@@ -18,9 +18,9 @@ MAX_MODEL_LEN = 16384  # Start with 16K max context to ensure it fits in memory,
 
 # 2. Test Parameters
 # We will test these specific context lengths to find the break-even point
-CONTEXT_LENGTHS = [1024, 2048, 4096, 6000, 7500, 8192, 16384] 
+CONTEXT_LENGTHS = [1024, 2048, 4096, 6000, 7500, 8192, 9000, 10000, 11000, 12000, 13000, 14000, 15000, 16384]
 # CONTEXT_LENGTHS = [1024, 4096, 8192, 16384, 24000] 
-SOURCE_FILE = "data/physiotherapy_wiki.pdf"  # Put your PDF or TXT path here
+SOURCE_FILE = "data/finance_reports.pdf"  # Put your PDF or TXT path here
 
 # 3. LMCache Paths
 CACHE_DIR = Path("lmcache_store")

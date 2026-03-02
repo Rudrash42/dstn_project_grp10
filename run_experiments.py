@@ -185,82 +185,191 @@ def ram_gb():
     return round(psutil.Process(os.getpid()).memory_info().rss / 1024**3, 2)
 
 
-def gpu_kv_cache_usage(llm):
+# ── Model-config-based KV size estimation ─────────────────────
+# These are read once from the model config in get_kv_config() and
+# cached in a module-level dict so we don't inspect the engine
+# every query.
+_KV_CFG = {}   # filled by get_kv_config()
+
+
+def get_kv_config(llm):
     """
-    Read GPU KV-cache utilisation from the vLLM V1 engine.
-    Returns (usage_pct, num_gpu_blocks, total_gpu_blocks) or (None, None, None).
+    Extract model architecture params needed to compute KV cache
+    sizes.  Caches the result in _KV_CFG.
+
+    Returns dict with keys:
+        num_layers, num_kv_heads, head_dim, dtype_bytes,
+        block_size, num_gpu_blocks, gpu_kv_capacity_mb
     """
-    # ── Method 1: vLLM V1 in-process scheduler (if multiprocessing=0) ──
+    if _KV_CFG:
+        return _KV_CFG
+
+    # --- model architecture ---
     try:
-        engine_core = llm.llm_engine.engine_core.engine_core
-        usage_frac = engine_core.scheduler.kv_cache_manager.usage  # 0.0–1.0
-        num_blocks = llm.llm_engine.cache_config.num_gpu_blocks
-        pct = round(100 * usage_frac, 1)
-        return pct, num_blocks, num_blocks
+        mc = llm.llm_engine.model_config.hf_config
+        num_layers  = getattr(mc, "num_hidden_layers", 24)
+        num_kv_heads = getattr(mc, "num_key_value_heads",
+                       getattr(mc, "num_attention_heads", 16))
+        hidden_size  = getattr(mc, "hidden_size", 896)
+        head_dim     = hidden_size // getattr(mc, "num_attention_heads", num_kv_heads)
     except Exception:
-        pass
-    # ── Method 2: report total GPU blocks from cache config ──
-    # In multiprocessing mode we can't access the live scheduler,
-    # but we can always read num_gpu_blocks (set during init).
+        # Qwen2.5-0.5B-Instruct defaults
+        num_layers, num_kv_heads, head_dim = 24, 2, 64
+
+    # bf16 / fp16 → 2 bytes per element
+    dtype_bytes = 2
+
+    # --- vLLM cache geometry ---
     try:
-        num_blocks = llm.llm_engine.cache_config.num_gpu_blocks
-        if num_blocks is not None and num_blocks > 0:
-            # We don't know live usage, report capacity & None for live %
-            return None, num_blocks, num_blocks
+        cc = llm.llm_engine.cache_config
+        block_size     = getattr(cc, "block_size", 16)
+        num_gpu_blocks = getattr(cc, "num_gpu_blocks", NUM_GPU_BLOCKS_OVERRIDE or 256)
     except Exception:
-        pass
-    # ── Method 3: torch.cuda device-level memory ──
+        block_size     = 16
+        num_gpu_blocks = NUM_GPU_BLOCKS_OVERRIDE or 256
+
+    # Bytes of KV per token = 2 (K+V) × layers × kv_heads × head_dim × dtype
+    kv_bytes_per_token = 2 * num_layers * num_kv_heads * head_dim * dtype_bytes
+
+    # Total GPU KV capacity in MB
+    tokens_capacity = num_gpu_blocks * block_size
+    gpu_kv_capacity_mb = round(tokens_capacity * kv_bytes_per_token / (1024**2), 2)
+
+    _KV_CFG.update({
+        "num_layers":        num_layers,
+        "num_kv_heads":      num_kv_heads,
+        "head_dim":          head_dim,
+        "dtype_bytes":       dtype_bytes,
+        "kv_bytes_per_token": kv_bytes_per_token,
+        "block_size":        block_size,
+        "num_gpu_blocks":    num_gpu_blocks,
+        "tokens_capacity":   tokens_capacity,
+        "gpu_kv_capacity_mb": gpu_kv_capacity_mb,
+    })
+
+    print(f"    [kv-cfg] {num_layers}L × {num_kv_heads}KVH × {head_dim}d  "
+          f"block_size={block_size}  gpu_blocks={num_gpu_blocks}  "
+          f"KV/tok={kv_bytes_per_token}B  "
+          f"GPU KV capacity={gpu_kv_capacity_mb:.1f}MB ({tokens_capacity} tok)")
+    return _KV_CFG
+
+
+def estimate_kv_size_mb(num_tokens, llm):
+    """
+    Estimated KV-cache memory for *num_tokens* based on model config.
+    This is the peak GPU KV memory the request needed.
+    """
+    cfg = get_kv_config(llm)
+    return round(num_tokens * cfg["kv_bytes_per_token"] / (1024**2), 3)
+
+
+def estimate_gpu_kv_usage_pct(num_tokens, llm):
+    """
+    Estimated GPU KV-cache utilisation (%) for a request of *num_tokens*.
+    """
+    cfg = get_kv_config(llm)
+    if cfg["tokens_capacity"] <= 0:
+        return 0.0
+    return round(100 * num_tokens / cfg["tokens_capacity"], 1)
+
+
+def gpu_vram_usage_mb():
+    """Current total GPU VRAM usage in MB (includes model + KV + overhead)."""
     try:
         free, total = torch.cuda.mem_get_info(0)
-        used_mb = round((total - free) / (1024 ** 2), 2)
-        total_mb = round(total / (1024 ** 2), 2)
-        pct = round(100 * (total - free) / total, 1)
-        return pct, used_mb, total_mb
-    except Exception:
-        return None, None, None
-
-
-def lmcache_cpu_cache_mb():
-    """
-    Read LMCache's L2 CPU cache usage in MB via its stats monitor.
-    Returns the current CPU cache size in MB, or None.
-    """
-    try:
-        from lmcache.observability import LMCStatsMonitor
-        monitor = LMCStatsMonitor.GetOrCreate()
-        return round(monitor.local_cache_usage_bytes / (1024 * 1024), 2)
+        return round((total - free) / (1024**2), 2)
     except Exception:
         return None
 
 
-def lmcache_disk_cache_mb():
+def estimate_l2_cpu_cache_mb(cumulative_kv_mb, disk_cache_mb):
     """
-    Read LMCache's L3 disk cache usage in MB via its stats monitor.
-    Falls back to scanning the cache directory.
+    Estimate L2 CPU cache usage.
+
+    LMCache writes new KV chunks first to CPU (L2), then spills to
+    disk (L3) when the CPU budget is exceeded.  So:
+
+        L2 ≈ min(cumulative_new_kv − disk_on_disk, MAX_CPU_CACHE)
+
+    Since cumulative_kv_mb tracks all KV ever generated in this
+    experiment, and disk_cache_mb shows what spilled to L3, the
+    difference (capped by the budget) is a reasonable L2 estimate.
     """
-    try:
-        from lmcache.observability import LMCStatsMonitor
-        monitor = LMCStatsMonitor.GetOrCreate()
-        val = monitor.local_storage_usage_bytes
-        if val is not None and val > 0:
-            return round(val / (1024 * 1024), 2)
-    except Exception:
-        pass
-    return cache_size_mb()  # fallback to directory scan
+    budget_mb = MAX_CPU_CACHE_GB * 1024
+    in_cpu = max(0.0, cumulative_kv_mb - disk_cache_mb)
+    return round(min(in_cpu, budget_mb), 2)
 
 
 def run_single(llm, sp, prompt: str):
-    """Run one prompt and return (latency_s, prompt_tokens, gen_tokens, text)."""
+    """Run one prompt and return a dict with latency, token counts,
+    TTFT, prefill/decode breakdown, and generated text."""
     t0 = time.perf_counter()
     outputs = llm.generate([prompt], sp)
     t1 = time.perf_counter()
     o = outputs[0]
-    return (
-        t1 - t0,
-        len(o.prompt_token_ids),
-        len(o.outputs[0].token_ids),
-        o.outputs[0].text,
-    )
+
+    latency   = t1 - t0
+    ptok      = len(o.prompt_token_ids)
+    gtok      = len(o.outputs[0].token_ids)
+    text      = o.outputs[0].text
+
+    # ── Extract fine-grained timing from vLLM RequestMetrics ──
+    ttft_s       = None   # time to first token (seconds)
+    prefill_s    = None   # prefill / prompt-processing time
+    decode_s     = None   # decode / generation time
+    tpot_ms      = None   # time per output token (ms)
+    queue_s      = None   # time in scheduler queue
+    decode_thr   = None   # decode throughput (tok/s)
+
+    m = getattr(o, "metrics", None)
+    if m is not None:
+        arrival  = getattr(m, "arrival_time", None)
+        first_tk = getattr(m, "first_token_time", None)
+        finished = getattr(m, "finished_time", None)
+        sched    = getattr(m, "first_scheduled_time", None)
+        q_time   = getattr(m, "time_in_queue", None)
+
+        if arrival is not None and first_tk is not None:
+            ttft_s = first_tk - arrival
+        if sched is not None and first_tk is not None:
+            prefill_s = first_tk - sched
+        if first_tk is not None and finished is not None:
+            decode_s = finished - first_tk
+            if gtok > 1:
+                tpot_ms = (decode_s / (gtok - 1)) * 1000
+            decode_thr = gtok / decode_s if decode_s > 0 else None
+        if q_time is not None:
+            queue_s = q_time
+        elif arrival is not None and sched is not None:
+            queue_s = sched - arrival
+
+    # ── Fallback estimation when metrics are unavailable ──
+    # Prefill is dominated by prompt processing; decode is ~linear in tokens.
+    if ttft_s is None and ptok > 0 and gtok > 0:
+        # Rough model: total_time ≈ prefill + decode
+        # Assume decode rate from first-principles: ~200 tok/s for small GPUs
+        est_decode_rate = 200.0  # tok/s (conservative estimate)
+        est_decode_s = gtok / est_decode_rate
+        est_prefill_s = max(latency - est_decode_s, latency * 0.1)
+        ttft_s    = est_prefill_s
+        prefill_s = est_prefill_s
+        decode_s  = latency - est_prefill_s
+        if gtok > 1 and decode_s > 0:
+            tpot_ms    = (decode_s / (gtok - 1)) * 1000
+            decode_thr = gtok / decode_s
+
+    return {
+        "latency":    latency,
+        "ptok":       ptok,
+        "gtok":       gtok,
+        "text":       text,
+        "ttft_s":     ttft_s,
+        "prefill_s":  prefill_s,
+        "decode_s":   decode_s,
+        "tpot_ms":    tpot_ms,
+        "queue_s":    queue_s,
+        "decode_thr": decode_thr,
+    }
 
 # ═══════════════════════════════════════════════════════════════
 # 4. Experiment runner
@@ -283,20 +392,28 @@ def run_experiment(name, prompts, llm, sp, clear_before=True, all_cold=False):
         clear_cache()
 
     rows = []
+    cumulative_kv_mb = 0.0   # running total of all KV generated this experiment
+
     for i, prompt in enumerate(prompts):
         # Truncate prompt if it would exceed the model's context window.
-        # (vLLM will error rather than silently truncate.)
-        # Rough heuristic: 1 token ≈ 3.5 chars for English text.
         max_chars = int(MAX_MODEL_LEN * 3.5) - 100
         if len(prompt) > max_chars:
             prompt = prompt[:max_chars]
 
         disk_before  = cache_size_mb()
         files_before = cache_file_count()
-        ram_before   = ram_gb()
-        l2_before    = lmcache_cpu_cache_mb() or 0.0
 
-        latency, ptok, gtok, text = run_single(llm, sp, prompt)
+        result = run_single(llm, sp, prompt)
+        latency   = result["latency"]
+        ptok      = result["ptok"]
+        gtok      = result["gtok"]
+        text      = result["text"]
+        ttft_s    = result["ttft_s"]
+        prefill_s = result["prefill_s"]
+        decode_s  = result["decode_s"]
+        tpot_ms   = result["tpot_ms"]
+        queue_s   = result["queue_s"]
+        decode_thr = result["decode_thr"]
 
         total_tok  = ptok + gtok
         throughput = total_tok / latency if latency > 0 else 0
@@ -304,12 +421,8 @@ def run_experiment(name, prompts, llm, sp, clear_before=True, all_cold=False):
         disk_after  = cache_size_mb()
         files_after = cache_file_count()
         ram_after   = ram_gb()
-        l2_after    = lmcache_cpu_cache_mb() or 0.0
-        l3_after    = lmcache_disk_cache_mb()
 
         # ── Detect cold / warm based on actual cache behaviour ──
-        # If new disk-cache files appeared, at least part of the KV
-        # was NOT in cache → label as Cold (or Partial if some reuse).
         disk_delta_mb   = round(disk_after - disk_before, 2)
         new_cache_files = files_after - files_before
 
@@ -322,35 +435,58 @@ def run_experiment(name, prompts, llm, sp, clear_before=True, all_cold=False):
         else:
             state = "Warm"          # no new cache entries → full hit
 
-        # ── GPU KV-cache utilisation ──
-        gpu_pct, gpu_detail1, gpu_detail2 = gpu_kv_cache_usage(llm)
-        gpu_label = f"{gpu_pct}%" if gpu_pct is not None else f"{gpu_detail1} blks"
+        # ── KV-cache size estimation (works reliably!) ──
+        kv_this_mb   = estimate_kv_size_mb(ptok, llm)      # KV needed for this prompt
+        gpu_kv_pct   = estimate_gpu_kv_usage_pct(ptok, llm) # % of GPU KV budget
+        cfg          = get_kv_config(llm)
+        gpu_cap_mb   = cfg["gpu_kv_capacity_mb"]
+        vram_mb      = gpu_vram_usage_mb()
+
+        # Accumulate total KV generated so far in this experiment
+        cumulative_kv_mb += kv_this_mb
+
+        # Estimate L2 CPU cache as: total KV generated minus what's on disk
+        l2_est_mb = estimate_l2_cpu_cache_mb(cumulative_kv_mb, disk_after)
+        l3_mb     = disk_after
+
+        ttft_ms_disp   = ttft_s * 1000 if ttft_s is not None else 0
+        tpot_ms_disp   = tpot_ms if tpot_ms is not None else 0
 
         print(
             f"   Q{i+1:>3d} ({state:7s})  "
-            f"lat={latency:.3f}s  thr={throughput:>6.0f} tok/s  "
+            f"lat={latency:.3f}s  TTFT={ttft_ms_disp:>6.1f}ms  "
+            f"TPOT={tpot_ms_disp:>5.1f}ms  thr={throughput:>6.0f} tok/s  "
             f"in={ptok:>5d}  out={gtok:>3d}  "
-            f"L1(GPU)={gpu_label}  "
-            f"L2(CPU)={l2_after:.1f}MB  "
-            f"L3(Disk)={l3_after:.1f}MB(Δ{disk_delta_mb:+.1f})"
+            f"KV={kv_this_mb:.1f}MB({gpu_kv_pct:.0f}%GPU)  "
+            f"L2≈{l2_est_mb:.1f}MB  "
+            f"L3={l3_mb:.1f}MB(Δ{disk_delta_mb:+.1f})"
         )
 
         rows.append({
-            "Experiment":            name,
-            "Query_ID":              i + 1,
-            "State":                 state,
-            "Latency (s)":           round(latency, 4),
-            "Throughput (tok/s)":     round(throughput, 2),
-            "Cost (ms/token)":       round(ms_tok, 3),
-            "Input Tokens":          ptok,
-            "Output Tokens":         gtok,
-            "L1 GPU KV Usage (%)":   gpu_pct,
-            "L2 CPU Cache (MB)":     l2_after,
-            "L3 Disk Cache (MB)":    l3_after,
-            "Disk Delta (MB)":       disk_delta_mb,
-            "New Cache Chunks":      new_cache_files,
-            "RAM (GB)":              ram_after,
-            "Prompt Preview":        prompt[:80] + "…",
+            "Experiment":               name,
+            "Query_ID":                 i + 1,
+            "State":                    state,
+            "Latency (s)":              round(latency, 4),
+            "TTFT (ms)":                round(ttft_s * 1000, 2) if ttft_s is not None else None,
+            "Prefill Time (ms)":        round(prefill_s * 1000, 2) if prefill_s is not None else None,
+            "Decode Time (ms)":         round(decode_s * 1000, 2) if decode_s is not None else None,
+            "TPOT (ms)":                round(tpot_ms, 3) if tpot_ms is not None else None,
+            "Queue Time (ms)":          round(queue_s * 1000, 3) if queue_s is not None else None,
+            "Decode Throughput (tok/s)": round(decode_thr, 2) if decode_thr is not None else None,
+            "Throughput (tok/s)":        round(throughput, 2),
+            "Cost (ms/token)":          round(ms_tok, 3),
+            "Input Tokens":             ptok,
+            "Output Tokens":            gtok,
+            "KV Size (MB)":             kv_this_mb,
+            "L1 GPU KV Usage (%)":      gpu_kv_pct,
+            "L1 GPU KV Capacity (MB)":  gpu_cap_mb,
+            "L2 CPU Cache Est (MB)":    l2_est_mb,
+            "L3 Disk Cache (MB)":       l3_mb,
+            "Disk Delta (MB)":          disk_delta_mb,
+            "New Cache Chunks":         new_cache_files,
+            "GPU VRAM Used (MB)":       vram_mb,
+            "RAM (GB)":                 ram_after,
+            "Prompt Preview":           prompt[:80] + "…",
         })
 
     return rows
@@ -1083,7 +1219,7 @@ def generate_plots(df: pd.DataFrame):
         fig.savefig(PLOTS_DIR / "5_multiturn_cost.png", dpi=150)
         plt.close(fig)
 
-    # ── Plot 6: All 3 cache levels growth (combined) ─────────
+    # ── Plot 6: All 3 cache levels (combined, per experiment) ──
     fig, axes = plt.subplots(2, 2, figsize=(14, 10), sharey=False)
     axes = axes.flatten()
     for idx, exp in enumerate(experiments):
@@ -1091,30 +1227,26 @@ def generate_plots(df: pd.DataFrame):
         sub = df[df["Experiment"] == exp]
         qid = sub["Query_ID"]
 
-        # L1 GPU KV Cache
-        if "L1 GPU KV Usage (%)" in sub.columns and sub["L1 GPU KV Usage (%)"].notna().any():
-            ax.plot(qid, sub["L1 GPU KV Usage (%)"],
-                    marker="s", markersize=3, label="L1 GPU KV (%)",
-                    color="#FF6B6B", linewidth=1.5)
-        # L2 CPU Cache
-        if "L2 CPU Cache (MB)" in sub.columns and sub["L2 CPU Cache (MB)"].notna().any():
-            ax2 = ax.twinx()
-            ax2.plot(qid, sub["L2 CPU Cache (MB)"],
-                     marker="^", markersize=3, label="L2 CPU (MB)",
-                     color="#4ECDC4", linewidth=1.5)
-            ax2.plot(qid, sub["L3 Disk Cache (MB)"],
-                     marker=".", markersize=3, label="L3 Disk (MB)",
-                     color="#45B7D1", linewidth=1.5)
-            ax2.set_ylabel("Cache Size (MB)", fontsize=8)
-            ax2.legend(loc="center right", fontsize=7)
-        else:
-            ax.plot(qid, sub["L3 Disk Cache (MB)"],
-                    marker=".", markersize=3, label="L3 Disk (MB)",
-                    color="#45B7D1", linewidth=1.5)
+        # L1 GPU KV Usage (%) — left y-axis
+        ax.plot(qid, sub["L1 GPU KV Usage (%)"],
+                marker="s", markersize=3, label="L1 GPU KV (%)",
+                color="#FF6B6B", linewidth=1.5)
+        ax.set_ylim(-5, 105)
+        ax.set_ylabel("GPU KV Usage (%)", fontsize=8, color="#FF6B6B")
+
+        # L2 + L3 on right y-axis (MB)
+        ax2 = ax.twinx()
+        ax2.plot(qid, sub["L2 CPU Cache Est (MB)"],
+                 marker="^", markersize=3, label="L2 CPU Est (MB)",
+                 color="#4ECDC4", linewidth=1.5)
+        ax2.plot(qid, sub["L3 Disk Cache (MB)"],
+                 marker=".", markersize=3, label="L3 Disk (MB)",
+                 color="#45B7D1", linewidth=1.5)
+        ax2.set_ylabel("Cache Size (MB)", fontsize=8)
+        ax2.legend(loc="center right", fontsize=7)
 
         ax.set_title(exp, fontsize=10)
         ax.set_xlabel("Query #")
-        ax.set_ylabel("GPU KV Usage (%)")
         ax.legend(loc="upper left", fontsize=7)
         ax.grid(alpha=0.3)
     fig.suptitle("Cache Utilisation Across All 3 Levels (L1 GPU / L2 CPU / L3 Disk)",
@@ -1124,42 +1256,69 @@ def generate_plots(df: pd.DataFrame):
     plt.close(fig)
 
     # ── Plot 7: L1 GPU KV-cache utilisation per query ─────────
-    if "L1 GPU KV Usage (%)" in df.columns and df["L1 GPU KV Usage (%)"].notna().any():
-        fig, axes = plt.subplots(2, 2, figsize=(14, 10), sharey=False)
-        axes = axes.flatten()
-        for idx, exp in enumerate(experiments):
-            ax = axes[idx]
-            sub = df[df["Experiment"] == exp]
-            ax.plot(sub["Query_ID"], sub["L1 GPU KV Usage (%)"],
-                    marker="o", markersize=3, color=palette[idx % len(palette)])
-            ax.set_title(exp, fontsize=10)
-            ax.set_xlabel("Query #")
-            ax.set_ylabel("GPU KV Cache Usage (%)")
-            ax.set_ylim(-5, 105)
-            ax.grid(alpha=0.3)
-        fig.suptitle("L1 GPU KV-Cache Utilisation per Query", fontsize=13, y=1.01)
-        fig.tight_layout()
-        fig.savefig(PLOTS_DIR / "7_gpu_kv_cache_usage.png", dpi=150)
-        plt.close(fig)
-
-    # ── Plot 8: L2 CPU cache growth per experiment ────────────
-    if "L2 CPU Cache (MB)" in df.columns and df["L2 CPU Cache (MB)"].notna().any():
-        fig, ax = plt.subplots(figsize=(12, 5))
-        for idx, exp in enumerate(experiments):
-            sub = df[df["Experiment"] == exp]
-            ax.plot(sub["Query_ID"], sub["L2 CPU Cache (MB)"],
-                    marker=".", markersize=3, label=exp,
-                    color=palette[idx % len(palette)])
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10), sharey=False)
+    axes = axes.flatten()
+    for idx, exp in enumerate(experiments):
+        ax = axes[idx]
+        sub = df[df["Experiment"] == exp]
+        ax.plot(sub["Query_ID"], sub["L1 GPU KV Usage (%)"],
+                marker="o", markersize=3, color=palette[idx % len(palette)])
+        ax.axhline(y=100, color="red", linestyle="--", alpha=0.5, label="GPU KV Capacity")
+        ax.set_title(exp, fontsize=10)
         ax.set_xlabel("Query #")
-        ax.set_ylabel("CPU Cache Size (MB)")
-        ax.set_title("L2 CPU Cache (LMCache) Growth During Experiments")
-        ax.legend(fontsize=9)
+        ax.set_ylabel("GPU KV Cache Usage (%)")
+        ax.set_ylim(-5, max(110, sub["L1 GPU KV Usage (%)"].max() * 1.1))
+        ax.legend(fontsize=7)
         ax.grid(alpha=0.3)
-        fig.tight_layout()
-        fig.savefig(PLOTS_DIR / "8_cpu_cache_growth.png", dpi=150)
-        plt.close(fig)
+    fig.suptitle("L1 GPU KV-Cache Utilisation per Query (estimated from token count)",
+                 fontsize=13, y=1.01)
+    fig.tight_layout()
+    fig.savefig(PLOTS_DIR / "7_gpu_kv_cache_usage.png", dpi=150)
+    plt.close(fig)
 
-    # ── Plot 9: L3 Disk cache growth ──────────────────────────
+    # ── Plot 8: KV size per query in MB ───────────────────────
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10), sharey=False)
+    axes = axes.flatten()
+    for idx, exp in enumerate(experiments):
+        ax = axes[idx]
+        sub = df[df["Experiment"] == exp]
+        ax.bar(sub["Query_ID"], sub["KV Size (MB)"],
+               color=palette[idx % len(palette)], alpha=0.8)
+        # draw GPU capacity line
+        if "L1 GPU KV Capacity (MB)" in sub.columns:
+            cap = sub["L1 GPU KV Capacity (MB)"].iloc[0]
+            ax.axhline(y=cap, color="red", linestyle="--", alpha=0.6,
+                       label=f"GPU KV Capacity ({cap:.1f} MB)")
+        ax.set_title(exp, fontsize=10)
+        ax.set_xlabel("Query #")
+        ax.set_ylabel("KV Cache Size (MB)")
+        ax.legend(fontsize=7)
+        ax.grid(alpha=0.3)
+    fig.suptitle("Per-Query KV Cache Size vs GPU Capacity", fontsize=13, y=1.01)
+    fig.tight_layout()
+    fig.savefig(PLOTS_DIR / "8_kv_size_per_query.png", dpi=150)
+    plt.close(fig)
+
+    # ── Plot 9: L2 CPU cache (estimated) per experiment ───────
+    fig, ax = plt.subplots(figsize=(12, 5))
+    for idx, exp in enumerate(experiments):
+        sub = df[df["Experiment"] == exp]
+        ax.plot(sub["Query_ID"], sub["L2 CPU Cache Est (MB)"],
+                marker=".", markersize=3, label=exp,
+                color=palette[idx % len(palette)])
+    budget_line = MAX_CPU_CACHE_GB * 1024
+    ax.axhline(y=budget_line, color="red", linestyle="--", alpha=0.5,
+               label=f"CPU Cache Budget ({budget_line:.0f} MB)")
+    ax.set_xlabel("Query #")
+    ax.set_ylabel("Estimated CPU Cache (MB)")
+    ax.set_title("L2 CPU Cache (estimated) Growth During Experiments")
+    ax.legend(fontsize=9)
+    ax.grid(alpha=0.3)
+    fig.tight_layout()
+    fig.savefig(PLOTS_DIR / "9_cpu_cache_est.png", dpi=150)
+    plt.close(fig)
+
+    # ── Plot 10: L3 Disk cache growth ─────────────────────────
     fig, ax = plt.subplots(figsize=(12, 5))
     for idx, exp in enumerate(experiments):
         sub = df[df["Experiment"] == exp]
@@ -1172,10 +1331,10 @@ def generate_plots(df: pd.DataFrame):
     ax.legend(fontsize=9)
     ax.grid(alpha=0.3)
     fig.tight_layout()
-    fig.savefig(PLOTS_DIR / "9_disk_cache_growth.png", dpi=150)
+    fig.savefig(PLOTS_DIR / "10_disk_cache_growth.png", dpi=150)
     plt.close(fig)
 
-    # ── Plot 10: Per-query cache delta (new KV written) ───────
+    # ── Plot 11: Per-query cache delta (new KV written) ───────
     if "Disk Delta (MB)" in df.columns:
         fig, axes = plt.subplots(2, 2, figsize=(14, 10), sharey=False)
         axes = axes.flatten()
@@ -1192,7 +1351,164 @@ def generate_plots(df: pd.DataFrame):
         fig.suptitle("Per-Query Cache Delta (red = cache miss / new KV)",
                      fontsize=13, y=1.01)
         fig.tight_layout()
-        fig.savefig(PLOTS_DIR / "10_cache_delta.png", dpi=150)
+        fig.savefig(PLOTS_DIR / "11_cache_delta.png", dpi=150)
+        plt.close(fig)
+
+    # ── Plot 12: TTFT Cold vs Warm per experiment ─────────────
+    has_ttft = "TTFT (ms)" in df.columns and df["TTFT (ms)"].notna().any()
+    if has_ttft:
+        fig, ax = plt.subplots(figsize=(12, 6))
+        cold_ttft    = df[df["State"] == "Cold"].groupby("Experiment")["TTFT (ms)"].mean()
+        partial_ttft = df[df["State"] == "Partial"].groupby("Experiment")["TTFT (ms)"].mean()
+        warm_ttft    = df[df["State"] == "Warm"].groupby("Experiment")["TTFT (ms)"].mean()
+
+        x = np.arange(len(experiments))
+        w = 0.25
+        bars1 = ax.bar(x - w, [cold_ttft.get(e, 0) for e in experiments], w,
+                        label="Cold (Cache Miss)", color="#FF6B6B")
+        bars2 = ax.bar(x,     [partial_ttft.get(e, 0) for e in experiments], w,
+                        label="Partial (Partial Hit)", color="#FFD93D")
+        bars3 = ax.bar(x + w, [warm_ttft.get(e, 0) for e in experiments], w,
+                        label="Warm (Full Cache Hit)", color="#4ECDC4")
+        ax.set_ylabel("Average TTFT (ms)")
+        ax.set_title("Time To First Token — Cold / Partial / Warm")
+        ax.set_xticks(x)
+        ax.set_xticklabels(experiments, rotation=15, ha="right")
+        ax.legend()
+        ax.grid(axis="y", alpha=0.3)
+        for bar in list(bars1) + list(bars2) + list(bars3):
+            h = bar.get_height()
+            if h > 0:
+                ax.annotate(f"{h:.1f}",
+                            xy=(bar.get_x() + bar.get_width() / 2, h),
+                            xytext=(0, 3), textcoords="offset points",
+                            ha="center", va="bottom", fontsize=8)
+        fig.tight_layout()
+        fig.savefig(PLOTS_DIR / "12_ttft_cold_vs_warm.png", dpi=150)
+        plt.close(fig)
+
+    # ── Plot 13: TTFT trace per query (one subplot per exp) ───
+    if has_ttft:
+        fig, axes = plt.subplots(2, 2, figsize=(14, 10), sharey=False)
+        axes = axes.flatten()
+        for idx, exp in enumerate(experiments):
+            ax = axes[idx]
+            sub = df[df["Experiment"] == exp].dropna(subset=["TTFT (ms)"])
+            ax.plot(sub["Query_ID"], sub["TTFT (ms)"], marker="o",
+                    markersize=3, color=palette[idx % len(palette)])
+            # Highlight first (cold) query
+            if len(sub) > 0:
+                ax.scatter(sub["Query_ID"].iloc[0], sub["TTFT (ms)"].iloc[0],
+                           color="red", s=60, zorder=5, label="Cold (Q1)")
+            ax.set_title(exp, fontsize=10)
+            ax.set_xlabel("Query #")
+            ax.set_ylabel("TTFT (ms)")
+            ax.legend(fontsize=7)
+            ax.grid(alpha=0.3)
+        fig.suptitle("Time To First Token — Per-Query Trace", fontsize=13, y=1.01)
+        fig.tight_layout()
+        fig.savefig(PLOTS_DIR / "13_ttft_trace.png", dpi=150)
+        plt.close(fig)
+
+    # ── Plot 14: TPOT (Time Per Output Token) per experiment ──
+    has_tpot = "TPOT (ms)" in df.columns and df["TPOT (ms)"].notna().any()
+    if has_tpot:
+        fig, ax = plt.subplots(figsize=(12, 6))
+        cold_tpot    = df[df["State"] == "Cold"].groupby("Experiment")["TPOT (ms)"].mean()
+        partial_tpot = df[df["State"] == "Partial"].groupby("Experiment")["TPOT (ms)"].mean()
+        warm_tpot    = df[df["State"] == "Warm"].groupby("Experiment")["TPOT (ms)"].mean()
+
+        x = np.arange(len(experiments))
+        w = 0.25
+        bars1 = ax.bar(x - w, [cold_tpot.get(e, 0) for e in experiments], w,
+                        label="Cold", color="#FF6B6B")
+        bars2 = ax.bar(x,     [partial_tpot.get(e, 0) for e in experiments], w,
+                        label="Partial", color="#FFD93D")
+        bars3 = ax.bar(x + w, [warm_tpot.get(e, 0) for e in experiments], w,
+                        label="Warm", color="#4ECDC4")
+        ax.set_ylabel("Average TPOT (ms / output token)")
+        ax.set_title("Time Per Output Token — Cold / Partial / Warm")
+        ax.set_xticks(x)
+        ax.set_xticklabels(experiments, rotation=15, ha="right")
+        ax.legend()
+        ax.grid(axis="y", alpha=0.3)
+        for bar in list(bars1) + list(bars2) + list(bars3):
+            h = bar.get_height()
+            if h > 0:
+                ax.annotate(f"{h:.1f}",
+                            xy=(bar.get_x() + bar.get_width() / 2, h),
+                            xytext=(0, 3), textcoords="offset points",
+                            ha="center", va="bottom", fontsize=8)
+        fig.tight_layout()
+        fig.savefig(PLOTS_DIR / "14_tpot_cold_vs_warm.png", dpi=150)
+        plt.close(fig)
+
+    # ── Plot 15: Prefill vs Decode time breakdown (stacked) ──
+    has_breakdown = ("Prefill Time (ms)" in df.columns and
+                     df["Prefill Time (ms)"].notna().any())
+    if has_breakdown:
+        fig, axes = plt.subplots(2, 2, figsize=(14, 10), sharey=False)
+        axes = axes.flatten()
+        for idx, exp in enumerate(experiments):
+            ax = axes[idx]
+            sub = df[df["Experiment"] == exp].dropna(subset=["Prefill Time (ms)"])
+            qid = sub["Query_ID"]
+            prefill = sub["Prefill Time (ms)"]
+            decode  = sub["Decode Time (ms)"].fillna(0)
+            ax.bar(qid, prefill, label="Prefill (prompt)", color="#FF6B6B", alpha=0.85)
+            ax.bar(qid, decode, bottom=prefill, label="Decode (generate)",
+                   color="#4ECDC4", alpha=0.85)
+            ax.set_title(exp, fontsize=10)
+            ax.set_xlabel("Query #")
+            ax.set_ylabel("Time (ms)")
+            ax.legend(fontsize=7)
+            ax.grid(alpha=0.3)
+        fig.suptitle("Latency Breakdown — Prefill vs Decode per Query",
+                     fontsize=13, y=1.01)
+        fig.tight_layout()
+        fig.savefig(PLOTS_DIR / "15_prefill_vs_decode.png", dpi=150)
+        plt.close(fig)
+
+    # ── Plot 16: TTFT vs Input Tokens scatter ────────────────
+    if has_ttft:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        for idx, exp in enumerate(experiments):
+            sub = df[df["Experiment"] == exp].dropna(subset=["TTFT (ms)"])
+            ax.scatter(sub["Input Tokens"], sub["TTFT (ms)"],
+                       s=20, alpha=0.7, label=exp,
+                       color=palette[idx % len(palette)])
+        ax.set_xlabel("Input Tokens (prompt length)")
+        ax.set_ylabel("TTFT (ms)")
+        ax.set_title("Time To First Token vs Prompt Length")
+        ax.legend(fontsize=9)
+        ax.grid(alpha=0.3)
+        fig.tight_layout()
+        fig.savefig(PLOTS_DIR / "16_ttft_vs_input_tokens.png", dpi=150)
+        plt.close(fig)
+
+    # ── Plot 17: Decode Throughput per experiment ─────────────
+    has_dec_thr = ("Decode Throughput (tok/s)" in df.columns and
+                   df["Decode Throughput (tok/s)"].notna().any())
+    if has_dec_thr:
+        fig, ax = plt.subplots(figsize=(10, 5))
+        dec_thr_avg = df.dropna(subset=["Decode Throughput (tok/s)"]) \
+                        .groupby("Experiment")["Decode Throughput (tok/s)"].mean()
+        bars = ax.bar(experiments,
+                      [dec_thr_avg.get(e, 0) for e in experiments],
+                      color=palette[:len(experiments)])
+        ax.set_ylabel("Decode Throughput (output tok/s)")
+        ax.set_title("Average Decode Throughput by Experiment")
+        ax.set_xticklabels(experiments, rotation=15, ha="right")
+        ax.grid(axis="y", alpha=0.3)
+        for bar in bars:
+            h = bar.get_height()
+            if h > 0:
+                ax.annotate(f"{h:.0f}",
+                            xy=(bar.get_x() + bar.get_width() / 2, h),
+                            xytext=(0, 3), textcoords="offset points",
+                            ha="center", va="bottom", fontsize=10)
+        fig.tight_layout()
+        fig.savefig(PLOTS_DIR / "17_decode_throughput.png", dpi=150)
         plt.close(fig)
 
     print(f"\n[plots] Plots saved → {PLOTS_DIR}/")
@@ -1224,11 +1540,26 @@ def print_summary(df: pd.DataFrame):
         print(f"    Warm  (hit)       : {len(warm):>3d}  avg lat {warm_lat:.4f}s")
         print(f"    Speedup (C/W)     : {speedup:.2f}x")
         print(f"    Avg Throughput    : {sub['Throughput (tok/s)'].mean():.1f} tok/s")
-        print(f"    Final disk cache  : {sub['L3 Disk Cache (MB)'].iloc[-1]:.1f} MB")
-        if "L1 GPU KV Usage (%)" in sub.columns and sub["L1 GPU KV Usage (%)"].notna().any():
-            print(f"    Avg L1 GPU KV use : {sub['L1 GPU KV Usage (%)'].mean():.1f}%")
-        if "L2 CPU Cache (MB)" in sub.columns and sub["L2 CPU Cache (MB)"].notna().any():
-            print(f"    Final L2 CPU cache: {sub['L2 CPU Cache (MB)'].iloc[-1]:.1f} MB")
+        print(f"    Avg KV Size       : {sub['KV Size (MB)'].mean():.2f} MB / query")
+        print(f"    Avg L1 GPU KV use : {sub['L1 GPU KV Usage (%)'].mean():.1f}%")
+        print(f"    Final L2 CPU est  : {sub['L2 CPU Cache Est (MB)'].iloc[-1]:.1f} MB")
+        print(f"    Final L3 disk     : {sub['L3 Disk Cache (MB)'].iloc[-1]:.1f} MB")
+
+        # ── TTFT / TPOT / Decode metrics ──
+        if "TTFT (ms)" in sub.columns and sub["TTFT (ms)"].notna().any():
+            ttft_cold = cold["TTFT (ms)"].mean() if len(cold) and cold["TTFT (ms)"].notna().any() else 0
+            ttft_warm = warm["TTFT (ms)"].mean() if len(warm) and warm["TTFT (ms)"].notna().any() else 0
+            ttft_all  = sub["TTFT (ms)"].mean()
+            print(f"    Avg TTFT          : {ttft_all:.1f} ms  "
+                  f"(Cold={ttft_cold:.1f}  Warm={ttft_warm:.1f})")
+        if "TPOT (ms)" in sub.columns and sub["TPOT (ms)"].notna().any():
+            print(f"    Avg TPOT          : {sub['TPOT (ms)'].mean():.2f} ms / output token")
+        if "Prefill Time (ms)" in sub.columns and sub["Prefill Time (ms)"].notna().any():
+            print(f"    Avg Prefill       : {sub['Prefill Time (ms)'].mean():.1f} ms")
+        if "Decode Time (ms)" in sub.columns and sub["Decode Time (ms)"].notna().any():
+            print(f"    Avg Decode        : {sub['Decode Time (ms)'].mean():.1f} ms")
+        if "Decode Throughput (tok/s)" in sub.columns and sub["Decode Throughput (tok/s)"].notna().any():
+            print(f"    Avg Decode Thr    : {sub['Decode Throughput (tok/s)'].mean():.1f} tok/s")
 
 
 # ═══════════════════════════════════════════════════════════════

@@ -1,0 +1,8 @@
+chunk_size: 256
+local_cpu: true
+local_disk: /home/rudrash/prog/dstn/lmcache_store/
+max_local_cpu_size: 2.0
+max_local_disk_size: 5.0
+remote_serde: naive
+remote_url: null
+save_decode_cache: true

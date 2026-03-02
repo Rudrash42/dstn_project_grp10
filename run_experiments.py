@@ -24,12 +24,14 @@ Hardware
 """
 
 import os
+
 import sys
 import time
 import shutil
 import yaml
 import psutil
 import pandas as pd
+import torch
 
 import matplotlib
 matplotlib.use("Agg")          # headless backend – saves to file
@@ -41,8 +43,9 @@ from pathlib import Path
 # CONFIGURATION  (edit these to match your hardware)
 # ═══════════════════════════════════════════════════════════════
 MODEL_NAME      = "Qwen/Qwen2.5-0.5B-Instruct"  # ~1 GB in fp16
-MAX_MODEL_LEN   = 2048
-GPU_MEM_UTIL    = 0.85
+# MODEL_NAME      = "meta-llama/Llama-3.2-1B-Instruct"  # ~2.3 GB in bf16
+MAX_MODEL_LEN   = 4096   # vLLM's max_model_len — reduced for 4 GB VRAM
+GPU_MEM_UTIL    = 0.80
 MAX_NEW_TOKENS  = 20
 TEMPERATURE     = 0.0
 ENFORCE_EAGER   = True
@@ -50,12 +53,36 @@ ENFORCE_EAGER   = True
 # Max queries per experiment (None = use all).
 # Lower this if you want a quicker test run.
 MAX_QUERIES     = 50
+MAX_CONTEXT_TOKENS = 2048  # We will test up to this many prompt tokens (must be <= MAX_MODEL_LEN)
+
+# ── Cache tuning knobs ────────────────────────────────────────
+# Lower MAX_CPU_CACHE_GB to force evictions so more queries are
+# genuinely "cold" (cache miss).  With 2.0 GB the shared prefix
+# (~256-token chunk ≈ a few MB) never gets evicted → everything
+# looks warm after the first query.  Try 0.05 (50 MB) or even
+# 0.01 (10 MB) to provoke real eviction behaviour.
+MAX_CPU_CACHE_GB  = 0.05      # L2 CPU cache budget in GB
+MAX_DISK_CACHE_GB = 5.0       # L3 disk cache budget in GB
+CHUNK_SIZE        = 256       # KV token-chunk granularity
+
+# ── GPU KV-cache size override ────────────────────────────────
+# vLLM normally fills ALL remaining VRAM with KV-cache blocks.
+# Set this to a small integer to artificially shrink the L1 GPU
+# KV cache and force evictions to L2 (CPU) / L3 (Disk).
+# Each block holds ~16 tokens of KV data.  Rough guide:
+#   256 blocks ≈ 4096 tokens  → moderate eviction pressure
+#   512 blocks ≈ 8192 tokens  → mild eviction pressure
+#   None       → use all available VRAM (no artificial limit)
+# WARNING: Do NOT set below ~200.  vLLM chunked prefill needs
+#          enough blocks for at least one full request.
+NUM_GPU_BLOCKS_OVERRIDE = 256  # ← tune this to control L1 pressure
 
 BASE_DIR    = Path(__file__).resolve().parent
 CACHE_DIR   = BASE_DIR / "lmcache_store"
 CONFIG_PATH = BASE_DIR / "lmcache_config.yaml"
-RESULTS_CSV = BASE_DIR / "experiment_results.csv"
-PLOTS_DIR   = BASE_DIR / "plots"
+RESULTS_CSV = BASE_DIR / "experiment_results_3.csv"
+PLOTS_DIR   = BASE_DIR / "plots3"
+SOURCE_FILE = BASE_DIR / "data/finance_reports.pdf"  # Put your PDF or TXT path here
 
 # ═══════════════════════════════════════════════════════════════
 # 1. LMCache configuration
@@ -67,11 +94,11 @@ def setup_lmcache():
     #   - local_disk must be a path STRING (not bool). Set None to disable.
     #   - remote_url is a separate string field (not the disk path).
     cfg = {
-        "chunk_size": 256,
+        "chunk_size": CHUNK_SIZE,
         "local_cpu": True,
-        "max_local_cpu_size": 2.0,              # 2 GB RAM (L2) cache
+        "max_local_cpu_size": MAX_CPU_CACHE_GB,              # 2 GB RAM (L2) cache
         "local_disk": str(CACHE_DIR) + "/",     # L3 disk path (must be string)
-        "max_local_disk_size": 5.0,             # 5 GB disk budget
+        "max_local_disk_size": MAX_DISK_CACHE_GB,             # 5 GB disk budget
         "remote_url": None,                     # No remote server
         "remote_serde": "naive",
         "save_decode_cache": True,
@@ -81,6 +108,9 @@ def setup_lmcache():
     os.environ["LMCACHE_CONFIG_FILE"] = str(CONFIG_PATH)
     print(f"[setup] LMCache config  → {CONFIG_PATH}")
     print(f"[setup] Disk cache dir  → {CACHE_DIR}")
+    print(f"[setup] CPU cache limit → {MAX_CPU_CACHE_GB} GB")
+    print(f"[setup] Disk cache dir  → {CACHE_DIR}  (limit {MAX_DISK_CACHE_GB} GB)")
+    print(f"[setup] Chunk size      → {CHUNK_SIZE} tokens")
 
 
 def clear_cache():
@@ -99,6 +129,8 @@ def build_engine():
 
     print(f"\n>>> Loading model: {MODEL_NAME}")
     print(f"    max_model_len={MAX_MODEL_LEN}  gpu_mem={GPU_MEM_UTIL}")
+    if NUM_GPU_BLOCKS_OVERRIDE is not None:
+        print(f"    num_gpu_blocks_override={NUM_GPU_BLOCKS_OVERRIDE}  (≈{NUM_GPU_BLOCKS_OVERRIDE * 16} tokens of L1 KV cache)")
 
     try:
         import lmcache                                       # noqa: F401
@@ -111,6 +143,7 @@ def build_engine():
             enforce_eager=ENFORCE_EAGER,
             gpu_memory_utilization=GPU_MEM_UTIL,
             max_model_len=MAX_MODEL_LEN,
+            num_gpu_blocks_override=NUM_GPU_BLOCKS_OVERRIDE,
             disable_log_stats=True,
         )
         print("    Engine loaded WITH LMCache KV connector")
@@ -121,6 +154,7 @@ def build_engine():
             enforce_eager=ENFORCE_EAGER,
             gpu_memory_utilization=GPU_MEM_UTIL,
             max_model_len=MAX_MODEL_LEN,
+            num_gpu_blocks_override=NUM_GPU_BLOCKS_OVERRIDE,
             disable_log_stats=True,
         )
 
@@ -140,8 +174,79 @@ def cache_size_mb():
     )
 
 
+def cache_file_count():
+    """Number of cache chunk files on disk (each ≈ one KV chunk)."""
+    if not CACHE_DIR.exists():
+        return 0
+    return sum(1 for f in CACHE_DIR.rglob("*") if f.is_file())
+
+
 def ram_gb():
     return round(psutil.Process(os.getpid()).memory_info().rss / 1024**3, 2)
+
+
+def gpu_kv_cache_usage(llm):
+    """
+    Read GPU KV-cache utilisation from the vLLM V1 engine.
+    Returns (usage_pct, num_gpu_blocks, total_gpu_blocks) or (None, None, None).
+    """
+    # ── Method 1: vLLM V1 in-process scheduler (if multiprocessing=0) ──
+    try:
+        engine_core = llm.llm_engine.engine_core.engine_core
+        usage_frac = engine_core.scheduler.kv_cache_manager.usage  # 0.0–1.0
+        num_blocks = llm.llm_engine.cache_config.num_gpu_blocks
+        pct = round(100 * usage_frac, 1)
+        return pct, num_blocks, num_blocks
+    except Exception:
+        pass
+    # ── Method 2: report total GPU blocks from cache config ──
+    # In multiprocessing mode we can't access the live scheduler,
+    # but we can always read num_gpu_blocks (set during init).
+    try:
+        num_blocks = llm.llm_engine.cache_config.num_gpu_blocks
+        if num_blocks is not None and num_blocks > 0:
+            # We don't know live usage, report capacity & None for live %
+            return None, num_blocks, num_blocks
+    except Exception:
+        pass
+    # ── Method 3: torch.cuda device-level memory ──
+    try:
+        free, total = torch.cuda.mem_get_info(0)
+        used_mb = round((total - free) / (1024 ** 2), 2)
+        total_mb = round(total / (1024 ** 2), 2)
+        pct = round(100 * (total - free) / total, 1)
+        return pct, used_mb, total_mb
+    except Exception:
+        return None, None, None
+
+
+def lmcache_cpu_cache_mb():
+    """
+    Read LMCache's L2 CPU cache usage in MB via its stats monitor.
+    Returns the current CPU cache size in MB, or None.
+    """
+    try:
+        from lmcache.observability import LMCStatsMonitor
+        monitor = LMCStatsMonitor.GetOrCreate()
+        return round(monitor.local_cache_usage_bytes / (1024 * 1024), 2)
+    except Exception:
+        return None
+
+
+def lmcache_disk_cache_mb():
+    """
+    Read LMCache's L3 disk cache usage in MB via its stats monitor.
+    Falls back to scanning the cache directory.
+    """
+    try:
+        from lmcache.observability import LMCStatsMonitor
+        monitor = LMCStatsMonitor.GetOrCreate()
+        val = monitor.local_storage_usage_bytes
+        if val is not None and val > 0:
+            return round(val / (1024 * 1024), 2)
+    except Exception:
+        pass
+    return cache_size_mb()  # fallback to directory scan
 
 
 def run_single(llm, sp, prompt: str):
@@ -186,37 +291,66 @@ def run_experiment(name, prompts, llm, sp, clear_before=True, all_cold=False):
         if len(prompt) > max_chars:
             prompt = prompt[:max_chars]
 
-        disk_before = cache_size_mb()
-        ram_before  = ram_gb()
+        disk_before  = cache_size_mb()
+        files_before = cache_file_count()
+        ram_before   = ram_gb()
+        l2_before    = lmcache_cpu_cache_mb() or 0.0
 
         latency, ptok, gtok, text = run_single(llm, sp, prompt)
 
         total_tok  = ptok + gtok
         throughput = total_tok / latency if latency > 0 else 0
         ms_tok     = (latency * 1000) / ptok if ptok > 0 else 0
-        disk_after = cache_size_mb()
+        disk_after  = cache_size_mb()
+        files_after = cache_file_count()
+        ram_after   = ram_gb()
+        l2_after    = lmcache_cpu_cache_mb() or 0.0
+        l3_after    = lmcache_disk_cache_mb()
 
-        state = "Cold" if (i == 0 or all_cold) else "Warm"
+        # ── Detect cold / warm based on actual cache behaviour ──
+        # If new disk-cache files appeared, at least part of the KV
+        # was NOT in cache → label as Cold (or Partial if some reuse).
+        disk_delta_mb   = round(disk_after - disk_before, 2)
+        new_cache_files = files_after - files_before
+
+        if all_cold:
+            state = "Cold"
+        elif i == 0:
+            state = "Cold"          # first query always cold
+        elif new_cache_files > 0:
+            state = "Partial"       # some new KV written → partial miss
+        else:
+            state = "Warm"          # no new cache entries → full hit
+
+        # ── GPU KV-cache utilisation ──
+        gpu_pct, gpu_detail1, gpu_detail2 = gpu_kv_cache_usage(llm)
+        gpu_label = f"{gpu_pct}%" if gpu_pct is not None else f"{gpu_detail1} blks"
 
         print(
-            f"   Q{i+1:>3d} ({state:4s})  "
+            f"   Q{i+1:>3d} ({state:7s})  "
             f"lat={latency:.3f}s  thr={throughput:>6.0f} tok/s  "
             f"in={ptok:>5d}  out={gtok:>3d}  "
-            f"cache={disk_after:.1f}MB"
+            f"L1(GPU)={gpu_label}  "
+            f"L2(CPU)={l2_after:.1f}MB  "
+            f"L3(Disk)={l3_after:.1f}MB(Δ{disk_delta_mb:+.1f})"
         )
 
         rows.append({
-            "Experiment":         name,
-            "Query_ID":           i + 1,
-            "State":              state,
-            "Latency (s)":        round(latency, 4),
-            "Throughput (tok/s)":  round(throughput, 2),
-            "Cost (ms/token)":    round(ms_tok, 3),
-            "Input Tokens":       ptok,
-            "Output Tokens":      gtok,
-            "L3 Disk Cache (MB)": disk_after,
-            "RAM (GB)":           ram_before,
-            "Prompt Preview":     prompt[:80] + "…",
+            "Experiment":            name,
+            "Query_ID":              i + 1,
+            "State":                 state,
+            "Latency (s)":           round(latency, 4),
+            "Throughput (tok/s)":     round(throughput, 2),
+            "Cost (ms/token)":       round(ms_tok, 3),
+            "Input Tokens":          ptok,
+            "Output Tokens":         gtok,
+            "L1 GPU KV Usage (%)":   gpu_pct,
+            "L2 CPU Cache (MB)":     l2_after,
+            "L3 Disk Cache (MB)":    l3_after,
+            "Disk Delta (MB)":       disk_delta_mb,
+            "New Cache Chunks":      new_cache_files,
+            "RAM (GB)":              ram_after,
+            "Prompt Preview":        prompt[:80] + "…",
         })
 
     return rows
@@ -354,38 +488,38 @@ EXP1_PROMPTS = [EXP1_PREFIX + q for q in EXP1_QUESTIONS]
 # We simulate a RAG scenario where the same retrieved document
 # is reused across many user questions.
 
-EXP2_DOCUMENT = (
-    "Tongaat Hulett and Implats ESG Report Summary — "
-    "Tongaat Hulett is a leading agri-processing business focusing on the complementary "
-    "activities of sugar production, property development, and starch production. The "
-    "company operates in South Africa, Mozambique, Zimbabwe, and Botswana, employing "
-    "over 30,000 people at the peak of the sugar milling season. In the 2021 financial "
-    "year, Tongaat Hulett produced approximately 1.1 million tons of sugar. The company "
-    "has committed to reducing energy intensity by 20% by 2025, with specific targets "
-    "for water efficiency improvement. Tongaat Hulett invests in socio-economic "
-    "development (SED) and reported total SED expenditure in 2021 aligned with community "
-    "needs. The Lost Time Injury Frequency Rate (LTIFR) is a critical safety metric "
-    "tracked annually. The company's ESG framework aligns with the UN Sustainable "
-    "Development Goals and operates under ISO 45001 certification. "
-    "Implats (Impala Platinum Holdings Limited) is one of the world's foremost producers "
-    "of platinum group metals (PGMs). The company's operations span South Africa and "
-    "Zimbabwe, with managed operations including Impala Rustenburg, Marula, and Zimplats. "
-    "Implats' ESG framework is built on three pillars focusing on environmental "
-    "stewardship, social responsibility, and governance excellence. The PS3 strategy "
-    "guides sustainability alignment. In 2023, Implats achieved significant safety "
-    "milestones while investing heavily in socio-economic development and community "
-    "projects. The company targets a 30% reduction in carbon emissions by 2030 and has "
-    "invested in renewable energy projects including the 35MW solar PV project at "
-    "Zimplats. Water recycling rates exceeded targets, and the company maintains strict "
-    "environmental compliance across all operations. The GISTM (Global Industry Standard "
-    "on Tailings Management) compliance roadmap is actively being implemented. "
-    "Both companies utilise the six capitals framework (Financial, Manufactured, "
-    "Intellectual, Human, Social/Relationship, Natural) to illustrate value creation "
-    "and regularly engage with stakeholders through structured programmes. "
-    "The double materiality principle used in ESG reporting assesses both inward "
-    "financial materiality and outward impact materiality to provide comprehensive "
-    "sustainability reporting aligned with global standards. "
-)
+# EXP2_DOCUMENT = (
+#     "Tongaat Hulett and Implats ESG Report Summary — "
+#     "Tongaat Hulett is a leading agri-processing business focusing on the complementary "
+#     "activities of sugar production, property development, and starch production. The "
+#     "company operates in South Africa, Mozambique, Zimbabwe, and Botswana, employing "
+#     "over 30,000 people at the peak of the sugar milling season. In the 2021 financial "
+#     "year, Tongaat Hulett produced approximately 1.1 million tons of sugar. The company "
+#     "has committed to reducing energy intensity by 20% by 2025, with specific targets "
+#     "for water efficiency improvement. Tongaat Hulett invests in socio-economic "
+#     "development (SED) and reported total SED expenditure in 2021 aligned with community "
+#     "needs. The Lost Time Injury Frequency Rate (LTIFR) is a critical safety metric "
+#     "tracked annually. The company's ESG framework aligns with the UN Sustainable "
+#     "Development Goals and operates under ISO 45001 certification. "
+#     "Implats (Impala Platinum Holdings Limited) is one of the world's foremost producers "
+#     "of platinum group metals (PGMs). The company's operations span South Africa and "
+#     "Zimbabwe, with managed operations including Impala Rustenburg, Marula, and Zimplats. "
+#     "Implats' ESG framework is built on three pillars focusing on environmental "
+#     "stewardship, social responsibility, and governance excellence. The PS3 strategy "
+#     "guides sustainability alignment. In 2023, Implats achieved significant safety "
+#     "milestones while investing heavily in socio-economic development and community "
+#     "projects. The company targets a 30% reduction in carbon emissions by 2030 and has "
+#     "invested in renewable energy projects including the 35MW solar PV project at "
+#     "Zimplats. Water recycling rates exceeded targets, and the company maintains strict "
+#     "environmental compliance across all operations. The GISTM (Global Industry Standard "
+#     "on Tailings Management) compliance roadmap is actively being implemented. "
+#     "Both companies utilise the six capitals framework (Financial, Manufactured, "
+#     "Intellectual, Human, Social/Relationship, Natural) to illustrate value creation "
+#     "and regularly engage with stakeholders through structured programmes. "
+#     "The double materiality principle used in ESG reporting assesses both inward "
+#     "financial materiality and outward impact materiality to provide comprehensive "
+#     "sustainability reporting aligned with global standards. "
+# )
 
 EXP2_QUESTIONS = [
     "What are the core vision and mission statements of Tongaat Hulett?",
@@ -492,7 +626,7 @@ EXP2_QUESTIONS = [
     "Describe the We Care programme's specific support for families of deceased employees, including education aid.",
 ]
 
-EXP2_PROMPTS = [EXP2_DOCUMENT + " Question: " + q for q in EXP2_QUESTIONS]
+# EXP2_PROMPTS = [EXP2_DOCUMENT + " Question: " + q for q in EXP2_QUESTIONS]
 
 # ── Experiment 3: No Context (random, independent queries) ───
 
@@ -791,6 +925,34 @@ EXP4_QUESTIONS = [
 ]
 
 
+# ================= DATA LOADING =================
+def load_and_scale_context(file_path, target_token_count):
+    text = ""
+    file_path = Path(file_path)
+    
+    # Simple fallback generator if file is missing/empty
+    if not file_path.exists():
+        print(f"[Warn] {file_path} not found. Generating dummy medical data.")
+        base_text = "Physiotherapy involves the holistic approach to prevention, diagnosis, and therapeutic management of pain disorders. "
+        text = base_text
+    else:
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                text = f.read()
+        except:
+            text = "Error reading file. Using dummy data. "
+
+    # Scale to target length (approx 4 chars per token)
+    current_chars = len(text)
+    target_chars = target_token_count * 4
+    
+    if current_chars < target_chars and current_chars > 0:
+        repeats = (target_chars // current_chars) + 1
+        text = text * repeats
+    
+    return text[:target_chars]
+
+
 def build_multiturn_prompts(max_turns=None):
     """
     Build a list of prompts where each successive prompt contains the
@@ -815,31 +977,33 @@ def generate_plots(df: pd.DataFrame):
 
     experiments = df["Experiment"].unique()
 
-    # ── Plot 1: Cold vs Warm average latency ──────────────────
+    # ── Plot 1: Cold / Partial / Warm average latency ───────────
     fig, ax = plt.subplots(figsize=(12, 6))
-    cold_avg = df[df["State"] == "Cold"].groupby("Experiment")["Latency (s)"].mean()
-    warm_avg = df[df["State"] == "Warm"].groupby("Experiment")["Latency (s)"].mean()
+    cold_avg    = df[df["State"] == "Cold"].groupby("Experiment")["Latency (s)"].mean()
+    partial_avg = df[df["State"] == "Partial"].groupby("Experiment")["Latency (s)"].mean()
+    warm_avg    = df[df["State"] == "Warm"].groupby("Experiment")["Latency (s)"].mean()
 
     x = np.arange(len(experiments))
-    w = 0.35
-    bars1 = ax.bar(x - w / 2, [cold_avg.get(e, 0) for e in experiments], w,
-                    label="Cold (No Cache)", color="#FF6B6B")
-    bars2 = ax.bar(x + w / 2, [warm_avg.get(e, 0) for e in experiments], w,
-                    label="Warm (Cache Hit)", color="#4ECDC4")
+    w = 0.25
+    bars1 = ax.bar(x - w, [cold_avg.get(e, 0) for e in experiments], w,
+                    label="Cold (Cache Miss)", color="#FF6B6B")
+    bars2 = ax.bar(x,     [partial_avg.get(e, 0) for e in experiments], w,
+                    label="Partial (Partial Hit)", color="#FFD93D")
+    bars3 = ax.bar(x + w, [warm_avg.get(e, 0) for e in experiments], w,
+                    label="Warm (Full Cache Hit)", color="#4ECDC4")
     ax.set_ylabel("Average Latency (s)")
-    ax.set_title("Cold vs Warm Latency by Experiment")
+    ax.set_title("Cold / Partial / Warm Latency by Experiment")
     ax.set_xticks(x)
     ax.set_xticklabels(experiments, rotation=15, ha="right")
     ax.legend()
     ax.grid(axis="y", alpha=0.3)
-    # Add value labels on bars
-    for bar in list(bars1) + list(bars2):
+    for bar in list(bars1) + list(bars2) + list(bars3):
         h = bar.get_height()
         if h > 0:
             ax.annotate(f"{h:.3f}",
                         xy=(bar.get_x() + bar.get_width() / 2, h),
                         xytext=(0, 3), textcoords="offset points",
-                        ha="center", va="bottom", fontsize=9)
+                        ha="center", va="bottom", fontsize=8)
     fig.tight_layout()
     fig.savefig(PLOTS_DIR / "1_cold_vs_warm_latency.png", dpi=150)
     plt.close(fig)
@@ -919,22 +1083,119 @@ def generate_plots(df: pd.DataFrame):
         fig.savefig(PLOTS_DIR / "5_multiturn_cost.png", dpi=150)
         plt.close(fig)
 
-    # ── Plot 6: Disk-cache growth over queries ────────────────
+    # ── Plot 6: All 3 cache levels growth (combined) ─────────
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10), sharey=False)
+    axes = axes.flatten()
+    for idx, exp in enumerate(experiments):
+        ax = axes[idx]
+        sub = df[df["Experiment"] == exp]
+        qid = sub["Query_ID"]
+
+        # L1 GPU KV Cache
+        if "L1 GPU KV Usage (%)" in sub.columns and sub["L1 GPU KV Usage (%)"].notna().any():
+            ax.plot(qid, sub["L1 GPU KV Usage (%)"],
+                    marker="s", markersize=3, label="L1 GPU KV (%)",
+                    color="#FF6B6B", linewidth=1.5)
+        # L2 CPU Cache
+        if "L2 CPU Cache (MB)" in sub.columns and sub["L2 CPU Cache (MB)"].notna().any():
+            ax2 = ax.twinx()
+            ax2.plot(qid, sub["L2 CPU Cache (MB)"],
+                     marker="^", markersize=3, label="L2 CPU (MB)",
+                     color="#4ECDC4", linewidth=1.5)
+            ax2.plot(qid, sub["L3 Disk Cache (MB)"],
+                     marker=".", markersize=3, label="L3 Disk (MB)",
+                     color="#45B7D1", linewidth=1.5)
+            ax2.set_ylabel("Cache Size (MB)", fontsize=8)
+            ax2.legend(loc="center right", fontsize=7)
+        else:
+            ax.plot(qid, sub["L3 Disk Cache (MB)"],
+                    marker=".", markersize=3, label="L3 Disk (MB)",
+                    color="#45B7D1", linewidth=1.5)
+
+        ax.set_title(exp, fontsize=10)
+        ax.set_xlabel("Query #")
+        ax.set_ylabel("GPU KV Usage (%)")
+        ax.legend(loc="upper left", fontsize=7)
+        ax.grid(alpha=0.3)
+    fig.suptitle("Cache Utilisation Across All 3 Levels (L1 GPU / L2 CPU / L3 Disk)",
+                 fontsize=13, y=1.01)
+    fig.tight_layout()
+    fig.savefig(PLOTS_DIR / "6_all_cache_levels.png", dpi=150)
+    plt.close(fig)
+
+    # ── Plot 7: L1 GPU KV-cache utilisation per query ─────────
+    if "L1 GPU KV Usage (%)" in df.columns and df["L1 GPU KV Usage (%)"].notna().any():
+        fig, axes = plt.subplots(2, 2, figsize=(14, 10), sharey=False)
+        axes = axes.flatten()
+        for idx, exp in enumerate(experiments):
+            ax = axes[idx]
+            sub = df[df["Experiment"] == exp]
+            ax.plot(sub["Query_ID"], sub["L1 GPU KV Usage (%)"],
+                    marker="o", markersize=3, color=palette[idx % len(palette)])
+            ax.set_title(exp, fontsize=10)
+            ax.set_xlabel("Query #")
+            ax.set_ylabel("GPU KV Cache Usage (%)")
+            ax.set_ylim(-5, 105)
+            ax.grid(alpha=0.3)
+        fig.suptitle("L1 GPU KV-Cache Utilisation per Query", fontsize=13, y=1.01)
+        fig.tight_layout()
+        fig.savefig(PLOTS_DIR / "7_gpu_kv_cache_usage.png", dpi=150)
+        plt.close(fig)
+
+    # ── Plot 8: L2 CPU cache growth per experiment ────────────
+    if "L2 CPU Cache (MB)" in df.columns and df["L2 CPU Cache (MB)"].notna().any():
+        fig, ax = plt.subplots(figsize=(12, 5))
+        for idx, exp in enumerate(experiments):
+            sub = df[df["Experiment"] == exp]
+            ax.plot(sub["Query_ID"], sub["L2 CPU Cache (MB)"],
+                    marker=".", markersize=3, label=exp,
+                    color=palette[idx % len(palette)])
+        ax.set_xlabel("Query #")
+        ax.set_ylabel("CPU Cache Size (MB)")
+        ax.set_title("L2 CPU Cache (LMCache) Growth During Experiments")
+        ax.legend(fontsize=9)
+        ax.grid(alpha=0.3)
+        fig.tight_layout()
+        fig.savefig(PLOTS_DIR / "8_cpu_cache_growth.png", dpi=150)
+        plt.close(fig)
+
+    # ── Plot 9: L3 Disk cache growth ──────────────────────────
     fig, ax = plt.subplots(figsize=(12, 5))
     for idx, exp in enumerate(experiments):
         sub = df[df["Experiment"] == exp]
         ax.plot(sub["Query_ID"], sub["L3 Disk Cache (MB)"],
-                marker=".", markersize=3, label=exp, color=palette[idx % len(palette)])
+                marker=".", markersize=3, label=exp,
+                color=palette[idx % len(palette)])
     ax.set_xlabel("Query #")
     ax.set_ylabel("Disk Cache Size (MB)")
     ax.set_title("L3 Disk Cache Growth During Experiments")
     ax.legend(fontsize=9)
     ax.grid(alpha=0.3)
     fig.tight_layout()
-    fig.savefig(PLOTS_DIR / "6_cache_growth.png", dpi=150)
+    fig.savefig(PLOTS_DIR / "9_disk_cache_growth.png", dpi=150)
     plt.close(fig)
 
-    print(f"\n[plots] 6 plots saved → {PLOTS_DIR}/")
+    # ── Plot 10: Per-query cache delta (new KV written) ───────
+    if "Disk Delta (MB)" in df.columns:
+        fig, axes = plt.subplots(2, 2, figsize=(14, 10), sharey=False)
+        axes = axes.flatten()
+        for idx, exp in enumerate(experiments):
+            ax = axes[idx]
+            sub = df[df["Experiment"] == exp]
+            colors_bar = ["#FF6B6B" if d > 0 else "#4ECDC4"
+                          for d in sub["Disk Delta (MB)"]]
+            ax.bar(sub["Query_ID"], sub["Disk Delta (MB)"], color=colors_bar)
+            ax.set_title(exp, fontsize=10)
+            ax.set_xlabel("Query #")
+            ax.set_ylabel("New KV Written to Disk (MB)")
+            ax.grid(alpha=0.3)
+        fig.suptitle("Per-Query Cache Delta (red = cache miss / new KV)",
+                     fontsize=13, y=1.01)
+        fig.tight_layout()
+        fig.savefig(PLOTS_DIR / "10_cache_delta.png", dpi=150)
+        plt.close(fig)
+
+    print(f"\n[plots] Plots saved → {PLOTS_DIR}/")
 
 # ═══════════════════════════════════════════════════════════════
 # 7. Summary statistics
@@ -947,20 +1208,28 @@ def print_summary(df: pd.DataFrame):
 
     for exp in df["Experiment"].unique():
         sub = df[df["Experiment"] == exp]
-        cold = sub[sub["State"] == "Cold"]
-        warm = sub[sub["State"] == "Warm"]
+        cold    = sub[sub["State"] == "Cold"]
+        partial = sub[sub["State"] == "Partial"]
+        warm    = sub[sub["State"] == "Warm"]
 
-        cold_lat = cold["Latency (s)"].mean() if len(cold) else 0
-        warm_lat = warm["Latency (s)"].mean() if len(warm) else 0
-        speedup  = cold_lat / warm_lat if warm_lat > 0 else 1.0
+        cold_lat    = cold["Latency (s)"].mean() if len(cold) else 0
+        partial_lat = partial["Latency (s)"].mean() if len(partial) else 0
+        warm_lat    = warm["Latency (s)"].mean() if len(warm) else 0
+        speedup     = cold_lat / warm_lat if warm_lat > 0 else 1.0
 
         print(f"\n  {exp}")
-        print(f"    Queries total    : {len(sub)}")
-        print(f"    Avg Cold latency : {cold_lat:.4f}s  ({len(cold)} queries)")
-        print(f"    Avg Warm latency : {warm_lat:.4f}s  ({len(warm)} queries)")
-        print(f"    Speedup          : {speedup:.2f}x")
-        print(f"    Avg Throughput   : {sub['Throughput (tok/s)'].mean():.1f} tok/s")
-        print(f"    Final cache size : {sub['L3 Disk Cache (MB)'].iloc[-1]:.1f} MB")
+        print(f"    Queries total     : {len(sub)}")
+        print(f"    Cold  (miss)      : {len(cold):>3d}  avg lat {cold_lat:.4f}s")
+        print(f"    Partial (partial) : {len(partial):>3d}  avg lat {partial_lat:.4f}s")
+        print(f"    Warm  (hit)       : {len(warm):>3d}  avg lat {warm_lat:.4f}s")
+        print(f"    Speedup (C/W)     : {speedup:.2f}x")
+        print(f"    Avg Throughput    : {sub['Throughput (tok/s)'].mean():.1f} tok/s")
+        print(f"    Final disk cache  : {sub['L3 Disk Cache (MB)'].iloc[-1]:.1f} MB")
+        if "L1 GPU KV Usage (%)" in sub.columns and sub["L1 GPU KV Usage (%)"].notna().any():
+            print(f"    Avg L1 GPU KV use : {sub['L1 GPU KV Usage (%)'].mean():.1f}%")
+        if "L2 CPU Cache (MB)" in sub.columns and sub["L2 CPU Cache (MB)"].notna().any():
+            print(f"    Final L2 CPU cache: {sub['L2 CPU Cache (MB)'].iloc[-1]:.1f} MB")
+
 
 # ═══════════════════════════════════════════════════════════════
 # 8. MAIN
@@ -983,6 +1252,9 @@ def main():
     )
 
     # ── Experiment 2: Shared Docs (RAG) ──
+    context_text = load_and_scale_context(SOURCE_FILE, MAX_CONTEXT_TOKENS)
+    EXP2_DOCUMENT = f"Context: {context_text}\n\n"
+    EXP2_PROMPTS = [EXP2_DOCUMENT + q for q in EXP2_QUESTIONS]
     prompts_2 = EXP2_PROMPTS[:n] if n else EXP2_PROMPTS
     all_rows.extend(
         run_experiment("2. Shared Docs (RAG)", prompts_2, llm, sp)

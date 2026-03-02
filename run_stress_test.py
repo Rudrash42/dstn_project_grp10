@@ -11,14 +11,16 @@ from vllm import LLM, SamplingParams
 
 # ================= CONFIGURATION =================
 # 1. Hardware & Model
-MODEL_NAME = "Qwen/Qwen2.5-1.5B-Instruct"
-GPU_MEM_UTIL = 0.85 
-MAX_MODEL_LEN = 32768  # Enable long context support
+MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct" #-GPTQ-Int4"  # A smaller model to fit in 3050's VRAM
+GPU_MEM_UTIL = 0.80 
+# MAX_MODEL_LEN = 32768  # Enable long context support
+MAX_MODEL_LEN = 16384  # Start with 16K max context to ensure it fits in memory, we will test up to 16K tokens
 
 # 2. Test Parameters
 # We will test these specific context lengths to find the break-even point
-CONTEXT_LENGTHS = [1024, 4096, 8192, 16384, 24000] 
-SOURCE_FILE = "rehab_knowledge_base.txt"  # Put your PDF or TXT path here
+CONTEXT_LENGTHS = [1024, 2048, 4096, 6000, 7500, 8192, 16384] 
+# CONTEXT_LENGTHS = [1024, 4096, 8192, 16384, 24000] 
+SOURCE_FILE = "data/physiotherapy_wiki.pdf"  # Put your PDF or TXT path here
 
 # 3. LMCache Paths
 CACHE_DIR = Path("lmcache_store")

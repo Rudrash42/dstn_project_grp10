@@ -1,0 +1,19 @@
+# RL Cache Prefetching — Dependencies
+# Core RL
+stable-baselines3>=2.3.0
+gymnasium>=1.0.0
+
+# Embeddings
+sentence-transformers>=3.0.0
+
+# ML Framework
+torch>=2.0.0
+
+# Visualization
+matplotlib>=3.7.0
+tensorboard>=2.17.0
+
+# Data
+pandas>=2.0.0
+numpy>=1.24.0
+pyyaml>=6.0

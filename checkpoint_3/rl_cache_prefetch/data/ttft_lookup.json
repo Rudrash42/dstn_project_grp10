@@ -1,0 +1,25 @@
+{
+  "shared_prefix": {
+    "cold_ttft_ms": 100.0,
+    "warm_ttft_ms": 57.0,
+    "avg_input_tokens": 166,
+    "shared_prefix_tokens": 160
+  },
+  "rag": {
+    "cold_ttft_ms": 238.0,
+    "warm_ttft_ms": 70.0,
+    "avg_input_tokens": 1750,
+    "shared_doc_tokens": 1700
+  },
+  "nocontext": {
+    "cold_ttft_ms": 60.0,
+    "warm_ttft_ms": 60.0,
+    "avg_input_tokens": 8
+  },
+  "multiturn": {
+    "cold_ttft_ms": 61.0,
+    "warm_ttft_ms_base": 61.0,
+    "base_tokens": 65,
+    "tokens_per_turn": 27
+  }
+}

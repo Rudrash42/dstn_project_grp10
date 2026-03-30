@@ -14,7 +14,7 @@ l3_capacity_mb: 5120.0
 l1_hit_latency_ms: 0.1
 l2_hit_latency_ms: 0.24
 l3_hit_latency_ms: 6.0
-cold_compute_per_chunk_ms: 29.8
+cold_compute_per_chunk_ms: 30.8
 prefetch_l3_to_l2_ms: 6.0
 alpha: 1.0
 beta: 0.01

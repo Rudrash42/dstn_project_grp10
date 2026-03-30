@@ -431,11 +431,10 @@ def get_kv_config(llm):
 
 def run_single(llm, sp, prompt):
     """Run one prompt through the engine. Returns timing + token info."""
-    # Cap max input tokens to avoid scheduling deadlock.
-    # With 256 GPU blocks (4096 tok capacity), prompts near 4096
-    # leave no room for output and cause an infinite scheduling loop.
-    # 2000 tokens matches checkpoint_2's real RAG experiment data (~1750 tok).
-    max_input_tokens = min(MAX_MODEL_LEN - MAX_NEW_TOKENS - 10, 2000)
+    # Cap max input tokens to 3800 to heavily utilize the 4096-token GPU cache 
+    # but still leave enough free blocks (~300 tokens worth) for vLLM to generate 
+    # output and avoid an infinite scheduling deadlock.
+    max_input_tokens = min(MAX_MODEL_LEN - MAX_NEW_TOKENS - 10, 3800)
     tokenizer = llm.get_tokenizer()
     token_ids = tokenizer.encode(prompt)
     if len(token_ids) > max_input_tokens:

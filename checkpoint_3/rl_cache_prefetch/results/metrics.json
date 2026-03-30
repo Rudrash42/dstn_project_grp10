@@ -1,24 +1,24 @@
 {
   "prefix": {
     "lru": {
-      "avg_latency_ms": 13.418,
-      "hit_rate_pct": 73.13432835820896,
-      "total_latency_ms": 670.9
+      "avg_latency_ms": 0.7140000000000002,
+      "hit_rate_pct": 98.0,
+      "total_latency_ms": 35.7
     },
     "no_cache": {
-      "avg_latency_ms": 49.58,
+      "avg_latency_ms": 30.8,
       "hit_rate_pct": 0.0,
-      "total_latency_ms": 2479.0
+      "total_latency_ms": 1540.0
     },
     "oracle": {
-      "avg_latency_ms": 13.418,
-      "hit_rate_pct": 73.13432835820896,
-      "total_latency_ms": 670.9
+      "avg_latency_ms": 0.7140000000000002,
+      "hit_rate_pct": 98.0,
+      "total_latency_ms": 35.7
     },
     "rl_agent": {
-      "avg_latency_ms": 13.418,
-      "hit_rate_pct": 73.13,
-      "total_latency_ms": 670.9,
+      "avg_latency_ms": 0.7140000000000002,
+      "hit_rate_pct": 98.0,
+      "total_latency_ms": 35.7,
       "total_prefetches": 0,
       "useful_prefetches": 0,
       "prefetch_accuracy_pct": 0,
@@ -28,83 +28,83 @@
   },
   "rag": {
     "lru": {
-      "avg_latency_ms": 42.865999999999985,
+      "avg_latency_ms": 35.798,
       "hit_rate_pct": 85.75,
-      "total_latency_ms": 2143.3
+      "total_latency_ms": 1789.9
     },
     "no_cache": {
-      "avg_latency_ms": 296.0,
+      "avg_latency_ms": 246.4,
       "hit_rate_pct": 0.0,
-      "total_latency_ms": 14800.0
+      "total_latency_ms": 12320.0
     },
     "oracle": {
-      "avg_latency_ms": 42.865999999999985,
+      "avg_latency_ms": 35.798,
       "hit_rate_pct": 85.75,
-      "total_latency_ms": 2143.3
+      "total_latency_ms": 1789.9
     },
     "rl_agent": {
-      "avg_latency_ms": 42.865999999999985,
+      "avg_latency_ms": 35.798,
       "hit_rate_pct": 85.75,
-      "total_latency_ms": 2143.3,
-      "total_prefetches": 87,
+      "total_latency_ms": 1789.9,
+      "total_prefetches": 20,
       "useful_prefetches": 0,
       "prefetch_accuracy_pct": 0.0,
-      "total_reward": -11.436783360000002,
+      "total_reward": -2.629145600000001,
       "speedup_vs_lru": 1.0
     }
   },
   "nocontext": {
     "lru": {
-      "avg_latency_ms": 37.0,
+      "avg_latency_ms": 30.8,
       "hit_rate_pct": 0.0,
-      "total_latency_ms": 1850.0
+      "total_latency_ms": 1540.0
     },
     "no_cache": {
-      "avg_latency_ms": 37.0,
+      "avg_latency_ms": 30.8,
       "hit_rate_pct": 0.0,
-      "total_latency_ms": 1850.0
+      "total_latency_ms": 1540.0
     },
     "oracle": {
-      "avg_latency_ms": 37.0,
+      "avg_latency_ms": 30.8,
       "hit_rate_pct": 0.0,
-      "total_latency_ms": 1850.0
+      "total_latency_ms": 1540.0
     },
     "rl_agent": {
-      "avg_latency_ms": 37.0,
+      "avg_latency_ms": 30.8,
       "hit_rate_pct": 0.0,
-      "total_latency_ms": 1850.0,
-      "total_prefetches": 54,
+      "total_latency_ms": 1540.0,
+      "total_prefetches": 0,
       "useful_prefetches": 0,
-      "prefetch_accuracy_pct": 0.0,
-      "total_reward": -7.09869312,
+      "prefetch_accuracy_pct": 0,
+      "total_reward": 0.0,
       "speedup_vs_lru": 1.0
     }
   },
   "multiturn": {
     "lru": {
-      "avg_latency_ms": 119.07700000000001,
+      "avg_latency_ms": 112.792,
       "hit_rate_pct": 44.0,
-      "total_latency_ms": 5953.85
+      "total_latency_ms": 5639.6
     },
     "no_cache": {
-      "avg_latency_ms": 943.5,
+      "avg_latency_ms": 785.4,
       "hit_rate_pct": 0.0,
-      "total_latency_ms": 47175.0
+      "total_latency_ms": 39270.0
     },
     "oracle": {
-      "avg_latency_ms": 119.07700000000001,
+      "avg_latency_ms": 112.792,
       "hit_rate_pct": 44.0,
-      "total_latency_ms": 5953.85
+      "total_latency_ms": 5639.6
     },
     "rl_agent": {
-      "avg_latency_ms": 112.522,
-      "hit_rate_pct": 48.47,
-      "total_latency_ms": 5626.1,
-      "total_prefetches": 57,
-      "useful_prefetches": 57,
-      "prefetch_accuracy_pct": 100.0,
-      "total_reward": -2789.24306496,
-      "speedup_vs_lru": 1.058
+      "avg_latency_ms": 112.792,
+      "hit_rate_pct": 44.0,
+      "total_latency_ms": 5639.6,
+      "total_prefetches": 0,
+      "useful_prefetches": 0,
+      "prefetch_accuracy_pct": 0,
+      "total_reward": -3115.200000000001,
+      "speedup_vs_lru": 1.0
     }
   }
 }

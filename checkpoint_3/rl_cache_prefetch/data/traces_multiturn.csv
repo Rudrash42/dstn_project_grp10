@@ -1,51 +1,251 @@
 query_id,query_text,input_tokens,chunk_ids_needed,shared_chunk_ids,unique_chunk_ids,num_chunks
-1,Can you explain how the RehabQuest pose tracking works?,65,[0],[],[0],1
-2,What is the calibration procedure at the start of each session?,92,"[0, 1]",[0],[1],2
-3,How does T-pose calibration normalise body proportions?,119,"[0, 1, 2]","[0, 1]",[2],3
-4,What are the hardware requirements for real-time pose tracking?,146,"[0, 1, 2, 3]","[0, 1, 2]",[3],4
-5,How does MediaPipe detect the 33 pose landmarks?,173,"[0, 1, 2, 3, 4]","[0, 1, 2, 3]",[4],5
-6,What is the role of cosine similarity in joint angle computation?,200,"[0, 1, 2, 3, 4, 5]","[0, 1, 2, 3, 4]",[5],6
-7,How are joint angles computed in three dimensions?,227,"[0, 1, 2, 3, 4, 5, 6]","[0, 1, 2, 3, 4, 5]",[6],7
-8,How is the system validated against Vicon motion capture?,254,"[0, 1, 2, 3, 4, 5, 6, 7]","[0, 1, 2, 3, 4, 5, 6]",[7],8
-9,What accuracy metrics are used to evaluate performance?,281,"[0, 1, 2, 3, 4, 5, 6, 7, 8]","[0, 1, 2, 3, 4, 5, 6, 7]",[8],9
-10,How does camera distance affect landmark detection accuracy?,308,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]","[0, 1, 2, 3, 4, 5, 6, 7, 8]",[9],10
-11,What GPU specification is needed for real-time processing?,335,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]",[10],11
-12,How does the system handle occlusion of body parts?,362,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]",[11],12
-13,What frame rate achieves clinically acceptable motion tracking?,389,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]",[12],13
-14,How are left and right side landmarks differentiated?,416,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]",[13],14
-15,What happens if T-pose calibration is performed incorrectly?,443,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]",[14],15
-16,How does the system account for varying patient heights?,470,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]",[15],16
-17,Can pose tracking work with a standard RGB webcam?,497,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]",[16],17
-18,How are the 33 landmarks mapped to anatomical joints?,524,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]",[17],18
-19,What filtering is applied to raw landmark coordinates?,551,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]",[18],19
-20,How does the system detect and reject outlier frames?,578,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]",[19],20
-21,How is shoulder flexion angle calculated from landmarks?,605,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]",[20],21
-22,How is knee extension range of motion extracted?,632,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]",[21],22
-23,What is the typical latency from movement to feedback?,659,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]",[22],23
-24,How does lighting affect landmark detection confidence?,686,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]",[23],24
-25,What confidence threshold accepts or rejects a landmark?,713,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]",[24],25
-26,How does the system track spinal alignment during exercises?,740,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]",[25],26
-27,How are exercise repetitions counted from angle time series?,767,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]",[26],27
-28,What ML model underlies the MediaPipe pose estimator?,794,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]",[27],28
-29,How was the MediaPipe model trained and what datasets used?,821,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]",[28],29
-30,Can the system distinguish correct from compensatory movement?,848,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]",[29],30
-31,How is data from multiple sessions stored and compared?,875,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]",[30],31
-32,What data format exports session results for clinicians?,902,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]",[31],32
-33,How does the system perform with limb prosthetics?,929,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]",[32],33
-34,What are failure modes of cosine similarity angle computation?,956,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]",[33],34
-35,How is the world coordinate frame defined relative to camera?,983,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33]",[34],35
-36,How handle patients who cannot perform the initial T-pose?,1010,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]",[35],36
-37,What is the mean absolute error vs Vicon gold standard?,1037,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]",[36],37
-38,How does clothing affect landmark detection accuracy?,1064,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]",[37],38
-39,Can multiple cameras improve tracking accuracy?,1091,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37]",[38],39
-40,How are upper and lower extremity exercises treated differently?,1118,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38]",[39],40
-41,What happens when patient moves out of camera frame?,1145,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39]",[40],41
-42,How is the skeleton model re-initialised after tracking loss?,1172,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]",[41],42
-43,How are hip joint angles computed and which landmarks used?,1199,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]",[42],43
-44,What is the difference between 2D and 3D landmarks?,1226,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42]",[43],44
-45,How does the system calculate left-right symmetry scores?,1253,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43]",[44],45
-46,What network architecture is used for landmark regression?,1280,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]",[45],46
-47,How are progress reports generated from session data?,1307,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]",[46],47
-48,Can the system operate offline without internet?,1334,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46]",[47],48
-49,How is patient privacy protected for video and landmark data?,1361,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47]",[48],49
-50,What future improvements are planned for pose tracking?,1388,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48]",[49],50
+1,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: Can you elaborate f",61,[0],[],[0],1
+2,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",88,"[0, 1]",[0],[1],2
+3,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",112,"[0, 1, 2]","[0, 1]",[2],3
+4,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",137,"[0, 1, 2, 3]","[0, 1, 2]",[3],4
+5,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",164,"[0, 1, 2, 3, 4]","[0, 1, 2, 3]",[4],5
+6,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",190,"[0, 1, 2, 3, 4, 5]","[0, 1, 2, 3, 4]",[5],6
+7,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",210,"[0, 1, 2, 3, 4, 5, 6]","[0, 1, 2, 3, 4, 5]",[6],7
+8,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",237,"[0, 1, 2, 3, 4, 5, 6, 7]","[0, 1, 2, 3, 4, 5, 6]",[7],8
+9,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",258,"[0, 1, 2, 3, 4, 5, 6, 7, 8]","[0, 1, 2, 3, 4, 5, 6, 7]",[8],9
+10,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",282,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]","[0, 1, 2, 3, 4, 5, 6, 7, 8]",[9],10
+11,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",308,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]",[10],11
+12,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",335,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]",[11],12
+13,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",357,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]",[12],13
+14,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",381,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]",[13],14
+15,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",409,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]",[14],15
+16,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",433,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]",[15],16
+17,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",458,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]",[16],17
+18,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",489,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]",[17],18
+19,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",509,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]",[18],19
+20,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",535,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]",[19],20
+21,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",560,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]",[20],21
+22,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",583,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]",[21],22
+23,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",609,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]",[22],23
+24,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",630,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]",[23],24
+25,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",655,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]",[24],25
+26,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",681,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]",[25],26
+27,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",706,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]",[26],27
+28,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",733,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]",[27],28
+29,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",761,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]",[28],29
+30,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",784,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]",[29],30
+31,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",809,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]",[30],31
+32,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",832,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]",[31],32
+33,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",858,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]",[32],33
+34,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",883,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]",[33],34
+35,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",910,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33]",[34],35
+36,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",938,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]",[35],36
+37,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",965,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]",[36],37
+38,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",984,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]",[37],38
+39,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",1005,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37]",[38],39
+40,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",1035,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38]",[39],40
+41,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",1059,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39]",[40],41
+42,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",1088,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]",[41],42
+43,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",1113,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]",[42],43
+44,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",1145,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42]",[43],44
+45,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",1166,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43]",[44],45
+46,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",1189,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]",[45],46
+47,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",1213,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]",[46],47
+48,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",1235,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46]",[47],48
+49,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",1264,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47]",[48],49
+50,"User: Hello AI.
+Assistant: Hi there! How can I help you today?
+User: Can you explain how the RehabQuest pose tracking works?
+Assistant: Here is my detailed answer for turn 1.
+User: What is the calibra",1286,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48]",[49],50

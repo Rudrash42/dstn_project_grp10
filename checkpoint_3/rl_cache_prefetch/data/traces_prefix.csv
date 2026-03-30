@@ -1,51 +1,51 @@
 query_id,query_text,input_tokens,chunk_ids_needed,shared_chunk_ids,unique_chunk_ids,num_chunks
-1,What exercises help with lower back pain?,174,"[0, 1]",[0],[1],2
-2,Is applying ice effective for reducing swelling?,174,[0],[0],[],1
-3,Define correct sitting posture for office workers.,174,[0],[0],[],1
-4,How long should a rotator cuff tear rehabilitation programme last?,180,"[0, 2]",[0],[2],2
-5,What is the recommended rest period after an acute ankle sprain?,182,[0],[0],[],1
-6,Which stretches are most effective for tight hamstrings?,176,[0],[0],[],1
-7,How should a patient progress from non-weight-bearing to full weight-bearing?,180,"[0, 3]",[0],[3],2
-8,What is the role of proprioception training after ACL reconstruction?,180,[0],[0],[],1
-9,How many sets and reps are recommended for quadriceps post surgery?,182,[0],[0],[],1
-10,What are the signs that a patient is overtraining during rehabilitation?,182,"[0, 4]",[0],[4],2
-11,How effective is dry needling for myofascial pain syndrome?,178,[0],[0],[],1
-12,What is the difference between active and passive physiotherapy?,178,[0],[0],[],1
-13,When is it safe to return to sport after a hamstring strain?,184,"[0, 5]",[0],[5],2
-14,How does ultrasound therapy aid soft tissue healing?,176,[0],[0],[],1
-15,What are the best exercises for strengthening the hip abductors?,180,[0],[0],[],1
-16,How should breathing be coordinated during core stability exercises?,178,"[0, 6]",[0],[6],2
-17,What is the McKenzie method and when is it indicated?,180,[0],[0],[],1
-18,How do wearable sensors improve rehabilitation outcomes?,174,[0],[0],[],1
-19,What is the recommended frequency of physiotherapy for chronic neck pain?,182,"[0, 7]",[0],[7],2
-20,How does foam rolling affect muscle recovery?,174,[0],[0],[],1
-21,What are the early mobilisation protocols after total knee replacement?,180,[0],[0],[],1
-22,How should a patient warm up before starting rehabilitation exercises?,180,"[0, 8]",[0],[8],2
-23,What is the evidence for kinesiology taping in shoulder impingement?,180,[0],[0],[],1
-24,How does sleep quality affect musculoskeletal recovery?,174,[0],[0],[],1
-25,What exercises are contraindicated after lumbar discectomy?,174,"[0, 9]",[0],[9],2
-26,How is gait analysis used in rehabilitation planning?,176,[0],[0],[],1
-27,What is the role of hydrotherapy in post-surgical rehabilitation?,178,[0],[0],[],1
-28,How long does it take to recover from a grade 2 ligament sprain?,186,"[0, 10]",[0],[10],2
-29,What are the benefits of eccentric training for tendinopathy?,178,[0],[0],[],1
-30,How should rehabilitation differ for elderly patients with hip fractures?,180,[0],[0],[],1
-31,What is the Oswestry Disability Index used for?,176,"[0, 11]",[0],[11],2
-32,How can computer vision detect incorrect squat form?,176,[0],[0],[],1
-33,What are the clinical criteria for diagnosing patellofemoral pain?,178,[0],[0],[],1
-34,How does chronic pain affect rehabilitation adherence?,174,"[0, 12]",[0],[12],2
-35,What is the recommended load progression for Achilles tendinopathy?,178,[0],[0],[],1
-36,How effective is TENS therapy for post-operative pain management?,178,[0],[0],[],1
-37,What is the difference between isometric and isotonic exercises?,178,"[0, 13]",[0],[13],2
-38,How should rehabilitation be modified for diabetic neuropathy patients?,178,[0],[0],[],1
-39,What are the red flags in low back pain requiring immediate referral?,184,[0],[0],[],1
-40,How does obesity affect joint loading during rehabilitation?,176,"[0, 14]",[0],[14],2
-41,What is neuromuscular electrical stimulation and when is it used?,180,[0],[0],[],1
-42,How can a patient self-monitor exercise intensity at home?,178,[0],[0],[],1
-43,What are the stages of tissue healing and how do they guide treatment?,186,"[0, 15]",[0],[15],2
-44,How effective is spinal manipulation for non-specific low back pain?,180,[0],[0],[],1
-45,What is the role of the transverse abdominis in lumbar stability?,182,[0],[0],[],1
-46,How does stress and anxiety impact musculoskeletal pain perception?,178,"[0, 16]",[0],[16],2
-47,What is the minimal detectable change for the Visual Analogue Scale?,182,[0],[0],[],1
-48,How should rehabilitation be adapted for osteoporosis patients?,176,[0],[0],[],1
-49,What are the best outcome measures for shoulder rehabilitation?,178,"[0, 17]",[0],[17],2
-50,How does dehydration affect muscle performance during exercise?,176,[0],[0],[],1
+1,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",163,[0],[0],[],1
+2,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",163,[0],[0],[],1
+3,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",163,[0],[0],[],1
+4,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,[0],[0],[],1
+5,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",168,[0],[0],[],1
+6,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",165,[0],[0],[],1
+7,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",169,[0],[0],[],1
+8,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,[0],[0],[],1
+9,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",168,[0],[0],[],1
+10,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",168,[0],[0],[],1
+11,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",169,[0],[0],[],1
+12,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,[0],[0],[],1
+13,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",168,[0],[0],[],1
+14,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",164,[0],[0],[],1
+15,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",168,[0],[0],[],1
+16,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",165,[0],[0],[],1
+17,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",166,[0],[0],[],1
+18,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",163,[0],[0],[],1
+19,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",169,[0],[0],[],1
+20,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",163,[0],[0],[],1
+21,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,[0],[0],[],1
+22,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",166,[0],[0],[],1
+23,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",171,[0],[0],[],1
+24,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",165,[0],[0],[],1
+25,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",170,[0],[0],[],1
+26,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",165,[0],[0],[],1
+27,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",168,[0],[0],[],1
+28,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",172,[0],[0],[],1
+29,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,[0],[0],[],1
+30,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",166,[0],[0],[],1
+31,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",166,[0],[0],[],1
+32,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",164,[0],[0],[],1
+33,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",170,[0],[0],[],1
+34,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",163,[0],[0],[],1
+35,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,[0],[0],[],1
+36,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,[0],[0],[],1
+37,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,[0],[0],[],1
+38,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",166,[0],[0],[],1
+39,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",168,[0],[0],[],1
+40,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",164,[0],[0],[],1
+41,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",169,[0],[0],[],1
+42,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",166,[0],[0],[],1
+43,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",169,[0],[0],[],1
+44,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,[0],[0],[],1
+45,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",170,[0],[0],[],1
+46,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,[0],[0],[],1
+47,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",169,[0],[0],[],1
+48,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",166,[0],[0],[],1
+49,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",165,[0],[0],[],1
+50,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",164,[0],[0],[],1

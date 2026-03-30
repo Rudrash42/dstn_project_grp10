@@ -1,46 +1,24 @@
-# ═══════════════════════════════════════════════════════════════
-# PPO + Environment Configuration for RL Cache Prefetching
-# ═══════════════════════════════════════════════════════════════
-
-# ── Model / Hardware Reference ────────────────────────────────
-model_name: "Qwen/Qwen2.5-0.5B-Instruct"
-gpu_mem_util: 0.80
+model_name: Qwen/Qwen2.5-0.5B-Instruct
+gpu_mem_util: 0.8
 max_model_len: 32768
-
-# ── KV-Cache Architecture (Qwen2.5-0.5B) ─────────────────────
 num_layers: 24
 num_kv_heads: 2
 head_dim: 64
 dtype_bytes: 2
 chunk_size_tokens: 256
-# KV bytes per token = 2 (K+V) × 24L × 2H × 64d × 2B = 12288
 kv_bytes_per_token: 12288
-# Bytes per chunk = 256 tokens × 12288 B/tok ≈ 3.0 MB
 chunk_size_bytes: 3145728
-
-# ── Tier Capacities ───────────────────────────────────────────
-l1_capacity_mb: 48.0       # GPU KV cache (256 blocks × 16 tok/block)
-l2_capacity_mb: 51.2       # CPU RAM cache
-l3_capacity_mb: 5120.0     # Disk cache
-
-# ── Tier Latencies (ms) — calibrated from experiments ────────
-# From lmcache_simulation_results.csv:
-#   Cold compute: 0.294s / 8 chunks ≈ 37ms per chunk
-#   L1 hit:       0.0007s / 7 hits  ≈ 0.1ms per chunk
-#   L2 hit:       estimated from PCIe bandwidth (~12 GB/s for 3MB chunk)
-#   L3 hit:       estimated from SSD read (~500 MB/s for 3MB chunk)
+l1_capacity_mb: 48.0
+l2_capacity_mb: 51.2
+l3_capacity_mb: 5120.0
 l1_hit_latency_ms: 0.1
-l2_hit_latency_ms: 0.25     # PCIe3 x16: 3MB / 12GB/s
-l3_hit_latency_ms: 6.0      # NVMe SSD:  3MB / 500MB/s
-cold_compute_per_chunk_ms: 37.0
-prefetch_l3_to_l2_ms: 6.0   # same as L3 read (SSD → RAM)
-
-# ── Reward Function Knobs ─────────────────────────────────────
-alpha: 1.0        # weight for time saved (ms)
-beta: 0.01        # penalty per MB migrated
-gamma_reward: 0.1 # penalty per unused prefetch
-
-# ── RL Hyperparameters (PPO) ──────────────────────────────────
+l2_hit_latency_ms: 0.24
+l3_hit_latency_ms: 6.0
+cold_compute_per_chunk_ms: 29.8
+prefetch_l3_to_l2_ms: 6.0
+alpha: 1.0
+beta: 0.01
+gamma_reward: 0.1
 learning_rate: 0.0003
 n_steps: 2048
 batch_size: 64
@@ -51,15 +29,12 @@ ent_coef: 0.01
 vf_coef: 0.5
 max_grad_norm: 0.5
 total_timesteps: 50000
-
-# ── Observation Space ─────────────────────────────────────────
-embed_dim: 384              # all-MiniLM-L6-v2 output dim
-max_candidate_chunks: 16    # top-K L3 candidates per step
-history_len: 5              # lookback window for recency
-# Total obs dim = 384 + 3 + 16 = 403
-
-# ── Training ──────────────────────────────────────────────────
-policy_net_arch: [64, 64]
+embed_dim: 384
+max_candidate_chunks: 16
+history_len: 5
+policy_net_arch:
+- 64
+- 64
 behavioral_cloning_epochs: 20
 behavioral_cloning_lr: 0.001
 num_queries_per_episode: 50

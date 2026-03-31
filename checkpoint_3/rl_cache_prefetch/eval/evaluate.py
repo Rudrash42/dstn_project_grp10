@@ -52,6 +52,7 @@ def evaluate_rl_agent(
             "query_id": info.get("step", 0),
             "reward": reward,
             "access_latency_ms": info.get("access_latency_ms", 0),
+            "prefetch_cost_ms": info.get("prefetch_cost_ms", 0),
             "baseline_latency_ms": info.get("baseline_latency_ms", 0),
             "n_prefetched": info.get("n_prefetched", 0),
             "n_useful": info.get("n_useful", 0),
@@ -66,8 +67,8 @@ def evaluate_rl_agent(
     return {
         "strategy": "RL Agent (PPO)",
         "per_query": per_query,
-        "avg_latency_ms": np.mean([r["access_latency_ms"] for r in per_query]),
-        "total_latency_ms": sum(r["access_latency_ms"] for r in per_query),
+        "avg_latency_ms": np.mean([r["access_latency_ms"] + r.get("prefetch_cost_ms", 0) for r in per_query]),
+        "total_latency_ms": sum(r["access_latency_ms"] + r.get("prefetch_cost_ms", 0) for r in per_query),
         "total_reward": total_reward,
         "hit_rate_pct": episode.get("hit_rate_pct", 0),
         "total_prefetches": episode.get("total_prefetches", 0),

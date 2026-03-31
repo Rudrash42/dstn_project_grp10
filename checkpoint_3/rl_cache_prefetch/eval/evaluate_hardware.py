@@ -115,8 +115,8 @@ def evaluate_rl_agent_hw(
     return {
         "strategy": "RL Agent (PPO) [HARDWARE]",
         "per_query": per_query,
-        "avg_latency_ms": float(np.mean([r["access_latency_ms"] for r in per_query])),
-        "total_latency_ms": float(sum(r["access_latency_ms"] for r in per_query)),
+        "avg_latency_ms": float(np.mean([r["access_latency_ms"] + r.get("prefetch_cost_ms", 0) for r in per_query])),
+        "total_latency_ms": float(sum(r["access_latency_ms"] + r.get("prefetch_cost_ms", 0) for r in per_query)),
         "total_reward": float(total_reward),
         "hit_rate_pct": float(episode.get("hit_rate_pct", 0)),
         "total_prefetches": episode.get("total_prefetches", 0),

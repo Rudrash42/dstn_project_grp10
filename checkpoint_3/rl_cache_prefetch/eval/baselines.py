@@ -141,8 +141,19 @@ def run_oracle_baseline(
         # Oracle: prefetch next query's chunks from L3 → L2
         if i + 1 < len(df):
             next_chunks = json.loads(df.iloc[i + 1]["chunk_ids_needed"])
+            # Prevent blind thrashing by limiting prefetch to L2 capacity
+            l2_cap = getattr(cfg, "l2_capacity_chunks", int(getattr(cfg, "l2_capacity_bytes", 12*1024*1024) / getattr(cfg, "chunk_size_bytes", 3*1024*1024)))
+            prefetched = 0
             for cid in next_chunks:
-                sim.prefetch(cid)
+                if prefetched >= l2_cap:
+                    break
+                loc = sim.chunk_in_cache(cid)
+                if loc in ["L1", "L2"]:
+                    prefetched += 1
+                elif loc == "L3":
+                    cost = sim.prefetch(cid)
+                    results[-1]["access_latency_ms"] += cost
+                    prefetched += 1
 
     all_latencies = [r["access_latency_ms"] for r in results]
     all_hits = sum(r["hit_rate"] * r["num_chunks"] for r in results)

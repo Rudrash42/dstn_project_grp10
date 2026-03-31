@@ -54,9 +54,9 @@ MAX_NEW_TOKENS = 20
 TEMPERATURE = 0.0
 ENFORCE_EAGER = True
 CHUNK_SIZE = 256
-MAX_CPU_CACHE_GB = 0.05        # L2 CPU cache budget (GB)
+MAX_CPU_CACHE_GB = 0.005       # L2 CPU cache budget (~5 MB) — forces L2→L3 spill
 MAX_DISK_CACHE_GB = 5.0        # L3 disk cache budget (GB)
-NUM_GPU_BLOCKS_OVERRIDE = 256  # L1 GPU blocks (~4096 tokens)
+NUM_GPU_BLOCKS_OVERRIDE = 32   # L1 GPU blocks (~512 tokens, ~6 MB KV) — forces eviction
 MAX_QUERIES = 50
 
 # ═══════════════════════════════════════════════════════════════
@@ -76,8 +76,40 @@ EXP1_PREFIX = (
     "provide a definitive diagnosis. Always recommend that patients consult their "
     "treating physician for personalised medical advice before changing their "
     "rehabilitation programme. Respond in professional but approachable language. "
+    # ── Extended context to push prefix to ~3 chunks (~650+ tokens) ──
+    "Clinical Practice Guidelines: For musculoskeletal rehabilitation, the American "
+    "Physical Therapy Association (APTA) recommends a structured, phase-based approach: "
+    "Phase I (Acute, Days 0-7): Focus on pain management using cryotherapy, compression, "
+    "and elevation. Introduce gentle range-of-motion exercises within pain tolerance. "
+    "Apply the PRICE protocol (Protection, Rest, Ice, Compression, Elevation). Monitor "
+    "for signs of deep vein thrombosis in immobilised patients. Document baseline pain "
+    "levels using the Visual Analogue Scale (VAS). "
+    "Phase II (Subacute, Weeks 1-6): Progressive loading following the tissue healing "
+    "timeline. Introduce isometric exercises progressing to isotonic by week 3. Begin "
+    "proprioceptive training with balance boards and unstable surfaces. Target 80% of "
+    "contralateral limb strength before advancing. Monitor inflammatory markers and adjust "
+    "intensity accordingly. Apply the principle of graduated return to activity. "
+    "Phase III (Remodelling, Weeks 6-12): Sport-specific or task-specific training. "
+    "Eccentric strengthening for tendinopathies following the Alfredson protocol. "
+    "Plyometric progression using the reactive strength index. Functional movement "
+    "screening (FMS) to identify compensatory patterns. Return-to-sport criteria: "
+    "90% limb symmetry index on isokinetic testing, successful completion of hop tests "
+    "(single, triple, crossover, and timed), and psychological readiness assessed via "
+    "the ACL-Return to Sport after Injury (ACL-RSI) scale. "
+    "Phase IV (Maintenance, Ongoing): Long-term injury prevention programming. "
+    "Periodised strength and conditioning with progressive overload. Neuromuscular "
+    "control drills integrated into warm-up routines following the FIFA 11+ protocol. "
+    "Annual functional reassessment recommended. Patient education on load management, "
+    "sleep hygiene, and nutritional support for tissue recovery. "
+    "Documentation Standards: Use the International Classification of Functioning, "
+    "Disability and Health (ICF) framework for assessment documentation. Record "
+    "objective measures including goniometric range of motion, manual muscle testing "
+    "grades (Oxford scale 0-5), and validated patient-reported outcome measures "
+    "(PROMs) such as the Lower Extremity Functional Scale (LEFS), Disabilities of "
+    "the Arm, Shoulder and Hand (DASH), and Oswestry Disability Index (ODI). "
     "Now answer the following clinical question. "
 )
+
 
 EXP1_QUESTIONS = [
     "What exercises help with lower back pain?",
@@ -822,24 +854,128 @@ def update_ppo_config(tier_config, kv_cfg):
 # ═══════════════════════════════════════════════════════════════
 
 def load_and_scale_context(file_path, target_token_count):
-    """Load text from a file and scale to target length."""
+    """Load text from a file (with PDF parsing) and scale to target length."""
     text = ""
     file_path = Path(file_path)
 
+    # ── Substantial fallback text (ESG report summary, ~800 tokens) ──
+    # Used when the PDF cannot be parsed or is not available.
+    FALLBACK_TEXT = (
+        "Tongaat Hulett and Implats ESG Report Summary — "
+        "Tongaat Hulett is a leading agri-processing business focusing on the complementary "
+        "activities of sugar production, property development, and starch production. The "
+        "company operates in South Africa, Mozambique, Zimbabwe, and Botswana, employing "
+        "over 30,000 people at the peak of the sugar milling season. In the 2021 financial "
+        "year, Tongaat Hulett produced approximately 1.1 million tons of sugar. The company "
+        "has committed to reducing energy intensity by 20% by 2025, with specific targets "
+        "for water efficiency improvement. Tongaat Hulett invests in socio-economic "
+        "development (SED) and reported total SED expenditure in 2021 aligned with community "
+        "needs. The Lost Time Injury Frequency Rate (LTIFR) is a critical safety metric "
+        "tracked annually. The company's ESG framework aligns with the UN Sustainable "
+        "Development Goals and operates under ISO 45001 certification. "
+        "Implats (Impala Platinum Holdings Limited) is one of the world's foremost producers "
+        "of platinum group metals (PGMs). The company's operations span South Africa and "
+        "Zimbabwe, with managed operations including Impala Rustenburg, Marula, and Zimplats. "
+        "Implats' ESG framework is built on three pillars focusing on environmental "
+        "stewardship, social responsibility, and governance excellence. The PS3 strategy "
+        "guides sustainability alignment. In 2023, Implats achieved significant safety "
+        "milestones while investing heavily in socio-economic development and community "
+        "projects. The company targets a 30% reduction in carbon emissions by 2030 and has "
+        "invested in renewable energy projects including the 35MW solar PV project at "
+        "Zimplats. Water recycling rates exceeded targets, and the company maintains strict "
+        "environmental compliance across all operations. The GISTM (Global Industry Standard "
+        "on Tailings Management) compliance roadmap is actively being implemented. "
+        "Both companies utilise the six capitals framework (Financial, Manufactured, "
+        "Intellectual, Human, Social/Relationship, Natural) to illustrate value creation "
+        "and regularly engage with stakeholders through structured programmes. "
+        "The double materiality principle used in ESG reporting assesses both inward "
+        "financial materiality and outward impact materiality to provide comprehensive "
+        "sustainability reporting aligned with global standards. "
+        "Tongaat Hulett reported revenue of approximately R16.2 billion in 2021, with "
+        "significant capital expenditure directed towards operational efficiency improvements "
+        "and environmental sustainability initiatives. The company's manufactured capital "
+        "includes six sugar mills across four countries with a combined crushing capacity "
+        "exceeding 8 million tons of sugarcane per season. Employee training and development "
+        "spend reached R45 million, reflecting commitment to human capital investment. "
+        "Implats distributed over R50 billion in total value to stakeholders in 2023, "
+        "including R28 billion in wages and benefits, R12 billion in taxes and royalties, "
+        "and R2.3 billion in dividends. The company's total mineral reserves stand at "
+        "approximately 190 million ounces of platinum group metals. Production across all "
+        "operations exceeded 3.2 million ounces of refined PGMs. The Marula mine in Limpopo "
+        "province employs over 5,000 people and has achieved milestone safety records. "
+        "Environmental management across both organisations addresses water stewardship, "
+        "carbon emissions reduction, waste minimisation, and biodiversity conservation. "
+        "Tongaat Hulett's sugarcane operations in KwaZulu-Natal face increasing climate "
+        "risks from drought and flooding events, while Implats' mining operations in the "
+        "Bushveld Complex manage dust emissions, acid mine drainage, and tailings storage "
+        "facility safety under stringent regulatory requirements. "
+    )
+
     if not file_path.exists():
-        print(f"  [warn] {file_path} not found. Using generated text.")
-        base_text = (
-            "Physiotherapy involves the holistic approach to prevention, "
-            "diagnosis, and therapeutic management of pain disorders. "
-        )
-        text = base_text
+        print(f"  [warn] {file_path} not found. Using fallback ESG text.")
+        text = FALLBACK_TEXT
     else:
-        try:
-            # Try reading as text first
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                text = f.read()
-        except Exception:
-            text = "Error reading file. Using dummy data. "
+        # Try PDF parsing first (the file is a .pdf)
+        parsed = False
+
+        if str(file_path).lower().endswith(".pdf"):
+            # Try PyPDF2
+            try:
+                import PyPDF2
+                reader = PyPDF2.PdfReader(str(file_path))
+                pages_text = []
+                for page in reader.pages:
+                    pt = page.extract_text()
+                    if pt:
+                        pages_text.append(pt)
+                if pages_text:
+                    text = " ".join(pages_text)
+                    parsed = True
+                    print(f"  [RAG] Parsed PDF with PyPDF2: {len(pages_text)} pages, ~{len(text)} chars")
+            except ImportError:
+                pass
+            except Exception as exc:
+                print(f"  [warn] PyPDF2 failed: {exc}")
+
+            # Try pdfplumber
+            if not parsed:
+                try:
+                    import pdfplumber
+                    with pdfplumber.open(str(file_path)) as pdf:
+                        pages_text = []
+                        for page in pdf.pages:
+                            pt = page.extract_text()
+                            if pt:
+                                pages_text.append(pt)
+                    if pages_text:
+                        text = " ".join(pages_text)
+                        parsed = True
+                        print(f"  [RAG] Parsed PDF with pdfplumber: {len(pages_text)} pages, ~{len(text)} chars")
+                except ImportError:
+                    pass
+                except Exception as exc:
+                    print(f"  [warn] pdfplumber failed: {exc}")
+
+        if not parsed:
+            # Fallback: try reading as plain text (for .txt files)
+            try:
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                    raw = f.read()
+                # Check if it looks like binary garbage (PDF headers, etc.)
+                printable_ratio = sum(1 for c in raw[:1000] if c.isprintable() or c.isspace()) / max(len(raw[:1000]), 1)
+                if printable_ratio > 0.85:
+                    text = raw
+                    parsed = True
+                    print(f"  [RAG] Read as plain text: ~{len(text)} chars")
+                else:
+                    print(f"  [warn] File appears binary (printable ratio={printable_ratio:.2f}). Using fallback text.")
+                    text = FALLBACK_TEXT
+            except Exception:
+                text = FALLBACK_TEXT
+
+        if not text.strip():
+            print(f"  [warn] No text extracted from {file_path}. Using fallback text.")
+            text = FALLBACK_TEXT
 
     target_chars = target_token_count * 4
     if len(text) < target_chars and len(text) > 0:

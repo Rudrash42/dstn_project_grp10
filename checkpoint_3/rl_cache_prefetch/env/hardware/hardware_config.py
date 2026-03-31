@@ -81,12 +81,12 @@ class HardwareConfig:
     # L1 (GPU VRAM) — RTX 3050 has 4096 MB total VRAM
     # Keep this MUCH smaller than total VRAM so PyTorch/CUDA
     # can use the rest for the RL model and overhead.
-    l1_capacity_mb: float = 48.0
+    l1_capacity_mb: float = 6.0
 
     # L2 (CPU pinned RAM) — Your laptop's system RAM
     # Pinned memory is locked in physical RAM (can't be swapped to disk)
     # so don't set this too high or you'll starve your OS.
-    l2_capacity_mb: float = 51.2
+    l2_capacity_mb: float = 9.0
 
     # L3 (NVMe disk) — Your SSD storage
     # This can be large since disk is cheap.

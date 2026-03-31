@@ -18,8 +18,8 @@ class TierConfig:
     chunk_size_bytes: int = 3_145_728      # 256 tok × 12288 B
 
     # ── Tier capacities (bytes) ────────────────────────────────
-    l1_capacity_bytes: int = 48 * 1024 * 1024        # 48 MB
-    l2_capacity_bytes: int = int(51.2 * 1024 * 1024) # 51.2 MB
+    l1_capacity_bytes: int = 6 * 1024 * 1024         # 6 MB  (fits ~2 chunks)
+    l2_capacity_bytes: int = 9 * 1024 * 1024         # 9 MB  (fits ~3 chunks)
     l3_capacity_bytes: int = 5120 * 1024 * 1024      # 5 GB
 
     # ── Latencies (milliseconds) ──────────────────────────────

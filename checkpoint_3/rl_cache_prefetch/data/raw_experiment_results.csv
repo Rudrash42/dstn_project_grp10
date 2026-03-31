@@ -1,401 +1,401 @@
 query_id,query_text,input_tokens,output_tokens,ttft_ms,latency_s,state,kv_size_mb,l1_gpu_kv_pct,l2_cpu_cache_mb,l3_disk_cache_mb,disk_delta_mb,new_cache_chunks,workload
-1,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,318.11,0.4181,Cold,7.195,30.0,3.0,3.0,3.0,1,prefix
-2,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,135.71,0.2357,Partial,7.195,30.0,5.12,6.0,3.0,1,prefix
-3,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,214.67,0.3147,Warm,7.195,30.0,5.12,6.0,0.0,0,prefix
-4,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,161.11,0.2611,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
-5,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,83.08,0.1831,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
-6,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,87.94,0.1879,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
-7,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,88.15,0.1882,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
-8,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,113.23,0.2132,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
-9,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,89.84,0.1898,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
-10,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,94.07,0.1941,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
-11,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,167.7,0.2677,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
-12,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,94.98,0.195,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
-13,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,94.87,0.1949,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
-14,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",615,20,89.03,0.189,Warm,7.207,30.0,5.12,6.0,0.0,0,prefix
-15,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,183.91,0.2839,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
-16,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,96.74,0.1967,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
-17,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,72.57,0.1726,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
-18,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,146.19,0.2462,Warm,7.195,30.0,5.12,6.0,0.0,0,prefix
-19,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,169.05,0.2691,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
-20,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,137.69,0.2377,Warm,7.195,30.0,5.12,6.0,0.0,0,prefix
-21,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,145.54,0.2455,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
-22,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,91.25,0.1912,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
-23,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",622,20,100.74,0.2007,Warm,7.289,30.4,5.12,6.0,0.0,0,prefix
-24,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,136.1,0.2361,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
-25,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",621,20,98.29,0.1983,Warm,7.277,30.3,5.12,6.0,0.0,0,prefix
-26,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,160.87,0.2609,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
-27,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,83.16,0.1832,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
-28,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",623,20,184.26,0.2843,Warm,7.301,30.4,5.12,6.0,0.0,0,prefix
-29,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,91.48,0.1915,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
-30,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,131.06,0.2311,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
-31,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,82.5,0.1825,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
-32,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",615,20,129.97,0.23,Warm,7.207,30.0,5.12,6.0,0.0,0,prefix
-33,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",621,20,96.28,0.1963,Warm,7.277,30.3,5.12,6.0,0.0,0,prefix
-34,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,147.68,0.2477,Warm,7.195,30.0,5.12,6.0,0.0,0,prefix
-35,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,69.09,0.1691,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
-36,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,63.08,0.1631,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
-37,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,106.59,0.2066,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
-38,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,154.59,0.2546,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
-39,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,163.88,0.2639,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
-40,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",615,20,143.48,0.2435,Warm,7.207,30.0,5.12,6.0,0.0,0,prefix
-41,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,93.59,0.1936,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
-42,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,125.07,0.2251,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
-43,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,131.26,0.2313,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
-44,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,110.83,0.2108,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
-45,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",621,20,141.11,0.2411,Warm,7.277,30.3,5.12,6.0,0.0,0,prefix
-46,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,97.01,0.197,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
-47,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,114.77,0.2148,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
-48,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,176.32,0.2763,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
-49,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,78.86,0.1789,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
-50,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",615,20,97.32,0.1973,Warm,7.207,30.0,5.12,6.0,0.0,0,prefix
-1,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,183.04,0.283,Cold,14.848,61.9,3.0,3.0,3.0,1,rag
-2,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,143.66,0.2437,Partial,14.848,61.9,5.12,6.0,3.0,1,rag
-3,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1270,20,153.51,0.2535,Partial,14.883,62.0,5.12,9.0,3.0,1,rag
-4,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,174.56,0.2746,Partial,14.824,61.8,5.12,12.0,3.0,1,rag
-5,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1264,20,114.64,0.2146,Warm,14.812,61.7,5.12,12.0,0.0,0,rag
-6,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,172.09,0.2721,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
-7,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1269,20,104.6,0.2046,Warm,14.871,62.0,5.12,12.0,0.0,0,rag
-8,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1273,20,158.55,0.2585,Warm,14.918,62.2,5.12,12.0,0.0,0,rag
-9,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1271,20,123.68,0.2237,Warm,14.895,62.1,5.12,12.0,0.0,0,rag
-10,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,115.03,0.215,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
-11,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,101.21,0.2012,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
-12,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,103.21,0.2032,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
-13,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,174.81,0.2748,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
-14,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1276,20,108.56,0.2086,Warm,14.953,62.3,5.12,12.0,0.0,0,rag
-15,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,110.02,0.21,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
-16,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,131.58,0.2316,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
-17,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,157.47,0.2575,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
-18,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,150.83,0.2508,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
-19,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,129.91,0.2299,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
-20,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,127.85,0.2279,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
-21,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,102.87,0.2029,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
-22,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1270,20,86.99,0.187,Warm,14.883,62.0,5.12,12.0,0.0,0,rag
-23,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1268,20,170.87,0.2709,Warm,14.859,61.9,5.12,12.0,0.0,0,rag
-24,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,163.9,0.2639,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
-25,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,127.81,0.2278,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
-26,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,111.19,0.2112,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
-27,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,130.78,0.2308,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
-28,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1261,20,132.76,0.2328,Warm,14.777,61.6,5.12,12.0,0.0,0,rag
-29,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,138.57,0.2386,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
-30,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,78.62,0.1786,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
-31,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1271,20,66.01,0.166,Warm,14.895,62.1,5.12,12.0,0.0,0,rag
-32,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1270,20,108.02,0.208,Warm,14.883,62.0,5.12,12.0,0.0,0,rag
-33,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1270,20,103.97,0.204,Warm,14.883,62.0,5.12,12.0,0.0,0,rag
-34,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,101.45,0.2015,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
-35,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,102.81,0.2028,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
-36,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,104.02,0.204,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
-37,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,103.16,0.2032,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
-38,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1269,20,127.93,0.2279,Warm,14.871,62.0,5.12,12.0,0.0,0,rag
-39,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,132.29,0.2323,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
-40,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,132.88,0.2329,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
-41,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,138.5,0.2385,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
-42,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1268,20,104.64,0.2046,Warm,14.859,61.9,5.12,12.0,0.0,0,rag
-43,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,154.56,0.2546,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
-44,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1268,20,152.93,0.2529,Warm,14.859,61.9,5.12,12.0,0.0,0,rag
-45,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,149.09,0.2491,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
-46,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,123.8,0.2238,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
-47,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1264,20,147.18,0.2472,Warm,14.812,61.7,5.12,12.0,0.0,0,rag
-48,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,150.6,0.2506,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
-49,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,120.62,0.2206,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
-50,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,133.44,0.2334,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
-1,Who is the founder of Microsoft?,7,20,120.18,0.2202,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
-2,What is the chemical symbol for sodium?,8,20,110.78,0.2108,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
-3,How many players are there in a baseball team?,10,20,141.65,0.2416,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
-4,What year did World War II end?,8,20,84.85,0.1849,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
-5,What is the tallest species of tree?,8,20,104.99,0.205,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
-6,Who wrote The Divine Comedy?,6,20,75.21,0.1752,Cold,0.07,0.3,0.0,0.0,0.0,0,nocontext
-7,What is the hardest rock type?,7,20,76.78,0.1768,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
-8,How many hearts does a squid have?,8,20,71.27,0.1713,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
-9,What is the main ingredient in guacamole?,10,20,73.93,0.1739,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
-10,Who developed the polio vaccine?,7,20,139.41,0.2394,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
-11,What is the longest-running Broadway show?,8,20,59.18,0.1592,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
-12,What is the square of 25?,9,20,113.8,0.2138,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
-13,Who was the first woman to win a Nobel Prize?,11,20,156.65,0.2567,Cold,0.129,0.5,0.0,0.0,0.0,0,nocontext
-14,What is the currency of Brazil?,7,20,117.24,0.2172,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
-15,What gas do plants absorb during photosynthesis?,9,20,75.79,0.1758,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
-16,Who directed the movie Jaws?,7,20,79.14,0.1791,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
-17,What is the largest internal organ in the human body?,11,20,74.59,0.1746,Cold,0.129,0.5,0.0,0.0,0.0,0,nocontext
-18,How many elements are in the periodic table?,9,20,76.4,0.1764,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
-19,What is the freezing point of mercury in Celsius?,10,20,75.76,0.1758,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
-20,Who painted The School of Athens?,7,20,73.67,0.1737,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
-21,What is the smallest unit of life?,8,20,72.11,0.1721,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
-22,How many time zones are there in Russia?,9,20,72.42,0.1724,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
-23,What is the main language spoken in Argentina?,9,20,70.41,0.1704,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
-24,Who invented the diesel engine?,6,20,70.24,0.1702,Cold,0.07,0.3,0.0,0.0,0.0,0,nocontext
-25,What is the diameter of Earth in kilometers?,9,20,69.45,0.1695,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
-26,What is the rarest blood type?,8,20,69.25,0.1693,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
-27,Who composed The Magic Flute?,7,20,71.37,0.1714,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
-28,What is the powerhouse of a computer?,8,20,75.19,0.1752,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
-29,How many sides does a dodecagon have?,11,20,72.87,0.1729,Cold,0.129,0.5,0.0,0.0,0.0,0,nocontext
-30,What is the largest species of penguin?,9,20,76.27,0.1763,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
-31,Who discovered the planet Neptune?,6,20,72.23,0.1722,Cold,0.07,0.3,0.0,0.0,0.0,0,nocontext
-32,What is the boiling point of nitrogen in Celsius?,10,20,70.34,0.1703,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
-33,What is the fastest bird in a dive?,9,20,66.42,0.1664,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
-34,Who wrote The Brothers Karamazov?,9,20,68.28,0.1683,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
-35,What is the largest artery in the human body?,10,20,156.41,0.2564,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
-36,How many keys are on a standard computer keyboard?,10,20,109.85,0.2098,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
-37,What is the smallest country by population?,8,20,75.14,0.1751,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
-38,Who invented the telescope?,5,20,73.37,0.1734,Cold,0.059,0.2,0.0,0.0,0.0,0,nocontext
-39,What is the main component of natural gas?,9,20,74.74,0.1747,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
-40,How many amendments are in the U.S. Constitution?,11,20,73.98,0.174,Cold,0.129,0.5,0.0,0.0,0.0,0,nocontext
-41,What is the deepest lake in the world?,9,20,73.63,0.1736,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
-42,Who was the first emperor of China?,8,20,124.71,0.2247,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
-43,What is the currency of South Africa?,8,20,94.92,0.1949,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
-44,What is the longest bone in the arm?,9,20,114.85,0.2149,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
-45,Who discovered the circulation of blood?,7,20,75.35,0.1753,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
-46,What is the primary ingredient in hummus?,9,20,98.53,0.1985,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
-47,How many moons does Mars have?,7,20,77.76,0.1778,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
-48,What is the largest species of cat?,8,20,70.52,0.1705,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
-49,Who wrote The Picture of Dorian Gray?,9,20,71.02,0.171,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
-50,What is the chemical formula for methane?,8,20,72.04,0.172,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+1,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,204.61,0.3046,Cold,7.195,30.0,3.0,3.0,3.0,1,prefix
+2,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,87.03,0.187,Partial,7.195,30.0,5.12,6.0,3.0,1,prefix
+3,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,102.35,0.2023,Warm,7.195,30.0,5.12,6.0,0.0,0,prefix
+4,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,142.79,0.2428,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+5,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,145.68,0.2457,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
+6,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,136.29,0.2363,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
+7,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,100.14,0.2001,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
+8,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,109.86,0.2099,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+9,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,91.85,0.1918,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
+10,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,105.95,0.2059,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
+11,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,105.83,0.2058,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
+12,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,98.9,0.1989,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+13,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,92.51,0.1925,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
+14,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",615,20,103.88,0.2039,Warm,7.207,30.0,5.12,6.0,0.0,0,prefix
+15,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,112.31,0.2123,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
+16,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,87.27,0.1873,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
+17,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,105.9,0.2059,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
+18,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,100.22,0.2002,Warm,7.195,30.0,5.12,6.0,0.0,0,prefix
+19,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,91.26,0.1913,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
+20,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,114.66,0.2147,Warm,7.195,30.0,5.12,6.0,0.0,0,prefix
+21,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,175.98,0.276,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+22,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,185.62,0.2856,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
+23,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",622,20,139.06,0.2391,Warm,7.289,30.4,5.12,6.0,0.0,0,prefix
+24,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,202.82,0.3028,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
+25,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",621,20,155.99,0.256,Warm,7.277,30.3,5.12,6.0,0.0,0,prefix
+26,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,215.07,0.3151,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
+27,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,139.06,0.2391,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
+28,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",623,20,199.17,0.2992,Warm,7.301,30.4,5.12,6.0,0.0,0,prefix
+29,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,218.26,0.3183,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+30,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,251.91,0.3519,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
+31,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,82.48,0.1825,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
+32,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",615,20,115.08,0.2151,Warm,7.207,30.0,5.12,6.0,0.0,0,prefix
+33,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",621,20,157.26,0.2573,Warm,7.277,30.3,5.12,6.0,0.0,0,prefix
+34,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,126.18,0.2262,Warm,7.195,30.0,5.12,6.0,0.0,0,prefix
+35,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,210.86,0.3109,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+36,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,149.18,0.2492,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+37,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,169.0,0.269,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+38,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,207.71,0.3077,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
+39,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,103.42,0.2034,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
+40,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",615,20,197.38,0.2974,Warm,7.207,30.0,5.12,6.0,0.0,0,prefix
+41,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,109.69,0.2097,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
+42,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,165.45,0.2654,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
+43,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,184.91,0.2849,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
+44,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,80.78,0.1808,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+45,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",621,20,97.36,0.1974,Warm,7.277,30.3,5.12,6.0,0.0,0,prefix
+46,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,125.25,0.2252,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+47,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,95.89,0.1959,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
+48,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,98.51,0.1985,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
+49,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,91.93,0.1919,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
+50,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",615,20,75.75,0.1757,Warm,7.207,30.0,5.12,6.0,0.0,0,prefix
+1,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,165.33,0.2653,Cold,14.848,61.9,3.0,3.0,3.0,1,rag
+2,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,117.41,0.2174,Partial,14.848,61.9,5.12,6.0,3.0,1,rag
+3,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1270,20,212.27,0.3123,Partial,14.883,62.0,5.12,9.0,3.0,1,rag
+4,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,227.34,0.3273,Partial,14.824,61.8,5.12,12.0,3.0,1,rag
+5,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1264,20,121.42,0.2214,Warm,14.812,61.7,5.12,12.0,0.0,0,rag
+6,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,147.06,0.2471,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
+7,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1269,20,150.59,0.2506,Warm,14.871,62.0,5.12,12.0,0.0,0,rag
+8,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1273,20,165.16,0.2652,Warm,14.918,62.2,5.12,12.0,0.0,0,rag
+9,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1271,20,213.85,0.3139,Warm,14.895,62.1,5.12,12.0,0.0,0,rag
+10,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,209.15,0.3091,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
+11,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,202.01,0.302,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
+12,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,210.79,0.3108,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
+13,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,174.01,0.274,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+14,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1276,20,94.59,0.1946,Warm,14.953,62.3,5.12,12.0,0.0,0,rag
+15,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,118.34,0.2183,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+16,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,106.44,0.2064,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+17,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,145.39,0.2454,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+18,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,205.77,0.3058,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+19,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,175.06,0.2751,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
+20,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,215.59,0.3156,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
+21,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,74.03,0.174,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
+22,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1270,20,168.04,0.268,Warm,14.883,62.0,5.12,12.0,0.0,0,rag
+23,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1268,20,106.29,0.2063,Warm,14.859,61.9,5.12,12.0,0.0,0,rag
+24,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,118.54,0.2185,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
+25,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,196.63,0.2966,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
+26,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,260.21,0.3602,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
+27,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,125.21,0.2252,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
+28,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1261,20,151.57,0.2516,Warm,14.777,61.6,5.12,12.0,0.0,0,rag
+29,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,100.12,0.2001,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
+30,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,112.53,0.2125,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
+31,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1271,20,109.92,0.2099,Warm,14.895,62.1,5.12,12.0,0.0,0,rag
+32,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1270,20,176.5,0.2765,Warm,14.883,62.0,5.12,12.0,0.0,0,rag
+33,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1270,20,144.7,0.2447,Warm,14.883,62.0,5.12,12.0,0.0,0,rag
+34,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,113.35,0.2134,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+35,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,124.28,0.2243,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
+36,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,208.97,0.309,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
+37,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,105.97,0.206,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
+38,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1269,20,109.29,0.2093,Warm,14.871,62.0,5.12,12.0,0.0,0,rag
+39,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,97.81,0.1978,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+40,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,96.18,0.1962,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
+41,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,94.81,0.1948,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
+42,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1268,20,88.28,0.1883,Warm,14.859,61.9,5.12,12.0,0.0,0,rag
+43,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,168.09,0.2681,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
+44,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1268,20,182.19,0.2822,Warm,14.859,61.9,5.12,12.0,0.0,0,rag
+45,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,98.04,0.198,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
+46,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,211.91,0.3119,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+47,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1264,20,106.36,0.2064,Warm,14.812,61.7,5.12,12.0,0.0,0,rag
+48,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,80.24,0.1802,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
+49,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,235.75,0.3358,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
+50,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,97.89,0.1979,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+1,Who is the founder of Microsoft?,7,20,77.9,0.1779,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+2,What is the chemical symbol for sodium?,8,20,68.38,0.1684,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+3,How many players are there in a baseball team?,10,20,101.89,0.2019,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
+4,What year did World War II end?,8,20,76.69,0.1767,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+5,What is the tallest species of tree?,8,20,154.28,0.2543,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+6,Who wrote The Divine Comedy?,6,20,102.04,0.202,Cold,0.07,0.3,0.0,0.0,0.0,0,nocontext
+7,What is the hardest rock type?,7,20,208.58,0.3086,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+8,How many hearts does a squid have?,8,20,223.16,0.3232,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+9,What is the main ingredient in guacamole?,10,20,143.74,0.2437,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
+10,Who developed the polio vaccine?,7,20,79.04,0.179,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+11,What is the longest-running Broadway show?,8,20,72.7,0.1727,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+12,What is the square of 25?,9,20,73.78,0.1738,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+13,Who was the first woman to win a Nobel Prize?,11,20,69.55,0.1695,Cold,0.129,0.5,0.0,0.0,0.0,0,nocontext
+14,What is the currency of Brazil?,7,20,75.78,0.1758,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+15,What gas do plants absorb during photosynthesis?,9,20,78.74,0.1787,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+16,Who directed the movie Jaws?,7,20,85.18,0.1852,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+17,What is the largest internal organ in the human body?,11,20,129.51,0.2295,Cold,0.129,0.5,0.0,0.0,0.0,0,nocontext
+18,How many elements are in the periodic table?,9,20,79.52,0.1795,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+19,What is the freezing point of mercury in Celsius?,10,20,177.84,0.2778,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
+20,Who painted The School of Athens?,7,20,69.23,0.1692,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+21,What is the smallest unit of life?,8,20,73.56,0.1736,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+22,How many time zones are there in Russia?,9,20,68.37,0.1684,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+23,What is the main language spoken in Argentina?,9,20,122.96,0.223,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+24,Who invented the diesel engine?,6,20,103.23,0.2032,Cold,0.07,0.3,0.0,0.0,0.0,0,nocontext
+25,What is the diameter of Earth in kilometers?,9,20,67.04,0.167,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+26,What is the rarest blood type?,8,20,75.03,0.175,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+27,Who composed The Magic Flute?,7,20,67.5,0.1675,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+28,What is the powerhouse of a computer?,8,20,66.54,0.1665,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+29,How many sides does a dodecagon have?,11,20,181.34,0.2813,Cold,0.129,0.5,0.0,0.0,0.0,0,nocontext
+30,What is the largest species of penguin?,9,20,142.89,0.2429,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+31,Who discovered the planet Neptune?,6,20,107.15,0.2072,Cold,0.07,0.3,0.0,0.0,0.0,0,nocontext
+32,What is the boiling point of nitrogen in Celsius?,10,20,135.18,0.2352,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
+33,What is the fastest bird in a dive?,9,20,150.28,0.2503,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+34,Who wrote The Brothers Karamazov?,9,20,70.4,0.1704,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+35,What is the largest artery in the human body?,10,20,74.85,0.1748,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
+36,How many keys are on a standard computer keyboard?,10,20,127.63,0.2276,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
+37,What is the smallest country by population?,8,20,169.22,0.2692,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+38,Who invented the telescope?,5,20,59.85,0.1598,Cold,0.059,0.2,0.0,0.0,0.0,0,nocontext
+39,What is the main component of natural gas?,9,20,73.11,0.1731,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+40,How many amendments are in the U.S. Constitution?,11,20,127.98,0.228,Cold,0.129,0.5,0.0,0.0,0.0,0,nocontext
+41,What is the deepest lake in the world?,9,20,152.24,0.2522,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+42,Who was the first emperor of China?,8,20,135.37,0.2354,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+43,What is the currency of South Africa?,8,20,163.47,0.2635,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+44,What is the longest bone in the arm?,9,20,188.25,0.2882,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+45,Who discovered the circulation of blood?,7,20,188.36,0.2884,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+46,What is the primary ingredient in hummus?,9,20,126.34,0.2263,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+47,How many moons does Mars have?,7,20,196.81,0.2968,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+48,What is the largest species of cat?,8,20,64.74,0.1647,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+49,Who wrote The Picture of Dorian Gray?,9,20,66.41,0.1664,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+50,What is the chemical formula for methane?,8,20,184.32,0.2843,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
 1,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: Can you elaborate f",61,20,78.58,0.1786,Cold,0.715,3.0,0.0,0.0,0.0,0,multiturn
+User: Can you elaborate f",61,20,158.54,0.2585,Cold,0.715,3.0,0.0,0.0,0.0,0,multiturn
 2,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",88,20,122.09,0.2221,Warm,1.031,4.3,0.0,0.0,0.0,0,multiturn
+User: What is the calibra",88,20,135.66,0.2357,Warm,1.031,4.3,0.0,0.0,0.0,0,multiturn
 3,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",112,20,66.91,0.1669,Warm,1.312,5.5,0.0,0.0,0.0,0,multiturn
+User: What is the calibra",112,20,121.58,0.2216,Warm,1.312,5.5,0.0,0.0,0.0,0,multiturn
 4,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",137,20,116.25,0.2162,Warm,1.605,6.7,0.0,0.0,0.0,0,multiturn
+User: What is the calibra",137,20,164.44,0.2644,Warm,1.605,6.7,0.0,0.0,0.0,0,multiturn
 5,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",164,20,79.74,0.1797,Warm,1.922,8.0,0.0,0.0,0.0,0,multiturn
+User: What is the calibra",164,20,114.49,0.2145,Warm,1.922,8.0,0.0,0.0,0.0,0,multiturn
 6,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",190,20,135.25,0.2353,Warm,2.227,9.3,0.0,0.0,0.0,0,multiturn
+User: What is the calibra",190,20,85.74,0.1857,Warm,2.227,9.3,0.0,0.0,0.0,0,multiturn
 7,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",210,20,137.24,0.2372,Warm,2.461,10.3,0.0,0.0,0.0,0,multiturn
+User: What is the calibra",210,20,85.09,0.1851,Warm,2.461,10.3,0.0,0.0,0.0,0,multiturn
 8,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",237,20,104.8,0.2048,Warm,2.777,11.6,0.0,0.0,0.0,0,multiturn
+User: What is the calibra",237,20,74.29,0.1743,Warm,2.777,11.6,0.0,0.0,0.0,0,multiturn
 9,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",258,20,89.16,0.1892,Partial,3.023,12.6,3.0,3.0,3.0,1,multiturn
+User: What is the calibra",258,20,80.12,0.1801,Partial,3.023,12.6,3.0,3.0,3.0,1,multiturn
 10,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",282,20,93.58,0.1936,Partial,3.305,13.8,5.12,6.0,3.0,1,multiturn
+User: What is the calibra",282,20,77.97,0.178,Partial,3.305,13.8,5.12,6.0,3.0,1,multiturn
 11,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",308,20,84.52,0.1845,Warm,3.609,15.0,5.12,6.0,0.0,0,multiturn
+User: What is the calibra",308,20,73.2,0.1732,Warm,3.609,15.0,5.12,6.0,0.0,0,multiturn
 12,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",335,20,87.3,0.1873,Warm,3.926,16.4,5.12,6.0,0.0,0,multiturn
+User: What is the calibra",335,20,83.31,0.1833,Warm,3.926,16.4,5.12,6.0,0.0,0,multiturn
 13,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",357,20,88.71,0.1887,Warm,4.184,17.4,5.12,6.0,0.0,0,multiturn
+User: What is the calibra",357,20,85.56,0.1856,Warm,4.184,17.4,5.12,6.0,0.0,0,multiturn
 14,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",381,20,82.34,0.1823,Warm,4.465,18.6,5.12,6.0,0.0,0,multiturn
+User: What is the calibra",381,20,89.96,0.19,Warm,4.465,18.6,5.12,6.0,0.0,0,multiturn
 15,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",409,20,83.89,0.1839,Warm,4.793,20.0,5.12,6.0,0.0,0,multiturn
+User: What is the calibra",409,20,93.02,0.193,Warm,4.793,20.0,5.12,6.0,0.0,0,multiturn
 16,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",433,20,88.41,0.1884,Warm,5.074,21.1,5.12,6.0,0.0,0,multiturn
+User: What is the calibra",433,20,90.31,0.1903,Warm,5.074,21.1,5.12,6.0,0.0,0,multiturn
 17,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",458,20,89.34,0.1893,Warm,5.367,22.4,5.12,6.0,0.0,0,multiturn
+User: What is the calibra",458,20,276.4,0.3764,Warm,5.367,22.4,5.12,6.0,0.0,0,multiturn
 18,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",489,20,144.11,0.2441,Warm,5.73,23.9,5.12,6.0,0.0,0,multiturn
+User: What is the calibra",489,20,285.29,0.3853,Warm,5.73,23.9,5.12,6.0,0.0,0,multiturn
 19,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",509,20,121.28,0.2213,Warm,5.965,24.9,5.12,6.0,0.0,0,multiturn
+User: What is the calibra",509,20,218.23,0.3182,Warm,5.965,24.9,5.12,6.0,0.0,0,multiturn
 20,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",535,20,96.03,0.196,Partial,6.27,26.1,5.12,9.0,3.0,1,multiturn
+User: What is the calibra",535,20,99.64,0.1996,Partial,6.27,26.1,5.12,9.0,3.0,1,multiturn
 21,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",560,20,79.51,0.1795,Warm,6.562,27.3,5.12,9.0,0.0,0,multiturn
+User: What is the calibra",560,20,109.0,0.209,Warm,6.562,27.3,5.12,9.0,0.0,0,multiturn
 22,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",583,20,80.78,0.1808,Warm,6.832,28.5,5.12,9.0,0.0,0,multiturn
+User: What is the calibra",583,20,78.22,0.1782,Warm,6.832,28.5,5.12,9.0,0.0,0,multiturn
 23,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",609,20,89.17,0.1892,Warm,7.137,29.7,5.12,9.0,0.0,0,multiturn
+User: What is the calibra",609,20,74.01,0.174,Warm,7.137,29.7,5.12,9.0,0.0,0,multiturn
 24,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",630,20,87.71,0.1877,Warm,7.383,30.8,5.12,9.0,0.0,0,multiturn
+User: What is the calibra",630,20,189.94,0.2899,Warm,7.383,30.8,5.12,9.0,0.0,0,multiturn
 25,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",655,20,73.08,0.1731,Warm,7.676,32.0,5.12,9.0,0.0,0,multiturn
+User: What is the calibra",655,20,63.99,0.164,Warm,7.676,32.0,5.12,9.0,0.0,0,multiturn
 26,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",681,20,74.29,0.1743,Warm,7.98,33.3,5.12,9.0,0.0,0,multiturn
+User: What is the calibra",681,20,91.43,0.1914,Warm,7.98,33.3,5.12,9.0,0.0,0,multiturn
 27,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",706,20,74.89,0.1749,Warm,8.273,34.5,5.12,9.0,0.0,0,multiturn
+User: What is the calibra",706,20,69.55,0.1696,Warm,8.273,34.5,5.12,9.0,0.0,0,multiturn
 28,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",733,20,73.73,0.1737,Warm,8.59,35.8,5.12,9.0,0.0,0,multiturn
+User: What is the calibra",733,20,96.34,0.1963,Warm,8.59,35.8,5.12,9.0,0.0,0,multiturn
 29,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",761,20,123.02,0.223,Warm,8.918,37.2,5.12,9.0,0.0,0,multiturn
+User: What is the calibra",761,20,111.81,0.2118,Warm,8.918,37.2,5.12,9.0,0.0,0,multiturn
 30,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",784,20,222.23,0.3222,Partial,9.188,38.3,5.12,12.0,3.0,1,multiturn
+User: What is the calibra",784,20,98.78,0.1988,Partial,9.188,38.3,5.12,12.0,3.0,1,multiturn
 31,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",809,20,128.7,0.2287,Warm,9.48,39.5,5.12,12.0,0.0,0,multiturn
+User: What is the calibra",809,20,82.86,0.1829,Warm,9.48,39.5,5.12,12.0,0.0,0,multiturn
 32,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",832,20,130.0,0.23,Warm,9.75,40.6,5.12,12.0,0.0,0,multiturn
+User: What is the calibra",832,20,78.27,0.1783,Warm,9.75,40.6,5.12,12.0,0.0,0,multiturn
 33,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",858,20,107.32,0.2073,Warm,10.055,41.9,5.12,12.0,0.0,0,multiturn
+User: What is the calibra",858,20,210.98,0.311,Warm,10.055,41.9,5.12,12.0,0.0,0,multiturn
 34,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",883,20,135.14,0.2351,Warm,10.348,43.1,5.12,12.0,0.0,0,multiturn
+User: What is the calibra",883,20,150.55,0.2506,Warm,10.348,43.1,5.12,12.0,0.0,0,multiturn
 35,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",910,20,111.5,0.2115,Warm,10.664,44.4,5.12,12.0,0.0,0,multiturn
+User: What is the calibra",910,20,82.74,0.1827,Warm,10.664,44.4,5.12,12.0,0.0,0,multiturn
 36,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",938,20,121.2,0.2212,Warm,10.992,45.8,5.12,12.0,0.0,0,multiturn
+User: What is the calibra",938,20,106.68,0.2067,Warm,10.992,45.8,5.12,12.0,0.0,0,multiturn
 37,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",965,20,145.38,0.2454,Warm,11.309,47.1,5.12,12.0,0.0,0,multiturn
+User: What is the calibra",965,20,106.05,0.206,Warm,11.309,47.1,5.12,12.0,0.0,0,multiturn
 38,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",984,20,157.17,0.2572,Warm,11.531,48.0,5.12,12.0,0.0,0,multiturn
+User: What is the calibra",984,20,176.13,0.2761,Warm,11.531,48.0,5.12,12.0,0.0,0,multiturn
 39,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1005,20,89.96,0.19,Warm,11.777,49.1,5.12,12.0,0.0,0,multiturn
+User: What is the calibra",1005,20,79.31,0.1793,Warm,11.777,49.1,5.12,12.0,0.0,0,multiturn
 40,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1035,20,197.35,0.2974,Partial,12.129,50.5,5.12,15.0,3.0,1,multiturn
+User: What is the calibra",1035,20,103.27,0.2033,Partial,12.129,50.5,5.12,15.0,3.0,1,multiturn
 41,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1059,20,87.99,0.188,Partial,12.41,51.7,5.12,18.0,3.0,1,multiturn
+User: What is the calibra",1059,20,213.15,0.3132,Partial,12.41,51.7,5.12,18.0,3.0,1,multiturn
 42,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1088,20,115.03,0.215,Warm,12.75,53.1,5.12,18.0,0.0,0,multiturn
+User: What is the calibra",1088,20,150.16,0.2502,Warm,12.75,53.1,5.12,18.0,0.0,0,multiturn
 43,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1113,20,69.17,0.1692,Warm,13.043,54.3,5.12,18.0,0.0,0,multiturn
+User: What is the calibra",1113,20,159.03,0.259,Warm,13.043,54.3,5.12,18.0,0.0,0,multiturn
 44,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1145,20,128.27,0.2283,Warm,13.418,55.9,5.12,18.0,0.0,0,multiturn
+User: What is the calibra",1145,20,89.56,0.1896,Warm,13.418,55.9,5.12,18.0,0.0,0,multiturn
 45,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1166,20,134.65,0.2346,Warm,13.664,56.9,5.12,18.0,0.0,0,multiturn
+User: What is the calibra",1166,20,163.67,0.2637,Warm,13.664,56.9,5.12,18.0,0.0,0,multiturn
 46,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1189,20,132.3,0.2323,Warm,13.934,58.1,5.12,18.0,0.0,0,multiturn
+User: What is the calibra",1189,20,114.51,0.2145,Warm,13.934,58.1,5.12,18.0,0.0,0,multiturn
 47,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1213,20,101.31,0.2013,Warm,14.215,59.2,5.12,18.0,0.0,0,multiturn
+User: What is the calibra",1213,20,153.33,0.2533,Warm,14.215,59.2,5.12,18.0,0.0,0,multiturn
 48,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1235,20,155.53,0.2555,Warm,14.473,60.3,5.12,18.0,0.0,0,multiturn
+User: What is the calibra",1235,20,140.7,0.2407,Warm,14.473,60.3,5.12,18.0,0.0,0,multiturn
 49,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1264,20,166.69,0.2667,Warm,14.812,61.7,5.12,18.0,0.0,0,multiturn
+User: What is the calibra",1264,20,106.18,0.2062,Warm,14.812,61.7,5.12,18.0,0.0,0,multiturn
 50,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1286,20,141.77,0.2418,Partial,15.07,62.8,5.12,21.0,3.0,1,multiturn
+User: What is the calibra",1286,20,296.81,0.3968,Partial,15.07,62.8,5.12,21.0,3.0,1,multiturn

@@ -692,6 +692,11 @@ class HardwareCache:
 
         latency_ms = end_fn()
 
+        # Add the LLM compute time penalty because generating random data 
+        # is vastly faster than actual LLM forward pass computation.
+        if self.cfg.cold_compute_per_chunk_ms > 0:
+            latency_ms += self.cfg.cold_compute_per_chunk_ms
+
         if self.cfg.verbose:
             print(f"  [ACCESS] MISS   chunk={chunk_id:<5d}  "
                   f"cold_compute={latency_ms:.3f}ms")

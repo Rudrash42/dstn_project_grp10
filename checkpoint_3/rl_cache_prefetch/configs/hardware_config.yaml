@@ -20,11 +20,11 @@ chunk_size_bytes: 3145728       # 256 × 12288 = 3 MB per chunk
 # ── Tier Capacities ──────────────────────────────────────────
 # L1 = GPU VRAM (RTX 3050 has 4096 MB total)
 # Keep this SMALL so chunks spill to L2/L3 — that's the whole point!
-l1_capacity_mb: 48.0            # ~15 chunks fit (good pressure)
+l1_capacity_mb: 9.0            # changed this ~15 chunks fit (good pressure)
 
 # L2 = CPU Pinned RAM (your laptop's system RAM)
 # Don't set too high — pinned memory can't be swapped to disk
-l2_capacity_mb: 51.2            # ~16 chunks fit
+l2_capacity_mb: 12.0            # changed this ~16 chunks fit
 
 # L3 = NVMe Disk (your SSD — plenty of space)
 l3_capacity_mb: 5120.0          # ~1600 chunks fit

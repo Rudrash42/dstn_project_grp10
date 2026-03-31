@@ -56,7 +56,7 @@ ENFORCE_EAGER = True
 CHUNK_SIZE = 256
 MAX_CPU_CACHE_GB = 0.005       # L2 CPU cache budget (~5 MB) — forces L2→L3 spill
 MAX_DISK_CACHE_GB = 5.0        # L3 disk cache budget (GB)
-NUM_GPU_BLOCKS_OVERRIDE = 32   # L1 GPU blocks (~512 tokens, ~6 MB KV) — forces eviction
+NUM_GPU_BLOCKS_OVERRIDE = 128   # L1 GPU blocks (2048 tokens, ~24 MB KV) — allows single large prompt to fit
 MAX_QUERIES = 50
 
 # ═══════════════════════════════════════════════════════════════

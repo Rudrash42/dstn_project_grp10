@@ -1,109 +1,109 @@
 {
   "prefix": {
     "lru": {
-      "avg_latency_ms": 0.7140000000000002,
-      "hit_rate_pct": 98.0,
-      "total_latency_ms": 35.7
+      "avg_latency_ms": 74.03000000000002,
+      "hit_rate_pct": 32.666666666666664,
+      "total_latency_ms": 3701.5000000000005
     },
     "no_cache": {
-      "avg_latency_ms": 30.8,
+      "avg_latency_ms": 109.8,
       "hit_rate_pct": 0.0,
-      "total_latency_ms": 1540.0
+      "total_latency_ms": 5490.000000000001
     },
     "oracle": {
-      "avg_latency_ms": 0.7140000000000002,
-      "hit_rate_pct": 98.0,
-      "total_latency_ms": 35.7
+      "avg_latency_ms": 74.03000000000002,
+      "hit_rate_pct": 32.666666666666664,
+      "total_latency_ms": 3701.5000000000005
     },
     "rl_agent": {
-      "avg_latency_ms": 0.7140000000000002,
-      "hit_rate_pct": 98.0,
-      "total_latency_ms": 35.7,
-      "total_prefetches": 0,
+      "avg_latency_ms": 74.15000000000002,
+      "hit_rate_pct": 32.67,
+      "total_latency_ms": 3707.5000000000005,
+      "total_prefetches": 1,
       "useful_prefetches": 0,
-      "prefetch_accuracy_pct": 0,
-      "total_reward": 0.0,
-      "speedup_vs_lru": 1.0
+      "prefetch_accuracy_pct": 0.0,
+      "total_reward": -0.13145728,
+      "speedup_vs_lru": 0.998
     }
   },
   "rag": {
     "lru": {
-      "avg_latency_ms": 35.798,
+      "avg_latency_ms": 42.41000000000002,
       "hit_rate_pct": 85.75,
-      "total_latency_ms": 1789.9
+      "total_latency_ms": 2120.5
     },
     "no_cache": {
-      "avg_latency_ms": 246.4,
+      "avg_latency_ms": 292.79999999999995,
       "hit_rate_pct": 0.0,
-      "total_latency_ms": 12320.0
+      "total_latency_ms": 14640.0
     },
     "oracle": {
-      "avg_latency_ms": 35.798,
+      "avg_latency_ms": 42.41000000000002,
       "hit_rate_pct": 85.75,
-      "total_latency_ms": 1789.9
+      "total_latency_ms": 2120.5
     },
     "rl_agent": {
-      "avg_latency_ms": 35.798,
+      "avg_latency_ms": 42.41000000000002,
       "hit_rate_pct": 85.75,
-      "total_latency_ms": 1789.9,
-      "total_prefetches": 20,
+      "total_latency_ms": 2120.5,
+      "total_prefetches": 0,
       "useful_prefetches": 0,
-      "prefetch_accuracy_pct": 0.0,
-      "total_reward": -2.629145600000001,
+      "prefetch_accuracy_pct": 0,
+      "total_reward": 0.0,
       "speedup_vs_lru": 1.0
     }
   },
   "nocontext": {
     "lru": {
-      "avg_latency_ms": 30.8,
+      "avg_latency_ms": 36.599999999999994,
       "hit_rate_pct": 0.0,
-      "total_latency_ms": 1540.0
+      "total_latency_ms": 1830.0
     },
     "no_cache": {
-      "avg_latency_ms": 30.8,
+      "avg_latency_ms": 36.599999999999994,
       "hit_rate_pct": 0.0,
-      "total_latency_ms": 1540.0
+      "total_latency_ms": 1830.0
     },
     "oracle": {
-      "avg_latency_ms": 30.8,
+      "avg_latency_ms": 36.599999999999994,
       "hit_rate_pct": 0.0,
-      "total_latency_ms": 1540.0
+      "total_latency_ms": 1830.0
     },
     "rl_agent": {
-      "avg_latency_ms": 30.8,
+      "avg_latency_ms": 37.199999999999996,
       "hit_rate_pct": 0.0,
-      "total_latency_ms": 1540.0,
-      "total_prefetches": 0,
+      "total_latency_ms": 1860.0,
+      "total_prefetches": 5,
       "useful_prefetches": 0,
-      "prefetch_accuracy_pct": 0,
-      "total_reward": 0.0,
-      "speedup_vs_lru": 1.0
+      "prefetch_accuracy_pct": 0.0,
+      "total_reward": -0.6572864,
+      "speedup_vs_lru": 0.984
     }
   },
   "multiturn": {
     "lru": {
-      "avg_latency_ms": 112.792,
-      "hit_rate_pct": 44.0,
-      "total_latency_ms": 5639.6
+      "avg_latency_ms": 178.31520000000003,
+      "hit_rate_pct": 3.5294117647058822,
+      "total_latency_ms": 8915.76
     },
     "no_cache": {
-      "avg_latency_ms": 785.4,
+      "avg_latency_ms": 933.3,
       "hit_rate_pct": 0.0,
-      "total_latency_ms": 39270.0
+      "total_latency_ms": 46665.0
     },
     "oracle": {
-      "avg_latency_ms": 112.792,
-      "hit_rate_pct": 44.0,
-      "total_latency_ms": 5639.6
+      "avg_latency_ms": 178.5072,
+      "hit_rate_pct": 6.666666666666667,
+      "total_latency_ms": 8925.36
     },
     "rl_agent": {
-      "avg_latency_ms": 112.792,
-      "hit_rate_pct": 44.0,
-      "total_latency_ms": 5639.6,
+      "avg_latency_ms": 178.31520000000003,
+      "hit_rate_pct": 3.53,
+      "total_latency_ms": 8915.76,
       "total_prefetches": 0,
       "useful_prefetches": 0,
       "prefetch_accuracy_pct": 0,
-      "total_reward": -3115.200000000001,
+      "total_reward": -2119.520000000001,
       "speedup_vs_lru": 1.0
     }
   }

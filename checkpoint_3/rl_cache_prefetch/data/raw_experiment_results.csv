@@ -1,1051 +1,401 @@
 query_id,query_text,input_tokens,output_tokens,ttft_ms,latency_s,state,kv_size_mb,l1_gpu_kv_pct,l2_cpu_cache_mb,l3_disk_cache_mb,disk_delta_mb,new_cache_chunks,workload
-1,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",163,20,560.39,0.6604,Cold,1.91,4.0,0.0,0.0,0.0,0,prefix
-2,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",163,20,225.51,0.3255,Warm,1.91,4.0,0.0,0.0,0.0,0,prefix
-3,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",163,20,85.53,0.1855,Warm,1.91,4.0,0.0,0.0,0.0,0,prefix
-4,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,20,81.65,0.1817,Warm,1.957,4.1,0.0,0.0,0.0,0,prefix
-5,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",168,20,69.92,0.1699,Warm,1.969,4.1,0.0,0.0,0.0,0,prefix
-6,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",165,20,76.51,0.1765,Warm,1.934,4.0,0.0,0.0,0.0,0,prefix
-7,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",169,20,81.33,0.1813,Warm,1.98,4.1,0.0,0.0,0.0,0,prefix
-8,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,20,76.14,0.1761,Warm,1.957,4.1,0.0,0.0,0.0,0,prefix
-9,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",168,20,242.93,0.3429,Warm,1.969,4.1,0.0,0.0,0.0,0,prefix
-10,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",168,20,305.32,0.4053,Warm,1.969,4.1,0.0,0.0,0.0,0,prefix
-11,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",169,20,249.11,0.3491,Warm,1.98,4.1,0.0,0.0,0.0,0,prefix
-12,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,20,296.6,0.3966,Warm,1.957,4.1,0.0,0.0,0.0,0,prefix
-13,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",168,20,84.41,0.1844,Warm,1.969,4.1,0.0,0.0,0.0,0,prefix
-14,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",164,20,423.9,0.5239,Warm,1.922,4.0,0.0,0.0,0.0,0,prefix
-15,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",168,20,280.59,0.3806,Warm,1.969,4.1,0.0,0.0,0.0,0,prefix
-16,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",165,20,231.34,0.3313,Warm,1.934,4.0,0.0,0.0,0.0,0,prefix
-17,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",166,20,200.92,0.3009,Warm,1.945,4.1,0.0,0.0,0.0,0,prefix
-18,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",163,20,76.67,0.1767,Warm,1.91,4.0,0.0,0.0,0.0,0,prefix
-19,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",169,20,155.49,0.2555,Warm,1.98,4.1,0.0,0.0,0.0,0,prefix
-20,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",163,20,151.52,0.2515,Warm,1.91,4.0,0.0,0.0,0.0,0,prefix
-21,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,20,84.17,0.1842,Warm,1.957,4.1,0.0,0.0,0.0,0,prefix
-22,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",166,20,67.18,0.1672,Warm,1.945,4.1,0.0,0.0,0.0,0,prefix
-23,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",171,20,181.54,0.2815,Warm,2.004,4.2,0.0,0.0,0.0,0,prefix
-24,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",165,20,85.94,0.1859,Warm,1.934,4.0,0.0,0.0,0.0,0,prefix
-25,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",170,20,85.76,0.1858,Warm,1.992,4.2,0.0,0.0,0.0,0,prefix
-26,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",165,20,328.62,0.4286,Warm,1.934,4.0,0.0,0.0,0.0,0,prefix
-27,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",168,20,216.48,0.3165,Warm,1.969,4.1,0.0,0.0,0.0,0,prefix
-28,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",172,20,173.97,0.274,Warm,2.016,4.2,0.0,0.0,0.0,0,prefix
-29,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,20,195.81,0.2958,Warm,1.957,4.1,0.0,0.0,0.0,0,prefix
-30,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",166,20,65.05,0.1651,Warm,1.945,4.1,0.0,0.0,0.0,0,prefix
-31,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",166,20,199.34,0.2993,Warm,1.945,4.1,0.0,0.0,0.0,0,prefix
-32,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",164,20,74.68,0.1747,Warm,1.922,4.0,0.0,0.0,0.0,0,prefix
-33,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",170,20,75.36,0.1754,Warm,1.992,4.2,0.0,0.0,0.0,0,prefix
-34,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",163,20,75.21,0.1752,Warm,1.91,4.0,0.0,0.0,0.0,0,prefix
-35,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,20,80.28,0.1803,Warm,1.957,4.1,0.0,0.0,0.0,0,prefix
-36,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,20,182.9,0.2829,Warm,1.957,4.1,0.0,0.0,0.0,0,prefix
-37,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,20,85.24,0.1852,Warm,1.957,4.1,0.0,0.0,0.0,0,prefix
-38,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",166,20,265.22,0.3652,Warm,1.945,4.1,0.0,0.0,0.0,0,prefix
-39,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",168,20,242.99,0.343,Warm,1.969,4.1,0.0,0.0,0.0,0,prefix
-40,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",164,20,300.42,0.4004,Warm,1.922,4.0,0.0,0.0,0.0,0,prefix
-41,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",169,20,146.83,0.2468,Warm,1.98,4.1,0.0,0.0,0.0,0,prefix
-42,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",166,20,134.28,0.2343,Warm,1.945,4.1,0.0,0.0,0.0,0,prefix
-43,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",169,20,106.13,0.2061,Warm,1.98,4.1,0.0,0.0,0.0,0,prefix
-44,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,20,115.14,0.2151,Warm,1.957,4.1,0.0,0.0,0.0,0,prefix
-45,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",170,20,72.2,0.1722,Warm,1.992,4.2,0.0,0.0,0.0,0,prefix
-46,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",167,20,213.8,0.3138,Warm,1.957,4.1,0.0,0.0,0.0,0,prefix
-47,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",169,20,327.38,0.4274,Warm,1.98,4.1,0.0,0.0,0.0,0,prefix
-48,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",166,20,64.18,0.1642,Warm,1.945,4.1,0.0,0.0,0.0,0,prefix
-49,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",165,20,69.58,0.1696,Warm,1.934,4.0,0.0,0.0,0.0,0,prefix
-50,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",164,20,108.2,0.2082,Warm,1.922,4.0,0.0,0.0,0.0,0,prefix
-1,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,461.87,0.5619,Cold,44.531,92.8,42.0,42.0,42.0,14,rag
-2,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,279.81,0.3798,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-3,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,208.43,0.3084,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-4,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,577.69,0.6777,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-5,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,272.98,0.373,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-6,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,310.34,0.4103,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-7,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,164.89,0.2649,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-8,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,187.25,0.2873,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-9,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,159.49,0.2595,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-10,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,335.32,0.4353,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-11,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,235.16,0.3352,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-12,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,217.64,0.3176,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-13,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,188.1,0.2881,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-14,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,301.65,0.4016,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-15,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,217.49,0.3175,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-16,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,203.47,0.3035,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-17,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,220.02,0.32,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-18,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,138.25,0.2382,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-19,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,133.92,0.2339,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-20,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,129.89,0.2299,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-21,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,275.5,0.3755,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-22,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,301.54,0.4015,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-23,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,209.95,0.3099,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-24,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,151.88,0.2519,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-25,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,336.18,0.4362,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-26,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,163.45,0.2634,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-27,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,265.61,0.3656,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-28,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,268.97,0.369,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-29,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,381.75,0.4818,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-30,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,361.67,0.4617,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-31,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,100.47,0.2005,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-32,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,307.92,0.4079,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-33,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,339.17,0.4392,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-34,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,174.53,0.2745,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-35,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,330.27,0.4303,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-36,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,264.28,0.3643,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-37,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,181.98,0.282,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-38,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,87.08,0.1871,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-39,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,97.64,0.1976,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-40,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,357.54,0.4575,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-41,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,135.36,0.2354,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-42,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,134.25,0.2342,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-43,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,139.52,0.2395,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-44,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,86.76,0.1868,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-45,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,278.41,0.3784,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-46,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,174.7,0.2747,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-47,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,150.16,0.2502,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-48,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,116.92,0.2169,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-49,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,552.7,0.6527,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-50,"Context: %PDF-1.7
-%
-120 0 obj
-<<
-/Filter /FlateDecode
-/Length 2574
-/N 3
->>
-stream
-HyTSwoɞc
-[5laQIBHADED2mtFOE.c}08׎8GNg9w߽ '0 ֠Jb	 
-  2y.-;!KZ	^i""L0-
- @8(r;q7Ly&Qq4j|9
-V",3800,20,185.61,0.2856,Warm,44.531,92.8,42.0,42.0,0.0,0,rag
-1,Who is the founder of Microsoft?,7,20,283.42,0.3834,Cold,0.082,0.2,0.0,0.0,0.0,0,nocontext
-2,What is the chemical symbol for sodium?,8,20,350.33,0.4503,Cold,0.094,0.2,0.0,0.0,0.0,0,nocontext
-3,How many players are there in a baseball team?,10,20,84.13,0.1841,Cold,0.117,0.2,0.0,0.0,0.0,0,nocontext
-4,What year did World War II end?,8,20,149.78,0.2498,Cold,0.094,0.2,0.0,0.0,0.0,0,nocontext
-5,What is the tallest species of tree?,8,20,137.83,0.2378,Cold,0.094,0.2,0.0,0.0,0.0,0,nocontext
-6,Who wrote The Divine Comedy?,6,20,251.79,0.3518,Cold,0.07,0.1,0.0,0.0,0.0,0,nocontext
-7,What is the hardest rock type?,7,20,86.17,0.1862,Cold,0.082,0.2,0.0,0.0,0.0,0,nocontext
-8,How many hearts does a squid have?,8,20,71.65,0.1717,Cold,0.094,0.2,0.0,0.0,0.0,0,nocontext
-9,What is the main ingredient in guacamole?,10,20,72.45,0.1724,Cold,0.117,0.2,0.0,0.0,0.0,0,nocontext
-10,Who developed the polio vaccine?,7,20,142.47,0.2425,Cold,0.082,0.2,0.0,0.0,0.0,0,nocontext
-11,What is the longest-running Broadway show?,8,20,195.61,0.2956,Cold,0.094,0.2,0.0,0.0,0.0,0,nocontext
-12,What is the square of 25?,9,20,173.42,0.2734,Cold,0.105,0.2,0.0,0.0,0.0,0,nocontext
-13,Who was the first woman to win a Nobel Prize?,11,20,117.14,0.2171,Cold,0.129,0.3,0.0,0.0,0.0,0,nocontext
-14,What is the currency of Brazil?,7,20,182.13,0.2821,Cold,0.082,0.2,0.0,0.0,0.0,0,nocontext
-15,What gas do plants absorb during photosynthesis?,9,20,224.77,0.3248,Cold,0.105,0.2,0.0,0.0,0.0,0,nocontext
-16,Who directed the movie Jaws?,7,20,57.02,0.157,Cold,0.082,0.2,0.0,0.0,0.0,0,nocontext
-17,What is the largest internal organ in the human body?,11,20,144.6,0.2446,Cold,0.129,0.3,0.0,0.0,0.0,0,nocontext
-18,How many elements are in the periodic table?,9,20,167.47,0.2675,Cold,0.105,0.2,0.0,0.0,0.0,0,nocontext
-19,What is the freezing point of mercury in Celsius?,10,20,56.17,0.1562,Cold,0.117,0.2,0.0,0.0,0.0,0,nocontext
-20,Who painted The School of Athens?,7,20,68.59,0.1686,Cold,0.082,0.2,0.0,0.0,0.0,0,nocontext
-21,What is the smallest unit of life?,8,20,80.28,0.1803,Cold,0.094,0.2,0.0,0.0,0.0,0,nocontext
-22,How many time zones are there in Russia?,9,20,69.43,0.1694,Cold,0.105,0.2,0.0,0.0,0.0,0,nocontext
-23,What is the main language spoken in Argentina?,9,20,129.29,0.2293,Cold,0.105,0.2,0.0,0.0,0.0,0,nocontext
-24,Who invented the diesel engine?,6,20,66.09,0.1661,Cold,0.07,0.1,0.0,0.0,0.0,0,nocontext
-25,What is the diameter of Earth in kilometers?,9,20,54.71,0.1547,Cold,0.105,0.2,0.0,0.0,0.0,0,nocontext
-26,What is the rarest blood type?,8,20,59.72,0.1597,Cold,0.094,0.2,0.0,0.0,0.0,0,nocontext
-27,Who composed The Magic Flute?,7,20,204.65,0.3046,Cold,0.082,0.2,0.0,0.0,0.0,0,nocontext
-28,What is the powerhouse of a computer?,8,20,307.42,0.4074,Cold,0.094,0.2,0.0,0.0,0.0,0,nocontext
-29,How many sides does a dodecagon have?,11,20,140.61,0.2406,Cold,0.129,0.3,0.0,0.0,0.0,0,nocontext
-30,What is the largest species of penguin?,9,20,289.83,0.3898,Cold,0.105,0.2,0.0,0.0,0.0,0,nocontext
-31,Who discovered the planet Neptune?,6,20,69.51,0.1695,Cold,0.07,0.1,0.0,0.0,0.0,0,nocontext
-32,What is the boiling point of nitrogen in Celsius?,10,20,74.52,0.1745,Cold,0.117,0.2,0.0,0.0,0.0,0,nocontext
-33,What is the fastest bird in a dive?,9,20,436.94,0.5369,Cold,0.105,0.2,0.0,0.0,0.0,0,nocontext
-34,Who wrote The Brothers Karamazov?,9,20,384.57,0.4846,Cold,0.105,0.2,0.0,0.0,0.0,0,nocontext
-35,What is the largest artery in the human body?,10,20,266.21,0.3662,Cold,0.117,0.2,0.0,0.0,0.0,0,nocontext
-36,How many keys are on a standard computer keyboard?,10,20,158.74,0.2587,Cold,0.117,0.2,0.0,0.0,0.0,0,nocontext
-37,What is the smallest country by population?,8,20,65.44,0.1654,Cold,0.094,0.2,0.0,0.0,0.0,0,nocontext
-38,Who invented the telescope?,5,20,203.19,0.3032,Cold,0.059,0.1,0.0,0.0,0.0,0,nocontext
-39,What is the main component of natural gas?,9,20,284.47,0.3845,Cold,0.105,0.2,0.0,0.0,0.0,0,nocontext
-40,How many amendments are in the U.S. Constitution?,11,20,150.32,0.2503,Cold,0.129,0.3,0.0,0.0,0.0,0,nocontext
-41,What is the deepest lake in the world?,9,20,314.02,0.414,Cold,0.105,0.2,0.0,0.0,0.0,0,nocontext
-42,Who was the first emperor of China?,8,20,66.57,0.1666,Cold,0.094,0.2,0.0,0.0,0.0,0,nocontext
-43,What is the currency of South Africa?,8,20,70.56,0.1706,Cold,0.094,0.2,0.0,0.0,0.0,0,nocontext
-44,What is the longest bone in the arm?,9,20,72.48,0.1725,Cold,0.105,0.2,0.0,0.0,0.0,0,nocontext
-45,Who discovered the circulation of blood?,7,20,77.36,0.1774,Cold,0.082,0.2,0.0,0.0,0.0,0,nocontext
-46,What is the primary ingredient in hummus?,9,20,165.34,0.2653,Cold,0.105,0.2,0.0,0.0,0.0,0,nocontext
-47,How many moons does Mars have?,7,20,145.88,0.2459,Cold,0.082,0.2,0.0,0.0,0.0,0,nocontext
-48,What is the largest species of cat?,8,20,78.45,0.1784,Cold,0.094,0.2,0.0,0.0,0.0,0,nocontext
-49,Who wrote The Picture of Dorian Gray?,9,20,69.61,0.1696,Cold,0.105,0.2,0.0,0.0,0.0,0,nocontext
-50,What is the chemical formula for methane?,8,20,79.85,0.1798,Cold,0.094,0.2,0.0,0.0,0.0,0,nocontext
+1,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,318.11,0.4181,Cold,7.195,30.0,3.0,3.0,3.0,1,prefix
+2,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,135.71,0.2357,Partial,7.195,30.0,5.12,6.0,3.0,1,prefix
+3,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,214.67,0.3147,Warm,7.195,30.0,5.12,6.0,0.0,0,prefix
+4,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,161.11,0.2611,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+5,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,83.08,0.1831,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
+6,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,87.94,0.1879,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
+7,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,88.15,0.1882,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
+8,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,113.23,0.2132,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+9,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,89.84,0.1898,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
+10,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,94.07,0.1941,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
+11,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,167.7,0.2677,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
+12,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,94.98,0.195,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+13,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,94.87,0.1949,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
+14,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",615,20,89.03,0.189,Warm,7.207,30.0,5.12,6.0,0.0,0,prefix
+15,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,183.91,0.2839,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
+16,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,96.74,0.1967,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
+17,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,72.57,0.1726,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
+18,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,146.19,0.2462,Warm,7.195,30.0,5.12,6.0,0.0,0,prefix
+19,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,169.05,0.2691,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
+20,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,137.69,0.2377,Warm,7.195,30.0,5.12,6.0,0.0,0,prefix
+21,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,145.54,0.2455,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+22,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,91.25,0.1912,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
+23,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",622,20,100.74,0.2007,Warm,7.289,30.4,5.12,6.0,0.0,0,prefix
+24,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,136.1,0.2361,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
+25,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",621,20,98.29,0.1983,Warm,7.277,30.3,5.12,6.0,0.0,0,prefix
+26,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,160.87,0.2609,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
+27,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,83.16,0.1832,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
+28,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",623,20,184.26,0.2843,Warm,7.301,30.4,5.12,6.0,0.0,0,prefix
+29,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,91.48,0.1915,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+30,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,131.06,0.2311,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
+31,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,82.5,0.1825,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
+32,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",615,20,129.97,0.23,Warm,7.207,30.0,5.12,6.0,0.0,0,prefix
+33,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",621,20,96.28,0.1963,Warm,7.277,30.3,5.12,6.0,0.0,0,prefix
+34,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",614,20,147.68,0.2477,Warm,7.195,30.0,5.12,6.0,0.0,0,prefix
+35,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,69.09,0.1691,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+36,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,63.08,0.1631,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+37,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,106.59,0.2066,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+38,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,154.59,0.2546,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
+39,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",619,20,163.88,0.2639,Warm,7.254,30.2,5.12,6.0,0.0,0,prefix
+40,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",615,20,143.48,0.2435,Warm,7.207,30.0,5.12,6.0,0.0,0,prefix
+41,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,93.59,0.1936,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
+42,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,125.07,0.2251,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
+43,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,131.26,0.2313,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
+44,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,110.83,0.2108,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+45,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",621,20,141.11,0.2411,Warm,7.277,30.3,5.12,6.0,0.0,0,prefix
+46,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",618,20,97.01,0.197,Warm,7.242,30.2,5.12,6.0,0.0,0,prefix
+47,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",620,20,114.77,0.2148,Warm,7.266,30.3,5.12,6.0,0.0,0,prefix
+48,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",617,20,176.32,0.2763,Warm,7.23,30.1,5.12,6.0,0.0,0,prefix
+49,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",616,20,78.86,0.1789,Warm,7.219,30.1,5.12,6.0,0.0,0,prefix
+50,"You are an expert Physiotherapist AI assistant for the RehabQuest platform. Your role is to provide concise, evidence-based rehabilitation guidance grounded in peer-reviewed clinical literature and WH",615,20,97.32,0.1973,Warm,7.207,30.0,5.12,6.0,0.0,0,prefix
+1,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,183.04,0.283,Cold,14.848,61.9,3.0,3.0,3.0,1,rag
+2,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,143.66,0.2437,Partial,14.848,61.9,5.12,6.0,3.0,1,rag
+3,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1270,20,153.51,0.2535,Partial,14.883,62.0,5.12,9.0,3.0,1,rag
+4,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,174.56,0.2746,Partial,14.824,61.8,5.12,12.0,3.0,1,rag
+5,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1264,20,114.64,0.2146,Warm,14.812,61.7,5.12,12.0,0.0,0,rag
+6,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,172.09,0.2721,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
+7,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1269,20,104.6,0.2046,Warm,14.871,62.0,5.12,12.0,0.0,0,rag
+8,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1273,20,158.55,0.2585,Warm,14.918,62.2,5.12,12.0,0.0,0,rag
+9,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1271,20,123.68,0.2237,Warm,14.895,62.1,5.12,12.0,0.0,0,rag
+10,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,115.03,0.215,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
+11,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,101.21,0.2012,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
+12,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,103.21,0.2032,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
+13,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,174.81,0.2748,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+14,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1276,20,108.56,0.2086,Warm,14.953,62.3,5.12,12.0,0.0,0,rag
+15,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,110.02,0.21,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+16,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,131.58,0.2316,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+17,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,157.47,0.2575,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+18,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,150.83,0.2508,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+19,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,129.91,0.2299,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
+20,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,127.85,0.2279,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
+21,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,102.87,0.2029,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
+22,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1270,20,86.99,0.187,Warm,14.883,62.0,5.12,12.0,0.0,0,rag
+23,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1268,20,170.87,0.2709,Warm,14.859,61.9,5.12,12.0,0.0,0,rag
+24,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,163.9,0.2639,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
+25,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,127.81,0.2278,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
+26,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,111.19,0.2112,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
+27,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,130.78,0.2308,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
+28,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1261,20,132.76,0.2328,Warm,14.777,61.6,5.12,12.0,0.0,0,rag
+29,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,138.57,0.2386,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
+30,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,78.62,0.1786,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
+31,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1271,20,66.01,0.166,Warm,14.895,62.1,5.12,12.0,0.0,0,rag
+32,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1270,20,108.02,0.208,Warm,14.883,62.0,5.12,12.0,0.0,0,rag
+33,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1270,20,103.97,0.204,Warm,14.883,62.0,5.12,12.0,0.0,0,rag
+34,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,101.45,0.2015,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+35,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,102.81,0.2028,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
+36,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,104.02,0.204,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
+37,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1265,20,103.16,0.2032,Warm,14.824,61.8,5.12,12.0,0.0,0,rag
+38,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1269,20,127.93,0.2279,Warm,14.871,62.0,5.12,12.0,0.0,0,rag
+39,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,132.29,0.2323,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+40,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,132.88,0.2329,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
+41,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,138.5,0.2385,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
+42,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1268,20,104.64,0.2046,Warm,14.859,61.9,5.12,12.0,0.0,0,rag
+43,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,154.56,0.2546,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
+44,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1268,20,152.93,0.2529,Warm,14.859,61.9,5.12,12.0,0.0,0,rag
+45,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1262,20,149.09,0.2491,Warm,14.789,61.6,5.12,12.0,0.0,0,rag
+46,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,123.8,0.2238,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+47,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1264,20,147.18,0.2472,Warm,14.812,61.7,5.12,12.0,0.0,0,rag
+48,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1267,20,150.6,0.2506,Warm,14.848,61.9,5.12,12.0,0.0,0,rag
+49,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1263,20,120.62,0.2206,Warm,14.801,61.7,5.12,12.0,0.0,0,rag
+50,"Context: Tongaat Hulett and Implats ESG Report Summary — Tongaat Hulett is a leading agri-processing business focusing on the complementary activities of sugar production, property development, and st",1266,20,133.44,0.2334,Warm,14.836,61.8,5.12,12.0,0.0,0,rag
+1,Who is the founder of Microsoft?,7,20,120.18,0.2202,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+2,What is the chemical symbol for sodium?,8,20,110.78,0.2108,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+3,How many players are there in a baseball team?,10,20,141.65,0.2416,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
+4,What year did World War II end?,8,20,84.85,0.1849,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+5,What is the tallest species of tree?,8,20,104.99,0.205,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+6,Who wrote The Divine Comedy?,6,20,75.21,0.1752,Cold,0.07,0.3,0.0,0.0,0.0,0,nocontext
+7,What is the hardest rock type?,7,20,76.78,0.1768,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+8,How many hearts does a squid have?,8,20,71.27,0.1713,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+9,What is the main ingredient in guacamole?,10,20,73.93,0.1739,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
+10,Who developed the polio vaccine?,7,20,139.41,0.2394,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+11,What is the longest-running Broadway show?,8,20,59.18,0.1592,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+12,What is the square of 25?,9,20,113.8,0.2138,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+13,Who was the first woman to win a Nobel Prize?,11,20,156.65,0.2567,Cold,0.129,0.5,0.0,0.0,0.0,0,nocontext
+14,What is the currency of Brazil?,7,20,117.24,0.2172,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+15,What gas do plants absorb during photosynthesis?,9,20,75.79,0.1758,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+16,Who directed the movie Jaws?,7,20,79.14,0.1791,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+17,What is the largest internal organ in the human body?,11,20,74.59,0.1746,Cold,0.129,0.5,0.0,0.0,0.0,0,nocontext
+18,How many elements are in the periodic table?,9,20,76.4,0.1764,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+19,What is the freezing point of mercury in Celsius?,10,20,75.76,0.1758,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
+20,Who painted The School of Athens?,7,20,73.67,0.1737,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+21,What is the smallest unit of life?,8,20,72.11,0.1721,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+22,How many time zones are there in Russia?,9,20,72.42,0.1724,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+23,What is the main language spoken in Argentina?,9,20,70.41,0.1704,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+24,Who invented the diesel engine?,6,20,70.24,0.1702,Cold,0.07,0.3,0.0,0.0,0.0,0,nocontext
+25,What is the diameter of Earth in kilometers?,9,20,69.45,0.1695,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+26,What is the rarest blood type?,8,20,69.25,0.1693,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+27,Who composed The Magic Flute?,7,20,71.37,0.1714,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+28,What is the powerhouse of a computer?,8,20,75.19,0.1752,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+29,How many sides does a dodecagon have?,11,20,72.87,0.1729,Cold,0.129,0.5,0.0,0.0,0.0,0,nocontext
+30,What is the largest species of penguin?,9,20,76.27,0.1763,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+31,Who discovered the planet Neptune?,6,20,72.23,0.1722,Cold,0.07,0.3,0.0,0.0,0.0,0,nocontext
+32,What is the boiling point of nitrogen in Celsius?,10,20,70.34,0.1703,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
+33,What is the fastest bird in a dive?,9,20,66.42,0.1664,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+34,Who wrote The Brothers Karamazov?,9,20,68.28,0.1683,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+35,What is the largest artery in the human body?,10,20,156.41,0.2564,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
+36,How many keys are on a standard computer keyboard?,10,20,109.85,0.2098,Cold,0.117,0.5,0.0,0.0,0.0,0,nocontext
+37,What is the smallest country by population?,8,20,75.14,0.1751,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+38,Who invented the telescope?,5,20,73.37,0.1734,Cold,0.059,0.2,0.0,0.0,0.0,0,nocontext
+39,What is the main component of natural gas?,9,20,74.74,0.1747,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+40,How many amendments are in the U.S. Constitution?,11,20,73.98,0.174,Cold,0.129,0.5,0.0,0.0,0.0,0,nocontext
+41,What is the deepest lake in the world?,9,20,73.63,0.1736,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+42,Who was the first emperor of China?,8,20,124.71,0.2247,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+43,What is the currency of South Africa?,8,20,94.92,0.1949,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+44,What is the longest bone in the arm?,9,20,114.85,0.2149,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+45,Who discovered the circulation of blood?,7,20,75.35,0.1753,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+46,What is the primary ingredient in hummus?,9,20,98.53,0.1985,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+47,How many moons does Mars have?,7,20,77.76,0.1778,Cold,0.082,0.3,0.0,0.0,0.0,0,nocontext
+48,What is the largest species of cat?,8,20,70.52,0.1705,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
+49,Who wrote The Picture of Dorian Gray?,9,20,71.02,0.171,Cold,0.105,0.4,0.0,0.0,0.0,0,nocontext
+50,What is the chemical formula for methane?,8,20,72.04,0.172,Cold,0.094,0.4,0.0,0.0,0.0,0,nocontext
 1,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: Can you elaborate f",61,20,78.68,0.1787,Cold,0.715,1.5,0.0,0.0,0.0,0,multiturn
+User: Can you elaborate f",61,20,78.58,0.1786,Cold,0.715,3.0,0.0,0.0,0.0,0,multiturn
 2,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",88,20,80.59,0.1806,Warm,1.031,2.1,0.0,0.0,0.0,0,multiturn
+User: What is the calibra",88,20,122.09,0.2221,Warm,1.031,4.3,0.0,0.0,0.0,0,multiturn
 3,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",112,20,74.48,0.1745,Warm,1.312,2.7,0.0,0.0,0.0,0,multiturn
+User: What is the calibra",112,20,66.91,0.1669,Warm,1.312,5.5,0.0,0.0,0.0,0,multiturn
 4,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",137,20,82.42,0.1824,Warm,1.605,3.3,0.0,0.0,0.0,0,multiturn
+User: What is the calibra",137,20,116.25,0.2162,Warm,1.605,6.7,0.0,0.0,0.0,0,multiturn
 5,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",164,20,70.76,0.1708,Warm,1.922,4.0,0.0,0.0,0.0,0,multiturn
+User: What is the calibra",164,20,79.74,0.1797,Warm,1.922,8.0,0.0,0.0,0.0,0,multiturn
 6,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",190,20,78.93,0.1789,Warm,2.227,4.6,0.0,0.0,0.0,0,multiturn
+User: What is the calibra",190,20,135.25,0.2353,Warm,2.227,9.3,0.0,0.0,0.0,0,multiturn
 7,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",210,20,86.22,0.1862,Warm,2.461,5.1,0.0,0.0,0.0,0,multiturn
+User: What is the calibra",210,20,137.24,0.2372,Warm,2.461,10.3,0.0,0.0,0.0,0,multiturn
 8,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",237,20,84.49,0.1845,Warm,2.777,5.8,0.0,0.0,0.0,0,multiturn
+User: What is the calibra",237,20,104.8,0.2048,Warm,2.777,11.6,0.0,0.0,0.0,0,multiturn
 9,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",258,20,93.96,0.194,Partial,3.023,6.3,3.0,3.0,3.0,1,multiturn
+User: What is the calibra",258,20,89.16,0.1892,Partial,3.023,12.6,3.0,3.0,3.0,1,multiturn
 10,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",282,20,105.21,0.2052,Partial,3.305,6.9,6.0,6.0,3.0,1,multiturn
+User: What is the calibra",282,20,93.58,0.1936,Partial,3.305,13.8,5.12,6.0,3.0,1,multiturn
 11,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",308,20,140.38,0.2404,Warm,3.609,7.5,6.0,6.0,0.0,0,multiturn
+User: What is the calibra",308,20,84.52,0.1845,Warm,3.609,15.0,5.12,6.0,0.0,0,multiturn
 12,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",335,20,212.27,0.3123,Warm,3.926,8.2,6.0,6.0,0.0,0,multiturn
+User: What is the calibra",335,20,87.3,0.1873,Warm,3.926,16.4,5.12,6.0,0.0,0,multiturn
 13,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",357,20,84.81,0.1848,Warm,4.184,8.7,6.0,6.0,0.0,0,multiturn
+User: What is the calibra",357,20,88.71,0.1887,Warm,4.184,17.4,5.12,6.0,0.0,0,multiturn
 14,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",381,20,284.58,0.3846,Warm,4.465,9.3,6.0,6.0,0.0,0,multiturn
+User: What is the calibra",381,20,82.34,0.1823,Warm,4.465,18.6,5.12,6.0,0.0,0,multiturn
 15,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",409,20,218.63,0.3186,Warm,4.793,10.0,6.0,6.0,0.0,0,multiturn
+User: What is the calibra",409,20,83.89,0.1839,Warm,4.793,20.0,5.12,6.0,0.0,0,multiturn
 16,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",433,20,170.19,0.2702,Warm,5.074,10.6,6.0,6.0,0.0,0,multiturn
+User: What is the calibra",433,20,88.41,0.1884,Warm,5.074,21.1,5.12,6.0,0.0,0,multiturn
 17,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",458,20,95.3,0.1953,Warm,5.367,11.2,6.0,6.0,0.0,0,multiturn
+User: What is the calibra",458,20,89.34,0.1893,Warm,5.367,22.4,5.12,6.0,0.0,0,multiturn
 18,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",489,20,416.44,0.5164,Warm,5.73,11.9,6.0,6.0,0.0,0,multiturn
+User: What is the calibra",489,20,144.11,0.2441,Warm,5.73,23.9,5.12,6.0,0.0,0,multiturn
 19,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",509,20,310.53,0.4105,Warm,5.965,12.4,6.0,6.0,0.0,0,multiturn
+User: What is the calibra",509,20,121.28,0.2213,Warm,5.965,24.9,5.12,6.0,0.0,0,multiturn
 20,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",535,20,92.5,0.1925,Partial,6.27,13.1,9.0,9.0,3.0,1,multiturn
+User: What is the calibra",535,20,96.03,0.196,Partial,6.27,26.1,5.12,9.0,3.0,1,multiturn
 21,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",560,20,133.26,0.2333,Warm,6.562,13.7,9.0,9.0,0.0,0,multiturn
+User: What is the calibra",560,20,79.51,0.1795,Warm,6.562,27.3,5.12,9.0,0.0,0,multiturn
 22,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",583,20,106.46,0.2065,Warm,6.832,14.2,9.0,9.0,0.0,0,multiturn
+User: What is the calibra",583,20,80.78,0.1808,Warm,6.832,28.5,5.12,9.0,0.0,0,multiturn
 23,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",609,20,100.28,0.2003,Warm,7.137,14.9,9.0,9.0,0.0,0,multiturn
+User: What is the calibra",609,20,89.17,0.1892,Warm,7.137,29.7,5.12,9.0,0.0,0,multiturn
 24,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",630,20,102.58,0.2026,Warm,7.383,15.4,9.0,9.0,0.0,0,multiturn
+User: What is the calibra",630,20,87.71,0.1877,Warm,7.383,30.8,5.12,9.0,0.0,0,multiturn
 25,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",655,20,96.13,0.1961,Warm,7.676,16.0,9.0,9.0,0.0,0,multiturn
+User: What is the calibra",655,20,73.08,0.1731,Warm,7.676,32.0,5.12,9.0,0.0,0,multiturn
 26,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",681,20,105.48,0.2055,Warm,7.98,16.6,9.0,9.0,0.0,0,multiturn
+User: What is the calibra",681,20,74.29,0.1743,Warm,7.98,33.3,5.12,9.0,0.0,0,multiturn
 27,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",706,20,96.92,0.1969,Warm,8.273,17.2,9.0,9.0,0.0,0,multiturn
+User: What is the calibra",706,20,74.89,0.1749,Warm,8.273,34.5,5.12,9.0,0.0,0,multiturn
 28,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",733,20,99.31,0.1993,Warm,8.59,17.9,9.0,9.0,0.0,0,multiturn
+User: What is the calibra",733,20,73.73,0.1737,Warm,8.59,35.8,5.12,9.0,0.0,0,multiturn
 29,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",761,20,106.93,0.2069,Warm,8.918,18.6,9.0,9.0,0.0,0,multiturn
+User: What is the calibra",761,20,123.02,0.223,Warm,8.918,37.2,5.12,9.0,0.0,0,multiturn
 30,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",784,20,186.46,0.2865,Partial,9.188,19.1,12.0,12.0,3.0,1,multiturn
+User: What is the calibra",784,20,222.23,0.3222,Partial,9.188,38.3,5.12,12.0,3.0,1,multiturn
 31,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",809,20,212.27,0.3123,Warm,9.48,19.8,12.0,12.0,0.0,0,multiturn
+User: What is the calibra",809,20,128.7,0.2287,Warm,9.48,39.5,5.12,12.0,0.0,0,multiturn
 32,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",832,20,250.53,0.3505,Warm,9.75,20.3,12.0,12.0,0.0,0,multiturn
+User: What is the calibra",832,20,130.0,0.23,Warm,9.75,40.6,5.12,12.0,0.0,0,multiturn
 33,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",858,20,354.77,0.4548,Warm,10.055,20.9,12.0,12.0,0.0,0,multiturn
+User: What is the calibra",858,20,107.32,0.2073,Warm,10.055,41.9,5.12,12.0,0.0,0,multiturn
 34,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",883,20,104.52,0.2045,Warm,10.348,21.6,12.0,12.0,0.0,0,multiturn
+User: What is the calibra",883,20,135.14,0.2351,Warm,10.348,43.1,5.12,12.0,0.0,0,multiturn
 35,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",910,20,112.92,0.2129,Warm,10.664,22.2,12.0,12.0,0.0,0,multiturn
+User: What is the calibra",910,20,111.5,0.2115,Warm,10.664,44.4,5.12,12.0,0.0,0,multiturn
 36,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",938,20,303.83,0.4038,Warm,10.992,22.9,12.0,12.0,0.0,0,multiturn
+User: What is the calibra",938,20,121.2,0.2212,Warm,10.992,45.8,5.12,12.0,0.0,0,multiturn
 37,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",965,20,156.21,0.2562,Warm,11.309,23.6,12.0,12.0,0.0,0,multiturn
+User: What is the calibra",965,20,145.38,0.2454,Warm,11.309,47.1,5.12,12.0,0.0,0,multiturn
 38,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",984,20,199.05,0.299,Warm,11.531,24.0,12.0,12.0,0.0,0,multiturn
+User: What is the calibra",984,20,157.17,0.2572,Warm,11.531,48.0,5.12,12.0,0.0,0,multiturn
 39,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1005,20,427.47,0.5275,Warm,11.777,24.5,12.0,12.0,0.0,0,multiturn
+User: What is the calibra",1005,20,89.96,0.19,Warm,11.777,49.1,5.12,12.0,0.0,0,multiturn
 40,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1035,20,522.07,0.6221,Partial,12.129,25.3,15.0,15.0,3.0,1,multiturn
+User: What is the calibra",1035,20,197.35,0.2974,Partial,12.129,50.5,5.12,15.0,3.0,1,multiturn
 41,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1059,20,217.09,0.3171,Partial,12.41,25.9,18.0,18.0,3.0,1,multiturn
+User: What is the calibra",1059,20,87.99,0.188,Partial,12.41,51.7,5.12,18.0,3.0,1,multiturn
 42,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1088,20,178.05,0.278,Warm,12.75,26.6,18.0,18.0,0.0,0,multiturn
+User: What is the calibra",1088,20,115.03,0.215,Warm,12.75,53.1,5.12,18.0,0.0,0,multiturn
 43,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1113,20,353.9,0.4539,Warm,13.043,27.2,18.0,18.0,0.0,0,multiturn
+User: What is the calibra",1113,20,69.17,0.1692,Warm,13.043,54.3,5.12,18.0,0.0,0,multiturn
 44,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1145,20,180.56,0.2806,Warm,13.418,28.0,18.0,18.0,0.0,0,multiturn
+User: What is the calibra",1145,20,128.27,0.2283,Warm,13.418,55.9,5.12,18.0,0.0,0,multiturn
 45,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1166,20,248.4,0.3484,Warm,13.664,28.5,18.0,18.0,0.0,0,multiturn
+User: What is the calibra",1166,20,134.65,0.2346,Warm,13.664,56.9,5.12,18.0,0.0,0,multiturn
 46,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1189,20,112.79,0.2128,Warm,13.934,29.0,18.0,18.0,0.0,0,multiturn
+User: What is the calibra",1189,20,132.3,0.2323,Warm,13.934,58.1,5.12,18.0,0.0,0,multiturn
 47,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1213,20,220.62,0.3206,Warm,14.215,29.6,18.0,18.0,0.0,0,multiturn
+User: What is the calibra",1213,20,101.31,0.2013,Warm,14.215,59.2,5.12,18.0,0.0,0,multiturn
 48,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1235,20,240.32,0.3403,Warm,14.473,30.2,18.0,18.0,0.0,0,multiturn
+User: What is the calibra",1235,20,155.53,0.2555,Warm,14.473,60.3,5.12,18.0,0.0,0,multiturn
 49,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1264,20,134.25,0.2342,Warm,14.812,30.9,18.0,18.0,0.0,0,multiturn
+User: What is the calibra",1264,20,166.69,0.2667,Warm,14.812,61.7,5.12,18.0,0.0,0,multiturn
 50,"User: Hello AI.
 Assistant: Hi there! How can I help you today?
 User: Can you explain how the RehabQuest pose tracking works?
 Assistant: Here is my detailed answer for turn 1.
-User: What is the calibra",1286,20,109.69,0.2097,Partial,15.07,31.4,21.0,21.0,3.0,1,multiturn
+User: What is the calibra",1286,20,141.77,0.2418,Partial,15.07,62.8,5.12,21.0,3.0,1,multiturn

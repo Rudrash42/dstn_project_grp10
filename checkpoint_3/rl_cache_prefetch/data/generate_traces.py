@@ -15,6 +15,7 @@ Usage:
 """
 
 import csv
+import hashlib
 import json
 import math
 import os
@@ -42,6 +43,7 @@ LMCACHE_CFG_PATH = DATA_DIR / "lmcache_config.yaml"
 
 # Source doc for RAG experiment
 SOURCE_FILE = CHECKPOINT2_DIR / "data" / "finance_reports.pdf"
+BENCHMARK_LATENCY_PATH = PROJECT_ROOT / "results" / "hardware_benchmark_latencies.csv"
 
 # ═══════════════════════════════════════════════════════════════
 # HARDWARE / MODEL CONFIGURATION
@@ -461,6 +463,86 @@ def get_kv_config(llm):
     return info
 
 
+def load_benchmark_tier_latencies(path):
+    """Load measured tier latencies from hardware benchmark CSV if available."""
+    path = Path(path)
+    if not path.exists():
+        return {}
+
+    tier_samples = {}
+    with open(path, newline="") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            tier = (row.get("tier") or "").strip().upper()
+            if not tier:
+                continue
+            try:
+                latency = float(row.get("latency_ms", 0.0))
+            except Exception:
+                continue
+            tier_samples.setdefault(tier, []).append(latency)
+
+    calibrated = {}
+    for tier, vals in tier_samples.items():
+        # Drop the first warmup sample when possible.
+        stable_vals = vals[1:] if len(vals) > 3 else vals
+        if not stable_vals:
+            continue
+        calibrated[tier] = round(float(np.median(stable_vals)), 3)
+
+    if calibrated:
+        print(f"  [benchmark] Loaded measured tier latencies from {path}")
+        print(
+            "  [benchmark] "
+            + ", ".join(f"{k}={v}ms" for k, v in sorted(calibrated.items()))
+        )
+    return calibrated
+
+
+def make_chunk_fingerprint(token_slice):
+    """Create a stable fingerprint for one chunk worth of prompt token IDs."""
+    arr = np.asarray(token_slice, dtype=np.int32)
+    return hashlib.blake2b(arr.tobytes(), digest_size=10).hexdigest()
+
+
+def build_embedding_text(focus_text, context_profile, prompt_preview, input_tokens):
+    """Build an embedding-friendly text that preserves semantics without huge context dominance."""
+    focus = " ".join((focus_text or "").split())
+    preview = " ".join((prompt_preview or "").split())
+    return (
+        f"Focus question: {focus}\n"
+        f"Context profile: {context_profile}\n"
+        f"Prompt tokens: {input_tokens}\n"
+        f"Context preview: {preview}"
+    )
+
+
+def extract_runtime_chunk_ids(output_obj):
+    """
+    Best-effort extraction of runtime chunk IDs from vLLM/LMCache runtime metadata.
+
+    Returns None when the runtime does not expose chunk-level events.
+    """
+    candidate_containers = [output_obj, getattr(output_obj, "metrics", None)]
+    candidate_attrs = [
+        "chunk_ids",
+        "kv_chunk_ids",
+        "lmcache_chunk_ids",
+        "cache_chunk_ids",
+        "prefill_chunk_ids",
+    ]
+
+    for container in candidate_containers:
+        if container is None:
+            continue
+        for attr in candidate_attrs:
+            raw = getattr(container, attr, None)
+            if isinstance(raw, (list, tuple)) and raw:
+                return list(raw)
+
+    return None
+
+
 def run_single(llm, sp, prompt):
     """Run one prompt through the engine. Returns timing + token info."""
     # Cap max input tokens to 3800 to heavily utilize the 4096-token GPU cache 
@@ -497,11 +579,15 @@ def run_single(llm, sp, prompt):
         est_decode_s = gtok / est_decode_rate
         ttft_s = max(latency - est_decode_s, latency * 0.1)
 
+    runtime_chunk_ids = extract_runtime_chunk_ids(o)
+
     return {
         "latency": latency,
         "ptok": ptok,
         "gtok": gtok,
         "ttft_s": ttft_s,
+        "prompt_token_ids": list(o.prompt_token_ids),
+        "runtime_chunk_ids": runtime_chunk_ids,
     }
 
 
@@ -509,7 +595,17 @@ def run_single(llm, sp, prompt):
 # EXPERIMENT RUNNER
 # ═══════════════════════════════════════════════════════════════
 
-def run_experiment(name, prompts, llm, sp, kv_cfg, clear_before=True, all_cold=False):
+def run_experiment(
+    name,
+    prompts,
+    llm,
+    sp,
+    kv_cfg,
+    clear_before=True,
+    all_cold=False,
+    focus_texts=None,
+    context_profile="default",
+):
     """
     Run prompts through the engine, recording per-query metrics.
     Returns list of dicts with timing, token, and cache data.
@@ -523,6 +619,7 @@ def run_experiment(name, prompts, llm, sp, kv_cfg, clear_before=True, all_cold=F
 
     rows = []
     for i, prompt in enumerate(prompts):
+        focus_text = focus_texts[i] if focus_texts is not None else prompt
         disk_before = cache_size_mb()
         files_before = cache_file_count()
 
@@ -557,9 +654,21 @@ def run_experiment(name, prompts, llm, sp, kv_cfg, clear_before=True, all_cold=F
               f"TTFT={ttft_ms:>7.1f}ms  in={ptok:>5d}tok  "
               f"L2≈{l2_est_mb:.1f}MB  L3={l3_mb:.1f}MB(Δ{disk_delta_mb:+.1f})")
 
+        embedding_text = build_embedding_text(
+            focus_text=focus_text,
+            context_profile=context_profile,
+            prompt_preview=prompt[:400],
+            input_tokens=ptok,
+        )
+
         rows.append({
             "query_id": i + 1,
-            "query_text": prompt[:200],  # store trimmed for CSV readability
+            "focus_text": focus_text,
+            "prompt_preview": prompt[:400],
+            "prompt_text": prompt,
+            "query_text": embedding_text,
+            "embedding_text": embedding_text,
+            "context_profile": context_profile,
             "input_tokens": ptok,
             "output_tokens": result["gtok"],
             "ttft_ms": round(ttft_ms, 2),
@@ -571,6 +680,8 @@ def run_experiment(name, prompts, llm, sp, kv_cfg, clear_before=True, all_cold=F
             "l3_disk_cache_mb": l3_mb,
             "disk_delta_mb": disk_delta_mb,
             "new_cache_chunks": new_cache_files,
+            "prompt_token_ids": result["prompt_token_ids"],
+            "runtime_chunk_ids": result["runtime_chunk_ids"],
         })
 
     return rows
@@ -586,97 +697,78 @@ def rows_to_trace_csv(rows, output_path, workload_type, kv_cfg):
     by the RL environment (query_id, query_text, input_tokens,
     chunk_ids_needed, shared_chunk_ids, unique_chunk_ids, num_chunks).
 
-    Chunk IDs are deterministically assigned based on real token counts.
+    Chunk IDs are assigned from runtime chunk events when available.
+    If runtime events are unavailable, IDs are projected from actual prompt token chunks.
     """
     chunk_tokens = kv_cfg["chunk_size_tokens"]
     trace_rows = []
 
-    if workload_type == "prefix":
-        # Shared prefix: first N chunks shared by all queries
-        # Determine shared prefix length from the first query's tokens
-        # (all prefix queries have similar length since they share the same prefix)
-        avg_tokens = int(np.mean([r["input_tokens"] for r in rows]))
-        # The prefix is ~160 tokens ≈ 1 chunk
-        prefix_chunks = max(1, math.ceil(160 / chunk_tokens))
-        shared_ids = list(range(prefix_chunks))
-        unique_counter = prefix_chunks
+    chunk_registry = {}
+    observed_chunk_ids = set()
+    runtime_rows = 0
 
-        for r in rows:
-            num_total_chunks = max(1, math.ceil(r["input_tokens"] / chunk_tokens))
-            num_unique = max(0, num_total_chunks - prefix_chunks)
-            unique_ids = list(range(unique_counter, unique_counter + num_unique))
-            unique_counter += num_unique
-            all_chunks = shared_ids + unique_ids
-            trace_rows.append({
-                "query_id": r["query_id"],
-                "query_text": r["query_text"],
-                "input_tokens": r["input_tokens"],
-                "chunk_ids_needed": json.dumps(all_chunks),
-                "shared_chunk_ids": json.dumps(shared_ids),
-                "unique_chunk_ids": json.dumps(unique_ids),
-                "num_chunks": len(all_chunks),
-            })
+    for r in rows:
+        runtime_chunk_ids = r.get("runtime_chunk_ids")
+        chunk_ids_needed = []
 
-    elif workload_type == "rag":
-        # RAG: ~1700 token shared doc ≈ 7 chunks, plus unique question chunk
-        shared_doc_chunks = max(1, math.ceil(1700 / chunk_tokens))
-        shared_ids = list(range(shared_doc_chunks))
-        unique_counter = shared_doc_chunks
+        if isinstance(runtime_chunk_ids, list) and runtime_chunk_ids:
+            runtime_rows += 1
+            for runtime_id in runtime_chunk_ids:
+                fp = f"runtime::{runtime_id}"
+                if fp not in chunk_registry:
+                    chunk_registry[fp] = len(chunk_registry)
+                chunk_ids_needed.append(chunk_registry[fp])
+            chunk_source = "runtime_event"
+        else:
+            token_ids = r.get("prompt_token_ids") or []
+            if not token_ids:
+                # Keep trace format valid even for unexpected empty prompts.
+                token_ids = [0]
+            for idx in range(0, len(token_ids), chunk_tokens):
+                token_slice = token_ids[idx: idx + chunk_tokens]
+                fp = make_chunk_fingerprint(token_slice)
+                if fp not in chunk_registry:
+                    chunk_registry[fp] = len(chunk_registry)
+                chunk_ids_needed.append(chunk_registry[fp])
+            chunk_source = "token_projection"
 
-        for r in rows:
-            unique_ids = [unique_counter]
-            unique_counter += 1
-            all_chunks = shared_ids + unique_ids
-            trace_rows.append({
-                "query_id": r["query_id"],
-                "query_text": r["query_text"],
-                "input_tokens": r["input_tokens"],
-                "chunk_ids_needed": json.dumps(all_chunks),
-                "shared_chunk_ids": json.dumps(shared_ids),
-                "unique_chunk_ids": json.dumps(unique_ids),
-                "num_chunks": len(all_chunks),
-            })
+        shared_ids = [cid for cid in chunk_ids_needed if cid in observed_chunk_ids]
+        unique_ids = [cid for cid in chunk_ids_needed if cid not in observed_chunk_ids]
+        observed_chunk_ids.update(chunk_ids_needed)
 
-    elif workload_type == "nocontext":
-        # No context: each query is independent, 1 chunk each
-        for idx, r in enumerate(rows):
-            chunk_id = idx
-            trace_rows.append({
-                "query_id": r["query_id"],
-                "query_text": r["query_text"],
-                "input_tokens": r["input_tokens"],
-                "chunk_ids_needed": json.dumps([chunk_id]),
-                "shared_chunk_ids": json.dumps([]),
-                "unique_chunk_ids": json.dumps([chunk_id]),
-                "num_chunks": 1,
-            })
+        trace_rows.append({
+            "query_id": r["query_id"],
+            "query_text": r["query_text"],
+            "embedding_text": r.get("embedding_text", r["query_text"]),
+            "focus_text": r.get("focus_text", ""),
+            "context_profile": r.get("context_profile", workload_type),
+            "prompt_text": r.get("prompt_text", r.get("query_text", "")),
+            "prompt_preview": r.get("prompt_preview", ""),
+            "input_tokens": r["input_tokens"],
+            "chunk_ids_needed": chunk_ids_needed,
+            "shared_chunk_ids": shared_ids,
+            "unique_chunk_ids": unique_ids,
+            "num_chunks": len(chunk_ids_needed),
+            "chunk_id_source": chunk_source,
+        })
 
-    elif workload_type == "multiturn":
-        # Multi-turn: accumulated chunks, each turn adds one new chunk
-        accumulated = []
-        for idx, r in enumerate(rows):
-            new_chunk_id = idx
-            accumulated.append(new_chunk_id)
-            shared_ids = accumulated[:-1]
-            unique_ids = [new_chunk_id]
-            trace_rows.append({
-                "query_id": r["query_id"],
-                "query_text": r["query_text"],
-                "input_tokens": r["input_tokens"],
-                "chunk_ids_needed": json.dumps(list(accumulated)),
-                "shared_chunk_ids": json.dumps(shared_ids),
-                "unique_chunk_ids": json.dumps(unique_ids),
-                "num_chunks": len(accumulated),
-            })
-
-    # Write CSV
+    # Write CSV with JSON-encoded chunk lists
     if trace_rows:
         fieldnames = trace_rows[0].keys()
         with open(output_path, "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
-            writer.writerows(trace_rows)
-    print(f"  → {output_path.name}  ({len(trace_rows)} queries)")
+            for row in trace_rows:
+                row_out = dict(row)
+                row_out["chunk_ids_needed"] = json.dumps(row_out["chunk_ids_needed"])
+                row_out["shared_chunk_ids"] = json.dumps(row_out["shared_chunk_ids"])
+                row_out["unique_chunk_ids"] = json.dumps(row_out["unique_chunk_ids"])
+                writer.writerow(row_out)
+
+    print(
+        f"  → {output_path.name}  ({len(trace_rows)} queries, "
+        f"runtime_rows={runtime_rows}, projected_rows={len(trace_rows) - runtime_rows})"
+    )
     return trace_rows
 
 
@@ -684,20 +776,27 @@ def rows_to_trace_csv(rows, output_path, workload_type, kv_cfg):
 # TTFT LOOKUP + TIER CONFIG EXTRACTION
 # ═══════════════════════════════════════════════════════════════
 
-def build_ttft_lookup(all_raw):
+def build_ttft_lookup(all_raw, traces_by_workload=None):
     """Build ttft_lookup.json from real measured data."""
     lookup = {}
+    traces_by_workload = traces_by_workload or {}
 
     # Shared Prefix
     prefix_rows = all_raw.get("prefix", [])
     if prefix_rows:
         cold = [r for r in prefix_rows if r["state"] == "Cold"]
         warm = [r for r in prefix_rows if r["state"] == "Warm"]
+        prefix_trace_rows = traces_by_workload.get("prefix", [])
+        shared_prefix_chunks = (
+            len(prefix_trace_rows[0]["shared_chunk_ids"])
+            if prefix_trace_rows
+            else 0
+        )
         lookup["shared_prefix"] = {
             "cold_ttft_ms": round(np.mean([r["ttft_ms"] for r in cold]), 2) if cold else 0,
             "warm_ttft_ms": round(np.mean([r["ttft_ms"] for r in warm]), 2) if warm else 0,
             "avg_input_tokens": int(np.mean([r["input_tokens"] for r in prefix_rows])),
-            "shared_prefix_tokens": 160,
+            "shared_prefix_tokens": int(shared_prefix_chunks * CHUNK_SIZE),
             "n_cold": len(cold),
             "n_warm": len(warm),
         }
@@ -707,11 +806,17 @@ def build_ttft_lookup(all_raw):
     if rag_rows:
         cold = [r for r in rag_rows if r["state"] == "Cold"]
         warm = [r for r in rag_rows if r["state"] == "Warm"]
+        rag_trace_rows = traces_by_workload.get("rag", [])
+        shared_doc_chunks = (
+            len(rag_trace_rows[0]["shared_chunk_ids"])
+            if rag_trace_rows
+            else 0
+        )
         lookup["rag"] = {
             "cold_ttft_ms": round(np.mean([r["ttft_ms"] for r in cold]), 2) if cold else 0,
             "warm_ttft_ms": round(np.mean([r["ttft_ms"] for r in warm]), 2) if warm else 0,
             "avg_input_tokens": int(np.mean([r["input_tokens"] for r in rag_rows])),
-            "shared_doc_tokens": 1700,
+            "shared_doc_tokens": int(shared_doc_chunks * CHUNK_SIZE),
             "n_cold": len(cold),
             "n_warm": len(warm),
         }
@@ -719,10 +824,14 @@ def build_ttft_lookup(all_raw):
     # No Context
     nc_rows = all_raw.get("nocontext", [])
     if nc_rows:
+        cold = [r for r in nc_rows if r["state"] == "Cold"]
+        warm = [r for r in nc_rows if r["state"] == "Warm"]
         lookup["nocontext"] = {
-            "cold_ttft_ms": round(np.mean([r["ttft_ms"] for r in nc_rows]), 2),
-            "warm_ttft_ms": round(np.mean([r["ttft_ms"] for r in nc_rows]), 2),
+            "cold_ttft_ms": round(np.mean([r["ttft_ms"] for r in cold]), 2) if cold else 0,
+            "warm_ttft_ms": round(np.mean([r["ttft_ms"] for r in warm]), 2) if warm else 0,
             "avg_input_tokens": int(np.mean([r["input_tokens"] for r in nc_rows])),
+            "n_cold": len(cold),
+            "n_warm": len(warm),
             "n_queries": len(nc_rows),
         }
 
@@ -745,7 +854,7 @@ def build_ttft_lookup(all_raw):
     return lookup
 
 
-def extract_tier_config(kv_cfg, ttft_lookup):
+def extract_tier_config(kv_cfg, ttft_lookup, benchmark_latencies=None):
     """
     Derive tier configuration numbers from measured experiment data
     and model architecture.
@@ -772,22 +881,32 @@ def extract_tier_config(kv_cfg, ttft_lookup):
     num_chunks_rag = max(1, math.ceil(avg_tokens / CHUNK_SIZE))
     cold_compute_per_chunk = round(float(cold_ttft / num_chunks_rag), 1)
 
+    benchmark_latencies = benchmark_latencies or {}
+
     # L1 hit: from warm prefix TTFT / 1 chunk (prefix is ~1 chunk, all in L1)
     prefix_data = ttft_lookup.get("shared_prefix", {})
     warm_prefix_ttft = prefix_data.get("warm_ttft_ms", 57.0)
     prefix_chunks = max(1, math.ceil(prefix_data.get("avg_input_tokens", 166) / CHUNK_SIZE))
     # Warm hit = L1 hit, so per-chunk L1 latency ≈ warm_ttft / prefix_chunks
     # But this includes decode overhead, so use a calibrated value
-    l1_hit_ms = 0.1  # sub-ms GPU access (backed by both theory and measurement)
+    l1_hit_ms = benchmark_latencies.get("L1", 0.1)
 
     # L2 hit: PCIe bandwidth estimate (~12 GB/s for 3MB chunk)
-    l2_hit_ms = round(chunk_bytes / (12 * 1024**3) * 1000, 2)
+    l2_hit_ms = benchmark_latencies.get(
+        "L2", round(chunk_bytes / (12 * 1024**3) * 1000, 2)
+    )
 
     # L3 hit: NVMe SSD estimate (~500 MB/s for 3MB chunk)
-    l3_hit_ms = round(chunk_bytes / (500 * 1024**2) * 1000, 1)
+    l3_hit_ms = benchmark_latencies.get(
+        "L3", round(chunk_bytes / (500 * 1024**2) * 1000, 1)
+    )
 
     # Prefetch L3→L2 ≈ same as L3 hit (read from disk)
-    prefetch_ms = l3_hit_ms
+    prefetch_ms = benchmark_latencies.get("PREFETCH", l3_hit_ms)
+
+    miss_benchmark = benchmark_latencies.get("MISS")
+    if miss_benchmark is not None and miss_benchmark >= 5.0:
+        cold_compute_per_chunk = round(float(miss_benchmark), 1)
 
     config = {
         "chunk_size_tokens": CHUNK_SIZE,
@@ -1016,26 +1135,61 @@ def main():
     all_raw = {}
 
     # ── Experiment 1: Shared Prefix ──
-    prompts_1 = [EXP1_PREFIX + q for q in EXP1_QUESTIONS[:n]]
-    raw_prefix = run_experiment("1. Shared Prefix", prompts_1, llm, sp, kv_cfg)
+    prefix_questions = EXP1_QUESTIONS[:n]
+    prompts_1 = [EXP1_PREFIX + q for q in prefix_questions]
+    raw_prefix = run_experiment(
+        "1. Shared Prefix",
+        prompts_1,
+        llm,
+        sp,
+        kv_cfg,
+        focus_texts=prefix_questions,
+        context_profile="shared_prefix_rehab_instructions",
+    )
     all_raw["prefix"] = raw_prefix
 
     # ── Experiment 2: RAG (Shared Document) ──
     # Use 1600 tokens for context, leaving room for question + output within 4096 limit
     context_text = load_and_scale_context(SOURCE_FILE, 1600)
     rag_doc = f"Context: {context_text}\n\n"
-    prompts_2 = [rag_doc + q for q in RAG_QUESTIONS[:n]]
-    raw_rag = run_experiment("2. Shared Docs (RAG)", prompts_2, llm, sp, kv_cfg)
+    rag_questions = RAG_QUESTIONS[:n]
+    prompts_2 = [rag_doc + q for q in rag_questions]
+    raw_rag = run_experiment(
+        "2. Shared Docs (RAG)",
+        prompts_2,
+        llm,
+        sp,
+        kv_cfg,
+        focus_texts=rag_questions,
+        context_profile="rag_shared_document_finance_reports",
+    )
     all_raw["rag"] = raw_rag
 
     # ── Experiment 3: No Context ──
     prompts_3 = NO_CONTEXT_QUESTIONS[:n]
-    raw_nc = run_experiment("3. No Context", prompts_3, llm, sp, kv_cfg, all_cold=True)
+    raw_nc = run_experiment(
+        "3. No Context",
+        prompts_3,
+        llm,
+        sp,
+        kv_cfg,
+        focus_texts=prompts_3,
+        context_profile="no_shared_context",
+    )
     all_raw["nocontext"] = raw_nc
 
     # ── Experiment 4: Multi-Turn Chat ──
     prompts_4 = build_multiturn_prompts(n)
-    raw_mt = run_experiment("4. Multi-Turn Chat", prompts_4, llm, sp, kv_cfg)
+    multiturn_focus = MULTITURN_QUESTIONS[: len(prompts_4)]
+    raw_mt = run_experiment(
+        "4. Multi-Turn Chat",
+        prompts_4,
+        llm,
+        sp,
+        kv_cfg,
+        focus_texts=multiturn_focus,
+        context_profile="multiturn_dialog_history",
+    )
     all_raw["multiturn"] = raw_mt
 
     # ── Convert to RL trace CSVs ──
@@ -1043,20 +1197,27 @@ def main():
     print("  Converting to RL trace CSVs...")
     print(f"{'=' * 64}")
 
-    rows_to_trace_csv(raw_prefix, DATA_DIR / "traces_prefix.csv", "prefix", kv_cfg)
-    rows_to_trace_csv(raw_rag, DATA_DIR / "traces_rag.csv", "rag", kv_cfg)
-    rows_to_trace_csv(raw_nc, DATA_DIR / "traces_nocontext.csv", "nocontext", kv_cfg)
-    rows_to_trace_csv(raw_mt, DATA_DIR / "traces_multiturn.csv", "multiturn", kv_cfg)
+    trace_prefix = rows_to_trace_csv(raw_prefix, DATA_DIR / "traces_prefix.csv", "prefix", kv_cfg)
+    trace_rag = rows_to_trace_csv(raw_rag, DATA_DIR / "traces_rag.csv", "rag", kv_cfg)
+    trace_nc = rows_to_trace_csv(raw_nc, DATA_DIR / "traces_nocontext.csv", "nocontext", kv_cfg)
+    trace_mt = rows_to_trace_csv(raw_mt, DATA_DIR / "traces_multiturn.csv", "multiturn", kv_cfg)
+    traces_by_workload = {
+        "prefix": trace_prefix,
+        "rag": trace_rag,
+        "nocontext": trace_nc,
+        "multiturn": trace_mt,
+    }
 
     # ── TTFT lookup ──
-    ttft_lookup = build_ttft_lookup(all_raw)
+    ttft_lookup = build_ttft_lookup(all_raw, traces_by_workload)
     ttft_path = DATA_DIR / "ttft_lookup.json"
     with open(ttft_path, "w") as f:
         json.dump(ttft_lookup, f, indent=2)
     print(f"  [ttft] Saved → {ttft_path.name}")
 
     # ── Extract tier config and update ppo_config.yaml ──
-    tier_config = extract_tier_config(kv_cfg, ttft_lookup)
+    benchmark_latencies = load_benchmark_tier_latencies(BENCHMARK_LATENCY_PATH)
+    tier_config = extract_tier_config(kv_cfg, ttft_lookup, benchmark_latencies=benchmark_latencies)
     update_ppo_config(tier_config, kv_cfg)
 
     # ── Save raw experiment results too (for reference) ──
@@ -1064,8 +1225,12 @@ def main():
     raw_rows = []
     for wl_name, rows in all_raw.items():
         for r in rows:
-            r["workload"] = wl_name
-            raw_rows.append(r)
+            raw = dict(r)
+            raw["workload"] = wl_name
+            raw["runtime_chunk_event_available"] = bool(raw.get("runtime_chunk_ids"))
+            raw.pop("prompt_token_ids", None)
+            raw.pop("runtime_chunk_ids", None)
+            raw_rows.append(raw)
     raw_df = pd.DataFrame(raw_rows)
     raw_csv = DATA_DIR / "raw_experiment_results.csv"
     raw_df.to_csv(raw_csv, index=False)

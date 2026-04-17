@@ -9,6 +9,7 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 import numpy as np
@@ -77,7 +78,7 @@ def evaluate_rl_agent(
     }
 
 
-def run_full_evaluation(model_path: Optional[str] = None):
+def run_full_evaluation(model_path: Optional[str] = None, include_interleaved: bool = False):
     """
     Run all strategies across all workloads and save results.
     """
@@ -91,26 +92,35 @@ def run_full_evaluation(model_path: Optional[str] = None):
         "rag": PROJECT_ROOT / "data" / "traces_rag.csv",
         "nocontext": PROJECT_ROOT / "data" / "traces_nocontext.csv",
         "multiturn": PROJECT_ROOT / "data" / "traces_multiturn.csv",
-        "interleaved": PROJECT_ROOT / "data" / "traces_interleaved.csv",
     }
+
+    if include_interleaved:
+        traces["interleaved"] = PROJECT_ROOT / "data" / "traces_interleaved.csv"
+        print("[evaluate] Including synthetic interleaved workload.")
 
     # Load or compute embeddings
     encoder = StateEncoder(embed_dim=tier_cfg.embed_dim)
     embeddings = {}
     for name, path in traces.items():
+        if not path.exists():
+            print(f"[evaluate] Skipping {name}: trace file not found at {path}")
+            continue
         emb_path = PROJECT_ROOT / "data" / f"embeddings_{name}.npy"
         if emb_path.exists():
             embeddings[name] = StateEncoder.load_embeddings(emb_path)
         else:
             df = pd.read_csv(path)
+            text_col = "embedding_text" if "embedding_text" in df.columns else "query_text"
             embeddings[name] = encoder.encode_and_save(
-                df["query_text"].tolist(), emb_path
+                df[text_col].tolist(), emb_path
             )
 
     # Results container
     all_results = {}
 
     for wl_name, trace_path in traces.items():
+        if wl_name not in embeddings:
+            continue
         print(f"\n{'─' * 50}")
         print(f"  Workload: {wl_name}")
         print(f"{'─' * 50}")
@@ -187,4 +197,13 @@ def run_full_evaluation(model_path: Optional[str] = None):
 
 
 if __name__ == "__main__":
-    run_full_evaluation()
+    parser = argparse.ArgumentParser(description="Evaluate RL policy and baselines.")
+    parser.add_argument("--model", type=str, default=None, help="Path to PPO model zip.")
+    parser.add_argument(
+        "--include-interleaved",
+        action="store_true",
+        help="Include synthetic interleaved workload in primary evaluation.",
+    )
+    args = parser.parse_args()
+
+    run_full_evaluation(model_path=args.model, include_interleaved=args.include_interleaved)

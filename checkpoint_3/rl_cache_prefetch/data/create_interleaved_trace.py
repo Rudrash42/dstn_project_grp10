@@ -32,12 +32,18 @@ def generate_interleaved_trace(output_path, num_users=3, turns_per_user=33):
             
             trace_rows.append({
                 "query_id": query_id,
-                "query_text": f"User {user_idx} Question {turn}",
+                "query_text": f"Synthetic interleaved workload | user={user_idx} turn={turn}",
+                "embedding_text": f"Synthetic interleaved workload | user={user_idx} turn={turn}",
+                "focus_text": f"User {user_idx} Question {turn}",
+                "context_profile": "synthetic_interleaved_stress_test",
+                "prompt_text": f"User {user_idx} Question {turn}",
+                "prompt_preview": f"User {user_idx} Question {turn}",
                 "input_tokens": input_tokens,
                 "chunk_ids_needed": json.dumps(all_chunks),
                 "shared_chunk_ids": json.dumps(shared_ids),
                 "unique_chunk_ids": json.dumps(unique_ids),
                 "num_chunks": len(all_chunks),
+                "chunk_id_source": "synthetic",
             })
             query_id += 1
             

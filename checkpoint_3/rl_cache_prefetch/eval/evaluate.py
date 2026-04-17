@@ -91,6 +91,7 @@ def run_full_evaluation(model_path: Optional[str] = None):
         "rag": PROJECT_ROOT / "data" / "traces_rag.csv",
         "nocontext": PROJECT_ROOT / "data" / "traces_nocontext.csv",
         "multiturn": PROJECT_ROOT / "data" / "traces_multiturn.csv",
+        "interleaved": PROJECT_ROOT / "data" / "traces_interleaved.csv",
     }
 
     # Load or compute embeddings

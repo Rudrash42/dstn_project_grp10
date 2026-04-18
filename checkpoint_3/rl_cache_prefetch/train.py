@@ -78,7 +78,8 @@ def ensure_embeddings(traces: dict, tier_cfg: TierConfig) -> dict:
         else:
             import pandas as pd
             df = pd.read_csv(trace_path)
-            texts = df["query_text"].tolist()
+            text_col = "embedding_text" if "embedding_text" in df.columns else "query_text"
+            texts = df[text_col].tolist()
             embeddings[name] = encoder.encode_and_save(texts, emb_path)
 
     return embeddings

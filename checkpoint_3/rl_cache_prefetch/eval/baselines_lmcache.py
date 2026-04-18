@@ -102,7 +102,7 @@ def run_lmcache_baseline_workload(
     workload_name : str
         Label for this workload (used in logging).
     trace_path : Path
-        CSV with columns query_id, query_text, input_tokens, chunk_ids_needed.
+        CSV with columns query_id, chunk_ids_needed, and prompt_text or query_text.
     llm : LLM
         Initialised vLLM engine (with LMCache connector enabled).
     sampling_params : SamplingParams
@@ -111,6 +111,7 @@ def run_lmcache_baseline_workload(
         First X% of queries run to warm the cache; their TTFT is excluded.
     """
     df = pd.read_csv(trace_path)
+    prompt_col = "prompt_text" if "prompt_text" in df.columns else "query_text"
     n_queries  = len(df)
     n_warmup   = int(n_queries * warmup_fraction)
 
@@ -119,7 +120,7 @@ def run_lmcache_baseline_workload(
           f"({n_warmup} warmup, {n_queries - n_warmup} eval) …")
 
     for idx, row in df.iterrows():
-        prompt = str(row["query_text"])
+        prompt = str(row[prompt_col])
         is_warmup = idx < n_warmup
 
         t0 = time.perf_counter()

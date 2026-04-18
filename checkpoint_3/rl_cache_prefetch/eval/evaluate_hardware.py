@@ -169,13 +169,17 @@ def run_full_evaluation_hw(
     encoder = StateEncoder(embed_dim=cfg.embed_dim)
     embeddings = {}
     for name, path in traces.items():
+        if not path.exists():
+            print(f"  ⚠️  Skipping embeddings for {name}: trace file not found")
+            continue
         emb_path = PROJECT_ROOT / "data" / f"embeddings_{name}.npy"
         if emb_path.exists():
             embeddings[name] = StateEncoder.load_embeddings(emb_path)
         else:
             df = pd.read_csv(path)
+            text_col = "embedding_text" if "embedding_text" in df.columns else "query_text"
             embeddings[name] = encoder.encode_and_save(
-                df["query_text"].tolist(), emb_path
+                df[text_col].tolist(), emb_path
             )
 
     # Results container
@@ -204,6 +208,9 @@ def run_full_evaluation_hw(
     for wl_name, trace_path in traces.items():
         if not trace_path.exists():
             print(f"\n  ⚠️  Skipping {wl_name}: trace not found")
+            continue
+        if wl_name not in embeddings:
+            print(f"\n  ⚠️  Skipping {wl_name}: embeddings unavailable")
             continue
 
         print(f"\n{'─' * 55}")

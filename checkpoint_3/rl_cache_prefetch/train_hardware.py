@@ -64,6 +64,27 @@ from env.tier_config import TierConfig
 from agent.state_encoder import StateEncoder
 
 
+REQUIRED_TRACE_COLUMNS = {
+    "query_id",
+    "query_text",
+    "embedding_text",
+    "chunk_ids_needed",
+    "runtime_chunk_ids",
+    "chunk_event_source",
+    "runtime_event_count",
+    "tier_transition_event",
+    "cache_file_count_before",
+    "cache_file_count_after",
+    "cache_disk_mb_before",
+    "cache_disk_mb_after",
+}
+VALID_CHUNK_EVENT_SOURCES = {
+    "direct_runtime",
+    "lmcache_store_runtime_snapshot",
+    "lmcache_store_coldpass",
+}
+
+
 # ═══════════════════════════════════════════════════════════════
 # HELPERS
 # ═══════════════════════════════════════════════════════════════
@@ -108,8 +129,10 @@ def load_raw_yaml_config(yaml_path: Optional[str] = None) -> dict:
         yaml_path = PROJECT_ROOT / "configs" / "hardware_config.yaml"
     yaml_path = Path(yaml_path)
     if not yaml_path.exists():
-        # Fall back to the original ppo_config.yaml
-        yaml_path = PROJECT_ROOT / "configs" / "ppo_config.yaml"
+        raise FileNotFoundError(
+            "hardware_config.yaml is required for hardware training and evaluation. "
+            f"Missing: {yaml_path}"
+        )
     with open(yaml_path) as f:
         return yaml.safe_load(f) or {}
 
@@ -125,6 +148,27 @@ def get_trace_paths() -> dict:
     }
 
 
+def validate_trace_schema(trace_path: Path):
+    """Fail fast when traces are stale or missing runtime provenance columns."""
+    import pandas as pd
+
+    df = pd.read_csv(trace_path)
+    missing = [c for c in REQUIRED_TRACE_COLUMNS if c not in df.columns]
+    if missing:
+        raise RuntimeError(
+            f"Trace {trace_path} is stale/incompatible. Missing columns: {missing}. "
+            "Regenerate traces with: python data/generate_traces.py"
+        )
+
+    sources = set(str(v).strip() for v in df["chunk_event_source"].dropna().unique())
+    invalid = {s for s in sources if s and s not in VALID_CHUNK_EVENT_SOURCES}
+    if invalid:
+        raise RuntimeError(
+            f"Trace {trace_path} has non-runtime chunk rows: {sorted(invalid)}. "
+            "Regenerate traces with strict runtime chunk capture."
+        )
+
+
 def ensure_embeddings(traces: dict, embed_dim: int) -> dict:
     """
     Load pre-computed embeddings (or generate them if missing).
@@ -135,6 +179,7 @@ def ensure_embeddings(traces: dict, embed_dim: int) -> dict:
 
     embeddings = {}
     for name, trace_path in traces.items():
+        validate_trace_schema(Path(trace_path))
         emb_path = data_dir / f"embeddings_{name}.npy"
         if emb_path.exists():
             embeddings[name] = StateEncoder.load_embeddings(emb_path)
@@ -407,6 +452,8 @@ def stage_b_ppo_training(
                         "episode": self.episode_count,
                         "total_reward": summary["total_reward"],
                         "hit_rate_pct": summary["hit_rate_pct"],
+                        "cache_hit_rate_pct": summary.get("cache_hit_rate_pct", summary["hit_rate_pct"]),
+                        "local_hit_rate_pct": summary.get("local_hit_rate_pct", summary["hit_rate_pct"]),
                         "prefetch_accuracy_pct": summary["prefetch_accuracy_pct"],
                         "total_prefetches": summary["total_prefetches"],
                         "useful_prefetches": summary["useful_prefetches"],
@@ -430,12 +477,14 @@ def stage_b_ppo_training(
                         recent = self.episode_rewards[-10:]
                         avg = sum(recent) / len(recent)
                         hr = summary["hit_rate_pct"]
+                        local_hr = summary.get("local_hit_rate_pct", hr)
                         pa = summary["prefetch_accuracy_pct"]
                         avg_lat = summary.get("avg_measured_latency_ms", 0)
                         print(
                             f"  Episode {self.episode_count:4d} | "
                             f"Avg reward(10): {avg:7.2f} | "
-                            f"Hit rate: {hr:5.1f}% | "
+                            f"Cache hit: {hr:5.1f}% | "
+                            f"Local hit: {local_hr:5.1f}% | "
                             f"Prefetch acc: {pa:5.1f}% | "
                             f"Avg latency: {avg_lat:.2f}ms"
                         )
@@ -554,8 +603,8 @@ def _plot_training_curves(logger, results_dir: Path):
         axes[0, 1].plot(df["episode"], rolling,
                         color="#2980b9", linewidth=2, label="Rolling avg (10)")
     axes[0, 1].set_xlabel("Episode")
-    axes[0, 1].set_ylabel("Hit Rate (%)")
-    axes[0, 1].set_title("Cache Hit Rate (L1 + L2)")
+    axes[0, 1].set_ylabel("Cache Hit Rate (%)")
+    axes[0, 1].set_title("Overall Cache Hit Rate (L1/L2/L3)")
     axes[0, 1].legend()
     axes[0, 1].grid(True, alpha=0.3)
 

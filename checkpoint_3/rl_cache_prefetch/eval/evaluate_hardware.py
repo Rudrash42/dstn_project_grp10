@@ -45,6 +45,46 @@ from eval.baselines_hardware import (
 )
 
 
+REQUIRED_TRACE_COLUMNS = {
+    "query_id",
+    "query_text",
+    "embedding_text",
+    "chunk_ids_needed",
+    "runtime_chunk_ids",
+    "chunk_event_source",
+    "runtime_event_count",
+    "tier_transition_event",
+    "cache_file_count_before",
+    "cache_file_count_after",
+    "cache_disk_mb_before",
+    "cache_disk_mb_after",
+}
+VALID_CHUNK_EVENT_SOURCES = {
+    "direct_runtime",
+    "lmcache_store_runtime_snapshot",
+    "lmcache_store_coldpass",
+}
+
+
+def validate_trace_schema(trace_path: Path):
+    """Fail fast when traces are stale or missing runtime provenance columns."""
+    df = pd.read_csv(trace_path)
+    missing = [c for c in REQUIRED_TRACE_COLUMNS if c not in df.columns]
+    if missing:
+        raise RuntimeError(
+            f"Trace {trace_path} is stale/incompatible. Missing columns: {missing}. "
+            "Regenerate traces with: python data/generate_traces.py"
+        )
+
+    sources = set(str(v).strip() for v in df["chunk_event_source"].dropna().unique())
+    invalid = {s for s in sources if s and s not in VALID_CHUNK_EVENT_SOURCES}
+    if invalid:
+        raise RuntimeError(
+            f"Trace {trace_path} has non-runtime chunk rows: {sorted(invalid)}. "
+            "Regenerate traces with strict runtime chunk capture."
+        )
+
+
 def evaluate_rl_agent_hw(
     trace_path: str | Path,
     model_path: str | Path,
@@ -102,6 +142,7 @@ def evaluate_rl_agent_hw(
             "access_latency_ms": info.get("access_latency_ms", 0),
             "baseline_latency_ms": info.get("baseline_latency_ms", 0),
             "prefetch_cost_ms": info.get("prefetch_cost_ms", 0),
+            "total_ttft_ms": info.get("access_latency_ms", 0) + info.get("prefetch_cost_ms", 0),
             "n_prefetched": info.get("n_prefetched", 0),
             "n_useful": info.get("n_useful", 0),
             "tier_counts": info.get("tier_counts", {}),
@@ -115,10 +156,14 @@ def evaluate_rl_agent_hw(
     return {
         "strategy": "RL Agent (PPO) [HARDWARE]",
         "per_query": per_query,
-        "avg_latency_ms": float(np.mean([r["access_latency_ms"] for r in per_query])),
-        "total_latency_ms": float(sum(r["access_latency_ms"] for r in per_query)),
+        "avg_ttft_ms": float(np.mean([r["total_ttft_ms"] for r in per_query])),
+        "total_ttft_ms": float(sum(r["total_ttft_ms"] for r in per_query)),
+        "avg_latency_ms": float(np.mean([r["total_ttft_ms"] for r in per_query])),
+        "total_latency_ms": float(sum(r["total_ttft_ms"] for r in per_query)),
         "total_reward": float(total_reward),
         "hit_rate_pct": float(episode.get("hit_rate_pct", 0)),
+        "cache_hit_rate_pct": float(episode.get("cache_hit_rate_pct", episode.get("hit_rate_pct", 0))),
+        "local_hit_rate_pct": float(episode.get("local_hit_rate_pct", episode.get("hit_rate_pct", 0))),
         "total_prefetches": episode.get("total_prefetches", 0),
         "useful_prefetches": episode.get("useful_prefetches", 0),
         "prefetch_accuracy_pct": float(episode.get("prefetch_accuracy_pct", 0)),
@@ -172,6 +217,7 @@ def run_full_evaluation_hw(
         if not path.exists():
             print(f"  ⚠️  Skipping embeddings for {name}: trace file not found")
             continue
+        validate_trace_schema(path)
         emb_path = PROJECT_ROOT / "data" / f"embeddings_{name}.npy"
         if emb_path.exists():
             embeddings[name] = StateEncoder.load_embeddings(emb_path)
@@ -222,35 +268,56 @@ def run_full_evaluation_hw(
         # ── LRU Baseline (hardware) ──
         print(f"  Running LRU baseline on real hardware...")
         lru = run_lru_baseline_hw(trace_path, quiet_cfg)
+        lru_avg_ttft = lru.get("avg_ttft_ms", lru["avg_latency_ms"])
+        lru_total_ttft = lru.get("total_ttft_ms", lru["total_latency_ms"])
         wl_results["lru_hw"] = {
-            "avg_latency_ms": lru["avg_latency_ms"],
+            "avg_ttft_ms": lru_avg_ttft,
+            "avg_latency_ms": lru_avg_ttft,
             "hit_rate_pct": lru["hit_rate_pct"],
-            "total_latency_ms": lru["total_latency_ms"],
+                        "cache_hit_rate_pct": lru.get("cache_hit_rate_pct", lru["hit_rate_pct"]),
+                        "local_hit_rate_pct": lru.get("local_hit_rate_pct", lru["hit_rate_pct"]),
+            "total_ttft_ms": lru_total_ttft,
+            "total_latency_ms": lru_total_ttft,
         }
-        print(f"  LRU [HW]:    avg_lat={lru['avg_latency_ms']:>8.2f}ms  "
-              f"hit_rate={lru['hit_rate_pct']:5.1f}%")
+        print(f"  LRU [HW]:    avg_ttft={lru_avg_ttft:>8.2f}ms  "
+                            f"hit_rate={lru['hit_rate_pct']:5.1f}%  "
+                            f"local={lru.get('local_hit_rate_pct', lru['hit_rate_pct']):5.1f}%")
 
         # ── No-Cache Baseline (hardware) ──
         print(f"  Running No-Cache baseline on real hardware...")
         nc = run_no_cache_baseline_hw(trace_path, quiet_cfg)
+        nc_avg_ttft = nc.get("avg_ttft_ms", nc["avg_latency_ms"])
+        nc_total_ttft = nc.get("total_ttft_ms", nc["total_latency_ms"])
         wl_results["no_cache_hw"] = {
-            "avg_latency_ms": nc["avg_latency_ms"],
+            "avg_ttft_ms": nc_avg_ttft,
+            "avg_latency_ms": nc_avg_ttft,
             "hit_rate_pct": nc["hit_rate_pct"],
-            "total_latency_ms": nc["total_latency_ms"],
+                        "cache_hit_rate_pct": nc.get("cache_hit_rate_pct", nc["hit_rate_pct"]),
+                        "local_hit_rate_pct": nc.get("local_hit_rate_pct", nc["hit_rate_pct"]),
+            "total_ttft_ms": nc_total_ttft,
+            "total_latency_ms": nc_total_ttft,
         }
-        print(f"  NoCache[HW]: avg_lat={nc['avg_latency_ms']:>8.2f}ms  "
-              f"hit_rate={nc['hit_rate_pct']:5.1f}%")
+        print(f"  NoCache[HW]: avg_ttft={nc_avg_ttft:>8.2f}ms  "
+                            f"hit_rate={nc['hit_rate_pct']:5.1f}%  "
+                            f"local={nc.get('local_hit_rate_pct', nc['hit_rate_pct']):5.1f}%")
 
         # ── Oracle Baseline (hardware) ──
         print(f"  Running Oracle baseline on real hardware...")
         oracle = run_oracle_baseline_hw(trace_path, quiet_cfg)
+        oracle_avg_ttft = oracle.get("avg_ttft_ms", oracle["avg_latency_ms"])
+        oracle_total_ttft = oracle.get("total_ttft_ms", oracle["total_latency_ms"])
         wl_results["oracle_hw"] = {
-            "avg_latency_ms": oracle["avg_latency_ms"],
+            "avg_ttft_ms": oracle_avg_ttft,
+            "avg_latency_ms": oracle_avg_ttft,
             "hit_rate_pct": oracle["hit_rate_pct"],
-            "total_latency_ms": oracle["total_latency_ms"],
+                        "cache_hit_rate_pct": oracle.get("cache_hit_rate_pct", oracle["hit_rate_pct"]),
+                        "local_hit_rate_pct": oracle.get("local_hit_rate_pct", oracle["hit_rate_pct"]),
+            "total_ttft_ms": oracle_total_ttft,
+            "total_latency_ms": oracle_total_ttft,
         }
-        print(f"  Oracle[HW]:  avg_lat={oracle['avg_latency_ms']:>8.2f}ms  "
-              f"hit_rate={oracle['hit_rate_pct']:5.1f}%")
+        print(f"  Oracle[HW]:  avg_ttft={oracle_avg_ttft:>8.2f}ms  "
+                            f"hit_rate={oracle['hit_rate_pct']:5.1f}%  "
+                            f"local={oracle.get('local_hit_rate_pct', oracle['hit_rate_pct']):5.1f}%")
 
         # ── RL Agent (hardware) ──
         if Path(model_path).exists():
@@ -258,23 +325,30 @@ def run_full_evaluation_hw(
             rl = evaluate_rl_agent_hw(
                 trace_path, model_path, cfg, embeddings[wl_name]
             )
+            rl_avg_ttft = rl.get("avg_ttft_ms", rl["avg_latency_ms"])
+            rl_total_ttft = rl.get("total_ttft_ms", rl["total_latency_ms"])
             wl_results["rl_agent_hw"] = {
-                "avg_latency_ms": rl["avg_latency_ms"],
+                "avg_ttft_ms": rl_avg_ttft,
+                "avg_latency_ms": rl_avg_ttft,
                 "hit_rate_pct": rl["hit_rate_pct"],
-                "total_latency_ms": rl["total_latency_ms"],
+                                "cache_hit_rate_pct": rl.get("cache_hit_rate_pct", rl["hit_rate_pct"]),
+                                "local_hit_rate_pct": rl.get("local_hit_rate_pct", rl["hit_rate_pct"]),
+                "total_ttft_ms": rl_total_ttft,
+                "total_latency_ms": rl_total_ttft,
                 "total_prefetches": rl["total_prefetches"],
                 "useful_prefetches": rl.get("useful_prefetches", 0),
                 "prefetch_accuracy_pct": rl.get("prefetch_accuracy_pct", 0),
                 "total_reward": rl["total_reward"],
                 "avg_measured_latency_ms": rl.get("avg_measured_latency_ms", 0),
             }
-            print(f"  RL [HW]:     avg_lat={rl['avg_latency_ms']:>8.2f}ms  "
-                  f"hit_rate={rl['hit_rate_pct']:5.1f}%  "
+            print(f"  RL [HW]:     avg_ttft={rl_avg_ttft:>8.2f}ms  "
+                                    f"hit_rate={rl['hit_rate_pct']:5.1f}%  "
+                                    f"local={rl.get('local_hit_rate_pct', rl['hit_rate_pct']):5.1f}%  "
                   f"pf_acc={rl.get('prefetch_accuracy_pct', 0):5.1f}%")
 
             # Speedup vs LRU
-            if lru["avg_latency_ms"] > 0:
-                speedup = lru["avg_latency_ms"] / rl["avg_latency_ms"]
+            if lru_avg_ttft > 0:
+                speedup = lru_avg_ttft / rl_avg_ttft
                 wl_results["rl_agent_hw"]["speedup_vs_lru"] = round(speedup, 3)
                 print(f"  RL vs LRU speedup: {speedup:.3f}x")
 
@@ -285,6 +359,8 @@ def run_full_evaluation_hw(
                     "strategy": "RL_Agent",
                     "query_id": pq["query_id"],
                     "access_latency_ms": pq["access_latency_ms"],
+                    "prefetch_cost_ms": pq.get("prefetch_cost_ms", 0),
+                    "total_ttft_ms": pq.get("total_ttft_ms", pq["access_latency_ms"] + pq.get("prefetch_cost_ms", 0)),
                     "baseline_latency_ms": pq["baseline_latency_ms"],
                     "reward": pq["reward"],
                     "n_prefetched": pq["n_prefetched"],
@@ -359,8 +435,8 @@ def _plot_evaluation(all_results: dict, results_dir: Path):
                    color=color, alpha=0.8)
 
     ax1.set_xlabel("Workload")
-    ax1.set_ylabel("Avg Latency (ms)")
-    ax1.set_title("Average Access Latency [HARDWARE]")
+    ax1.set_ylabel("Avg TTFT (ms)")
+    ax1.set_title("Average TTFT [HARDWARE]")
     ax1.set_xticks(x + width * 1.5)
     ax1.set_xticklabels(workloads)
     ax1.legend()
@@ -378,8 +454,8 @@ def _plot_evaluation(all_results: dict, results_dir: Path):
                    color=color, alpha=0.8)
 
     ax2.set_xlabel("Workload")
-    ax2.set_ylabel("Hit Rate (%)")
-    ax2.set_title("Cache Hit Rate [HARDWARE]")
+    ax2.set_ylabel("Cache Hit Rate (%)")
+    ax2.set_title("Overall Cache Hit Rate (L1/L2/L3) [HARDWARE]")
     ax2.set_xticks(x + width * 1.5)
     ax2.set_xticklabels(workloads)
     ax2.legend()
@@ -399,12 +475,12 @@ def _print_summary_table(all_results: dict):
     print(f"{'=' * 72}")
 
     header = (f"  {'Workload':<12} {'Strategy':<18} "
-              f"{'Avg Lat (ms)':<14} {'Hit Rate':<10} {'Speedup':<10}")
+              f"{'Avg TTFT (ms)':<14} {'Cache Hit':<10} {'Speedup':<10}")
     print(header)
     print("  " + "─" * 66)
 
     for wl_name, wl_data in all_results.items():
-        lru_lat = wl_data.get("lru_hw", {}).get("avg_latency_ms", 1)
+        lru_lat = wl_data.get("lru_hw", {}).get("avg_ttft_ms", wl_data.get("lru_hw", {}).get("avg_latency_ms", 1))
 
         for strat_key, strat_label in [
             ("no_cache_hw", "No Cache"),
@@ -414,7 +490,7 @@ def _print_summary_table(all_results: dict):
         ]:
             if strat_key in wl_data:
                 d = wl_data[strat_key]
-                lat = d.get("avg_latency_ms", 0)
+                lat = d.get("avg_ttft_ms", d.get("avg_latency_ms", 0))
                 hr = d.get("hit_rate_pct", 0)
                 sp = f"{lru_lat / lat:.2f}x" if lat > 0 else "N/A"
                 print(f"  {wl_name:<12} {strat_label:<18} "

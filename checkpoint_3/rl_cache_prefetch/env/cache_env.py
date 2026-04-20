@@ -184,8 +184,13 @@ class CacheEnv(gym.Env):
 
         if terminated:
             total_accesses = sum(self.episode_hits.values())
-            hit_rate = (
+            local_hit_rate = (
                 (self.episode_hits["L1"] + self.episode_hits["L2"])
+                / total_accesses * 100
+                if total_accesses > 0 else 0
+            )
+            cache_hit_rate = (
+                (self.episode_hits["L1"] + self.episode_hits["L2"] + self.episode_hits["L3"])
                 / total_accesses * 100
                 if total_accesses > 0 else 0
             )
@@ -195,7 +200,11 @@ class CacheEnv(gym.Env):
             )
             info["episode_summary"] = {
                 "total_reward": sum(self.episode_rewards),
-                "hit_rate_pct": round(hit_rate, 2),
+                # Keep hit_rate_pct as overall cache hit rate (L1/L2/L3).
+                "hit_rate_pct": round(cache_hit_rate, 2),
+                # Preserve local-memory-only visibility for analysis.
+                "local_hit_rate_pct": round(local_hit_rate, 2),
+                "cache_hit_rate_pct": round(cache_hit_rate, 2),
                 "total_prefetches": self.episode_prefetches,
                 "useful_prefetches": self.episode_useful_prefetches,
                 "prefetch_accuracy_pct": round(prefetch_accuracy, 2),

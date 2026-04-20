@@ -1,0 +1,61 @@
+{
+  "workloads": {
+    "prefix": {
+      "rows": 8,
+      "runtime_rows": 8,
+      "runtime_provenance_coverage": 1.0,
+      "transition_counts": {
+        "l1_to_l2": 2,
+        "l2_to_l3": 3
+      },
+      "embedding_text_unique": 8,
+      "embedding_text_unique_ratio": 1.0,
+      "chunk_count_sanity_mismatch": 8
+    },
+    "rag": {
+      "rows": 8,
+      "runtime_rows": 8,
+      "runtime_provenance_coverage": 1.0,
+      "transition_counts": {
+        "l1_to_l2": 2,
+        "l2_to_l3": 3
+      },
+      "embedding_text_unique": 8,
+      "embedding_text_unique_ratio": 1.0,
+      "chunk_count_sanity_mismatch": 8
+    },
+    "nocontext": {
+      "rows": 8,
+      "runtime_rows": 8,
+      "runtime_provenance_coverage": 1.0,
+      "transition_counts": {
+        "l1_to_l2": 2,
+        "l2_to_l3": 3
+      },
+      "embedding_text_unique": 8,
+      "embedding_text_unique_ratio": 1.0,
+      "chunk_count_sanity_mismatch": 8
+    },
+    "multiturn": {
+      "rows": 8,
+      "runtime_rows": 8,
+      "runtime_provenance_coverage": 1.0,
+      "transition_counts": {
+        "l1_to_l2": 2,
+        "l2_to_l3": 3
+      },
+      "embedding_text_unique": 8,
+      "embedding_text_unique_ratio": 1.0,
+      "chunk_count_sanity_mismatch": 8
+    }
+  },
+  "overall": {
+    "rows": 32,
+    "runtime_rows": 32,
+    "runtime_provenance_coverage": 1.0,
+    "transition_counts": {
+      "l1_to_l2": 8,
+      "l2_to_l3": 12
+    }
+  }
+}

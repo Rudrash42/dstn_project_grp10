@@ -60,7 +60,7 @@ def plot_hit_rate_comparison(metrics: dict, save_dir: Path):
 
 
 def plot_latency_comparison(metrics: dict, save_dir: Path):
-    """Bar chart: average access latency per workload × strategy."""
+    """Bar chart: average TTFT per workload × strategy."""
     workloads = list(metrics.keys())
     strategies = ["no_cache", "lru", "rl_agent", "oracle"]
     labels = ["No Cache", "LRU", "RL Agent", "Oracle"]
@@ -76,14 +76,14 @@ def plot_latency_comparison(metrics: dict, save_dir: Path):
         for wl in workloads:
             wl_data = metrics[wl]
             if strat in wl_data:
-                vals.append(wl_data[strat]["avg_latency_ms"])
+                vals.append(wl_data[strat].get("avg_ttft_ms", wl_data[strat].get("avg_latency_ms", 0)))
             else:
                 vals.append(0)
         ax.bar(x + i * width, vals, width, label=label, color=color, alpha=0.85)
 
     ax.set_xlabel("Workload", fontsize=12)
-    ax.set_ylabel("Avg Access Latency (ms)", fontsize=12)
-    ax.set_title("Access Latency: RL Agent vs Baselines", fontsize=14, fontweight="bold")
+    ax.set_ylabel("Avg TTFT (ms)", fontsize=12)
+    ax.set_title("TTFT: RL Agent vs Baselines", fontsize=14, fontweight="bold")
     ax.set_xticks(x + width * 1.5)
     ax.set_xticklabels([w.capitalize() for w in workloads])
     ax.legend()

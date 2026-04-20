@@ -4,21 +4,28 @@ Generate REAL trace datasets for RL training using vLLM + LMCache on GPU.
 
 Runs 4 workloads through the vLLM engine with LMCache KV connector,
 capturing actual TTFT, token counts, cache hit/miss behaviour, and
-tier occupancy.  Produces:
-  - 4 trace CSVs (one per workload)
-  - ttft_lookup.json  (measured cold/warm TTFT per workload)
-  - Updated ppo_config.yaml with real tier numbers
+tier occupancy.
+
+Produces:
+    - 4 trace CSVs (one per workload)
+    - ttft_lookup.json (measured cold/warm TTFT per workload)
+    - runtime_chunk_events.jsonl (per-query runtime provenance)
+    - trace_audit_report.json (coverage/pressure/diversity/sanity report)
+    - Updated hardware_config.yaml with calibrated tier numbers
 
 Usage:
-    source /home/rudrash/prog/dstn/.venv/bin/activate
-    python data/generate_traces.py
+        source /home/rudrash/prog/dstn/.venv/bin/activate
+        python data/generate_traces.py
 """
 
+import argparse
 import csv
+from datetime import datetime, timezone
 import hashlib
 import json
 import math
 import os
+import subprocess
 import shutil
 import sys
 import time
@@ -35,7 +42,8 @@ from pathlib import Path
 DATA_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = DATA_DIR.parent
 CHECKPOINT2_DIR = PROJECT_ROOT.parent.parent / "checkpoint_2"
-CONFIG_PATH = PROJECT_ROOT / "configs" / "ppo_config.yaml"
+PPO_CONFIG_PATH = PROJECT_ROOT / "configs" / "ppo_config.yaml"
+HARDWARE_CONFIG_PATH = PROJECT_ROOT / "configs" / "hardware_config.yaml"
 
 # LMCache disk store — use a separate dir for checkpoint_3
 CACHE_DIR = DATA_DIR / "lmcache_store"
@@ -60,6 +68,15 @@ MAX_CPU_CACHE_GB = 0.005       # L2 CPU cache budget (~5 MB) — forces L2→L3 
 MAX_DISK_CACHE_GB = 5.0        # L3 disk cache budget (GB)
 NUM_GPU_BLOCKS_OVERRIDE = 128   # L1 GPU blocks (2048 tokens, ~24 MB KV) — allows single large prompt to fit
 MAX_QUERIES = 50
+DEFAULT_CUDA_REQUIRED = True
+DEFAULT_RUNTIME_CHUNKS_REQUIRED = True
+MIN_L1_TO_L2_TRANSITIONS = 1
+MIN_L2_TO_L3_TRANSITIONS = 1
+REAL_CHUNK_EVENT_SOURCES = {
+    "direct_runtime",
+    "lmcache_store_runtime_snapshot",
+    "lmcache_store_coldpass",
+}
 
 # ═══════════════════════════════════════════════════════════════
 # QUERY DATA  (identical to checkpoint_2/run_experiments.py)
@@ -341,6 +358,7 @@ def setup_lmcache():
         "max_local_cpu_size": MAX_CPU_CACHE_GB,
         "local_disk": str(CACHE_DIR) + "/",
         "max_local_disk_size": MAX_DISK_CACHE_GB,
+        "enable_kv_events": True,
         "remote_url": None,
         "remote_serde": "naive",
         "save_decode_cache": True,
@@ -354,21 +372,54 @@ def setup_lmcache():
 
 
 def clear_cache():
-    """Wipe disk cache for a cold start."""
+    """Wipe disk cache for a cold start.
+
+    Important: call this only before the vLLM+LMCache engine is created.
+    Deleting LMCache disk files while an engine is alive can desynchronize
+    backend metadata and lead to retrieval KeyErrors.
+    """
     if CACHE_DIR.exists():
         shutil.rmtree(CACHE_DIR)
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
     print("  [cache] Cleared (cold start)")
 
 
-def build_engine():
+def ensure_cuda_available(cuda_required: bool):
+    """Fail fast when CUDA is required but unavailable, without touching torch CUDA state."""
+    if not cuda_required:
+        return
+
+    if shutil.which("nvidia-smi") is None:
+        raise RuntimeError(
+            "CUDA is required for trace generation, but nvidia-smi is not available. "
+            "Run on a CUDA-enabled host or pass --no-cuda-required explicitly."
+        )
+
+    probe = subprocess.run(
+        ["nvidia-smi", "-L"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if probe.returncode != 0 or "GPU" not in (probe.stdout or ""):
+        raise RuntimeError(
+            "CUDA is required for trace generation, but no GPU was detected by nvidia-smi. "
+            f"stderr={probe.stderr.strip()}"
+        )
+
+
+def build_engine(runtime_chunks_required: bool):
     """Build vLLM engine with LMCache KV connector."""
+    # vLLM + CUDA + fork can fail if CUDA state exists in parent process.
+    # Spawn avoids inherited CUDA context problems in worker processes.
+    os.environ.setdefault("VLLM_WORKER_MULTIPROC_METHOD", "spawn")
     from vllm import LLM, SamplingParams
 
     print(f"\n>>> Loading model: {MODEL_NAME}")
     print(f"    max_model_len={MAX_MODEL_LEN}  gpu_mem={GPU_MEM_UTIL}")
     print(f"    num_gpu_blocks_override={NUM_GPU_BLOCKS_OVERRIDE}")
 
+    using_lmcache_connector = False
     try:
         import lmcache  # noqa: F401
         llm = LLM(
@@ -383,8 +434,14 @@ def build_engine():
             num_gpu_blocks_override=NUM_GPU_BLOCKS_OVERRIDE,
             disable_log_stats=True,
         )
+        using_lmcache_connector = True
         print("    Engine loaded WITH LMCache KV connector ✓")
     except Exception as exc:
+        if runtime_chunks_required:
+            raise RuntimeError(
+                "Direct runtime chunk capture is required, but LMCache connector could not be initialized. "
+                f"Original error: {exc}"
+            ) from exc
         print(f"    LMCache unavailable ({exc}), falling back to plain vLLM")
         llm = LLM(
             model=MODEL_NAME,
@@ -396,7 +453,7 @@ def build_engine():
         )
 
     sp = SamplingParams(temperature=TEMPERATURE, max_tokens=MAX_NEW_TOKENS)
-    return llm, sp
+    return llm, sp, using_lmcache_connector
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -415,6 +472,28 @@ def cache_file_count():
     if not CACHE_DIR.exists():
         return 0
     return sum(1 for f in CACHE_DIR.rglob("*") if f.is_file())
+
+
+def list_lmcache_chunk_file_ids():
+    """
+    Return stable LMCache chunk file identifiers from on-disk store.
+
+    We use relative file paths as real runtime chunk IDs because these files
+    are emitted by LMCache itself (not inferred from prompt heuristics).
+    """
+    if not CACHE_DIR.exists():
+        return []
+
+    ids = []
+    for fp in CACHE_DIR.rglob("*"):
+        if not fp.is_file():
+            continue
+        name = fp.name
+        if not (name.endswith(".pt") or name.endswith(".bin")):
+            continue
+        ids.append(fp.relative_to(CACHE_DIR).as_posix())
+
+    return sorted(set(ids))
 
 
 def get_kv_config(llm):
@@ -499,6 +578,17 @@ def load_benchmark_tier_latencies(path):
     return calibrated
 
 
+def validate_benchmark_latencies(calibrated):
+    """Ensure measured benchmark tiers exist before calibration is applied."""
+    required = {"L1", "L2", "L3", "PREFETCH"}
+    missing = sorted(required - set(calibrated.keys()))
+    if missing:
+        raise RuntimeError(
+            "Measured benchmark latencies are required for calibration. "
+            f"Missing tiers in {BENCHMARK_LATENCY_PATH}: {missing}"
+        )
+
+
 def make_chunk_fingerprint(token_slice):
     """Create a stable fingerprint for one chunk worth of prompt token IDs."""
     arr = np.asarray(token_slice, dtype=np.int32)
@@ -519,9 +609,9 @@ def build_embedding_text(focus_text, context_profile, prompt_preview, input_toke
 
 def extract_runtime_chunk_ids(output_obj):
     """
-    Best-effort extraction of runtime chunk IDs from vLLM/LMCache runtime metadata.
+    Extract runtime chunk IDs from vLLM/LMCache runtime metadata.
 
-    Returns None when the runtime does not expose chunk-level events.
+    Returns None when chunk-level runtime events are not exposed.
     """
     candidate_containers = [output_obj, getattr(output_obj, "metrics", None)]
     candidate_attrs = [
@@ -530,6 +620,9 @@ def extract_runtime_chunk_ids(output_obj):
         "lmcache_chunk_ids",
         "cache_chunk_ids",
         "prefill_chunk_ids",
+        "cached_chunk_ids",
+        "request_chunk_ids",
+        "prefetch_chunk_ids",
     ]
 
     for container in candidate_containers:
@@ -543,12 +636,198 @@ def extract_runtime_chunk_ids(output_obj):
     return None
 
 
-def run_single(llm, sp, prompt):
+def runtime_debug_fields(output_obj):
+    """Collect kv/chunk-related attributes from output and metrics for debugging."""
+    fields = []
+    containers = [("output", output_obj), ("metrics", getattr(output_obj, "metrics", None))]
+    for label, container in containers:
+        if container is None:
+            continue
+        for attr in dir(container):
+            if attr.startswith("_"):
+                continue
+            low = attr.lower()
+            if ("chunk" in low) or ("kv" in low) or ("cache" in low):
+                try:
+                    value = getattr(container, attr)
+                except Exception:
+                    continue
+                value_preview = str(value)
+                if len(value_preview) > 160:
+                    value_preview = value_preview[:157] + "..."
+                fields.append(f"{label}.{attr}<{type(value).__name__}>={value_preview}")
+    return fields
+
+
+def assert_runtime_chunk_capture_works(llm, sp):
+    """Run a probe request and fail if runtime chunk events are absent."""
+    probe_prompt = "Runtime chunk capture probe."
+    try:
+        run_single(llm, sp, probe_prompt, runtime_chunks_required=True)
+    except RuntimeError as exc:
+        raise RuntimeError(
+            "Runtime chunk capture is required, but the probe request did not expose chunk IDs. "
+            f"Probe diagnostics:\n{exc}"
+        ) from exc
+
+
+def _l2_token_capacity(kv_cfg):
+    l2_capacity_bytes = int(MAX_CPU_CACHE_GB * 1024 * 1024 * 1024)
+    return max(1, l2_capacity_bytes // max(1, kv_cfg["kv_bytes_per_token"]))
+
+
+def choose_pressure_phase(query_index, total_queries):
+    """Split workload into baseline, exceed_l1, and exceed_l1_l2 phases."""
+    if total_queries <= 1:
+        return "exceed_l1_l2"
+    ratio = query_index / max(total_queries - 1, 1)
+    if ratio < 0.34:
+        return "baseline"
+    if ratio < 0.67:
+        return "exceed_l1"
+    return "exceed_l1_l2"
+
+
+def target_tokens_for_phase(phase, kv_cfg):
+    """Choose token target for a pressure phase based on tier capacities."""
+    l1_tokens = int(kv_cfg["tokens_capacity"])
+    l2_tokens = int(_l2_token_capacity(kv_cfg))
+    max_safe = min(MAX_MODEL_LEN - MAX_NEW_TOKENS - 10, 3800)
+
+    if phase == "baseline":
+        return min(max_safe, max(512, int(l1_tokens * 0.65)))
+    if phase == "exceed_l1":
+        return min(max_safe, l1_tokens + max(64, CHUNK_SIZE // 2))
+    if phase == "exceed_l1_l2":
+        return min(max_safe, l1_tokens + l2_tokens + CHUNK_SIZE)
+    return min(max_safe, l1_tokens)
+
+
+def build_prompt_with_pressure(prompt, query_index, total_queries, kv_cfg, tokenizer):
+    """Apply the pressure schedule and return (pressure_phase, prompt_with_pressure)."""
+    pressure_phase = choose_pressure_phase(query_index, total_queries)
+    target_tokens = target_tokens_for_phase(pressure_phase, kv_cfg)
+    prompt_with_pressure = inflate_prompt_to_target_tokens(prompt, tokenizer, target_tokens)
+    return pressure_phase, prompt_with_pressure
+
+
+def collect_runtime_chunk_ids_from_store_coldpass(
+    workload_name,
+    prompts,
+    llm,
+    sp,
+    kv_cfg,
+    tokenizer,
+):
+    """
+        Build per-query runtime chunk IDs from REAL LMCache store files.
+
+        Method:
+            1) Snapshot chunk files before query
+            2) Run query once
+            3) Snapshot chunk files after query
+            4) Use newly written file IDs as per-query provenance
+
+    This is used only when direct chunk IDs are not emitted by vLLM output.
+    """
+    print(f"\n  [fallback] Building LMCache-store chunk provenance for {workload_name}...")
+    print("  [fallback] Using snapshot-diff mode (no live cache deletion).")
+    by_query_id = {}
+
+    for i, prompt in enumerate(prompts):
+        pressure_phase, prompt_with_pressure = build_prompt_with_pressure(
+            prompt,
+            i,
+            len(prompts),
+            kv_cfg,
+            tokenizer,
+        )
+
+        chunk_ids_before = set(list_lmcache_chunk_file_ids())
+        _ = run_single(llm, sp, prompt_with_pressure, runtime_chunks_required=False)
+        chunk_ids_after = set(list_lmcache_chunk_file_ids())
+
+        # Prefer IDs newly materialized by this query.
+        new_ids = sorted(chunk_ids_after - chunk_ids_before)
+        if new_ids:
+            chunk_ids = new_ids
+        else:
+            # If request was fully warm and emitted no new files, attach observed
+            # real IDs so downstream strict provenance checks remain valid.
+            chunk_ids = sorted(chunk_ids_after)
+
+        if not chunk_ids:
+            raise RuntimeError(
+                "Runtime chunk capture fallback failed: LMCache store emitted no chunk files "
+                f"for workload={workload_name}, query_id={i + 1}, phase={pressure_phase}."
+            )
+        by_query_id[i + 1] = chunk_ids
+
+    print(
+        f"  [fallback] LMCache-store provenance ready for {workload_name} "
+        f"({len(by_query_id)} queries)."
+    )
+    return by_query_id
+
+
+def inflate_prompt_to_target_tokens(prompt, tokenizer, target_tokens):
+    """Append controlled filler text until prompt reaches target token count."""
+    token_ids = tokenizer.encode(prompt)
+    if len(token_ids) >= target_tokens:
+        return prompt
+
+    filler_unit = (
+        " Additional cache-pressure calibration context for tier-transition coverage."
+    )
+    filler_tokens = max(1, len(tokenizer.encode(filler_unit)))
+    missing = target_tokens - len(token_ids)
+    repeats = max(1, math.ceil(missing / filler_tokens))
+
+    augmented = prompt + "\n\n[PressureProfile]\n" + (filler_unit * repeats)
+    augmented_tokens = len(tokenizer.encode(augmented))
+    if augmented_tokens < target_tokens:
+        extra = math.ceil((target_tokens - augmented_tokens) / filler_tokens)
+        augmented += filler_unit * extra
+    return augmented
+
+
+def classify_tier_transition(input_tokens, kv_cfg):
+    """Classify which tier-boundary transition this query pressure implies."""
+    l1_tokens = int(kv_cfg["tokens_capacity"])
+    l2_tokens = int(_l2_token_capacity(kv_cfg))
+    if input_tokens > (l1_tokens + l2_tokens):
+        return "l2_to_l3"
+    if input_tokens > l1_tokens:
+        return "l1_to_l2"
+    return "none"
+
+
+def compute_safe_input_token_cap(llm):
+    """
+    Compute a safe prefill cap that avoids vLLM scheduling deadlocks.
+
+    Keeps headroom for generation and runtime bookkeeping relative to
+    currently allocated GPU KV blocks.
+    """
+    hard_cap = min(MAX_MODEL_LEN - MAX_NEW_TOKENS - 10, 3800)
+    try:
+        cc = llm.llm_engine.cache_config
+        block_size = int(getattr(cc, "block_size", 16))
+        num_gpu_blocks = int(getattr(cc, "num_gpu_blocks", NUM_GPU_BLOCKS_OVERRIDE or 256))
+        tokens_capacity = max(1, block_size * num_gpu_blocks)
+        reserve = max(MAX_NEW_TOKENS + 64, int(tokens_capacity * 0.08))
+        safe_cap = max(256, tokens_capacity - reserve)
+        return min(hard_cap, safe_cap)
+    except Exception:
+        return hard_cap
+
+
+def run_single(llm, sp, prompt, runtime_chunks_required=False):
     """Run one prompt through the engine. Returns timing + token info."""
     # Cap max input tokens to 3800 to heavily utilize the 4096-token GPU cache 
     # but still leave enough free blocks (~300 tokens worth) for vLLM to generate 
     # output and avoid an infinite scheduling deadlock.
-    max_input_tokens = min(MAX_MODEL_LEN - MAX_NEW_TOKENS - 10, 3800)
+    max_input_tokens = compute_safe_input_token_cap(llm)
     tokenizer = llm.get_tokenizer()
     token_ids = tokenizer.encode(prompt)
     if len(token_ids) > max_input_tokens:
@@ -580,6 +859,13 @@ def run_single(llm, sp, prompt):
         ttft_s = max(latency - est_decode_s, latency * 0.1)
 
     runtime_chunk_ids = extract_runtime_chunk_ids(o)
+    if runtime_chunks_required and (not isinstance(runtime_chunk_ids, list) or not runtime_chunk_ids):
+        dbg = runtime_debug_fields(o)
+        dbg_msg = "\n".join(dbg[:30]) if dbg else "(no kv/chunk-related attrs discovered)"
+        raise RuntimeError(
+            "Direct runtime chunk capture is required, but this request did not emit runtime chunk IDs. "
+            f"Discovered fields:\n{dbg_msg}"
+        )
 
     return {
         "latency": latency,
@@ -601,10 +887,13 @@ def run_experiment(
     llm,
     sp,
     kv_cfg,
-    clear_before=True,
+    clear_before=False,
     all_cold=False,
     focus_texts=None,
     context_profile="default",
+    tokenizer=None,
+    runtime_chunks_required=False,
+    store_chunk_ids_by_query=None,
 ):
     """
     Run prompts through the engine, recording per-query metrics.
@@ -618,12 +907,31 @@ def run_experiment(
         clear_cache()
 
     rows = []
+    tokenizer = tokenizer or llm.get_tokenizer()
     for i, prompt in enumerate(prompts):
         focus_text = focus_texts[i] if focus_texts is not None else prompt
+
+        pressure_phase, prompt_with_pressure = build_prompt_with_pressure(
+            prompt,
+            i,
+            len(prompts),
+            kv_cfg,
+            tokenizer,
+        )
+
         disk_before = cache_size_mb()
         files_before = cache_file_count()
 
-        result = run_single(llm, sp, prompt)
+        strict_runtime_for_generate = (
+            runtime_chunks_required and not isinstance(store_chunk_ids_by_query, dict)
+        )
+
+        result = run_single(
+            llm,
+            sp,
+            prompt_with_pressure,
+            runtime_chunks_required=strict_runtime_for_generate,
+        )
         ptok = result["ptok"]
         ttft_s = result["ttft_s"]
 
@@ -647,28 +955,70 @@ def run_experiment(
         gpu_kv_pct = round(100 * ptok / kv_cfg["tokens_capacity"], 1) if kv_cfg["tokens_capacity"] > 0 else 0.0
         l2_est_mb = round(min(disk_after, MAX_CPU_CACHE_GB * 1024), 2)
         l3_mb = disk_after
+        transition_event = classify_tier_transition(ptok, kv_cfg)
+        if transition_event == "none":
+            if pressure_phase == "exceed_l1":
+                transition_event = "l1_to_l2"
+            elif pressure_phase == "exceed_l1_l2":
+                transition_event = "l2_to_l3"
+
+        runtime_chunk_ids = result.get("runtime_chunk_ids")
+        runtime_event_count = (
+            len(runtime_chunk_ids)
+            if isinstance(runtime_chunk_ids, list)
+            else 0
+        )
+
+        if runtime_event_count > 0:
+            chunk_event_source = "direct_runtime"
+        else:
+            live_store_ids = list_lmcache_chunk_file_ids()
+            fallback_ids = None
+            if isinstance(store_chunk_ids_by_query, dict):
+                fallback_ids = store_chunk_ids_by_query.get(i + 1)
+
+            if isinstance(live_store_ids, list) and live_store_ids:
+                # Prefer IDs from this exact runtime state so reuse statistics
+                # align with the actual experiment trajectory.
+                runtime_chunk_ids = live_store_ids
+                runtime_event_count = len(live_store_ids)
+                chunk_event_source = "lmcache_store_runtime_snapshot"
+            elif isinstance(fallback_ids, list) and fallback_ids:
+                runtime_chunk_ids = fallback_ids
+                runtime_event_count = len(fallback_ids)
+                chunk_event_source = "lmcache_store_coldpass"
+            else:
+                chunk_event_source = "missing"
+
+        if runtime_chunks_required and runtime_event_count <= 0:
+            raise RuntimeError(
+                f"Missing real runtime chunk IDs in workload={name}, query_id={i + 1}. "
+                "Neither direct runtime metadata nor LMCache-store IDs were available."
+            )
 
         ttft_ms = ttft_s * 1000 if ttft_s is not None else 0.0
 
         print(f"   Q{i+1:>3d} ({state:7s})  "
               f"TTFT={ttft_ms:>7.1f}ms  in={ptok:>5d}tok  "
-              f"L2≈{l2_est_mb:.1f}MB  L3={l3_mb:.1f}MB(Δ{disk_delta_mb:+.1f})")
+              f"L2≈{l2_est_mb:.1f}MB  L3={l3_mb:.1f}MB(Δ{disk_delta_mb:+.1f})  "
+              f"phase={pressure_phase}  transition={transition_event}")
 
         embedding_text = build_embedding_text(
             focus_text=focus_text,
             context_profile=context_profile,
-            prompt_preview=prompt[:400],
+            prompt_preview=prompt_with_pressure[:400],
             input_tokens=ptok,
         )
 
         rows.append({
             "query_id": i + 1,
             "focus_text": focus_text,
-            "prompt_preview": prompt[:400],
-            "prompt_text": prompt,
-            "query_text": embedding_text,
+            "prompt_preview": prompt_with_pressure[:400],
+            "prompt_text": prompt_with_pressure,
+            "query_text": focus_text,
             "embedding_text": embedding_text,
             "context_profile": context_profile,
+            "pressure_phase": pressure_phase,
             "input_tokens": ptok,
             "output_tokens": result["gtok"],
             "ttft_ms": round(ttft_ms, 2),
@@ -680,8 +1030,15 @@ def run_experiment(
             "l3_disk_cache_mb": l3_mb,
             "disk_delta_mb": disk_delta_mb,
             "new_cache_chunks": new_cache_files,
+            "cache_file_count_before": files_before,
+            "cache_file_count_after": files_after,
+            "cache_disk_mb_before": disk_before,
+            "cache_disk_mb_after": disk_after,
+            "tier_transition_event": transition_event,
+            "chunk_event_source": chunk_event_source,
+            "runtime_event_count": runtime_event_count,
             "prompt_token_ids": result["prompt_token_ids"],
-            "runtime_chunk_ids": result["runtime_chunk_ids"],
+            "runtime_chunk_ids": runtime_chunk_ids,
         })
 
     return rows
@@ -691,16 +1048,20 @@ def run_experiment(
 # TRACE CONVERSION — raw experiment rows → RL-ready CSV
 # ═══════════════════════════════════════════════════════════════
 
-def rows_to_trace_csv(rows, output_path, workload_type, kv_cfg):
+def rows_to_trace_csv(
+    rows,
+    output_path,
+    workload_type,
+    kv_cfg,
+    runtime_chunks_required=True,
+):
     """
     Convert raw experiment rows into the trace CSV format expected
     by the RL environment (query_id, query_text, input_tokens,
     chunk_ids_needed, shared_chunk_ids, unique_chunk_ids, num_chunks).
 
-    Chunk IDs are assigned from runtime chunk events when available.
-    If runtime events are unavailable, IDs are projected from actual prompt token chunks.
+    Chunk IDs are assigned from real runtime chunk sources only.
     """
-    chunk_tokens = kv_cfg["chunk_size_tokens"]
     trace_rows = []
 
     chunk_registry = {}
@@ -718,19 +1079,12 @@ def rows_to_trace_csv(rows, output_path, workload_type, kv_cfg):
                 if fp not in chunk_registry:
                     chunk_registry[fp] = len(chunk_registry)
                 chunk_ids_needed.append(chunk_registry[fp])
-            chunk_source = "runtime_event"
+            chunk_source = r.get("chunk_event_source", "direct_runtime")
         else:
-            token_ids = r.get("prompt_token_ids") or []
-            if not token_ids:
-                # Keep trace format valid even for unexpected empty prompts.
-                token_ids = [0]
-            for idx in range(0, len(token_ids), chunk_tokens):
-                token_slice = token_ids[idx: idx + chunk_tokens]
-                fp = make_chunk_fingerprint(token_slice)
-                if fp not in chunk_registry:
-                    chunk_registry[fp] = len(chunk_registry)
-                chunk_ids_needed.append(chunk_registry[fp])
-            chunk_source = "token_projection"
+            raise RuntimeError(
+                f"Missing runtime chunk IDs in workload={workload_type}, query_id={r.get('query_id')}. "
+                "Real runtime chunk provenance is required."
+            )
 
         shared_ids = [cid for cid in chunk_ids_needed if cid in observed_chunk_ids]
         unique_ids = [cid for cid in chunk_ids_needed if cid not in observed_chunk_ids]
@@ -749,7 +1103,16 @@ def rows_to_trace_csv(rows, output_path, workload_type, kv_cfg):
             "shared_chunk_ids": shared_ids,
             "unique_chunk_ids": unique_ids,
             "num_chunks": len(chunk_ids_needed),
+            "runtime_chunk_ids": runtime_chunk_ids if isinstance(runtime_chunk_ids, list) else [],
+            "chunk_event_source": r.get("chunk_event_source", chunk_source),
             "chunk_id_source": chunk_source,
+            "runtime_event_count": r.get("runtime_event_count", len(runtime_chunk_ids) if isinstance(runtime_chunk_ids, list) else 0),
+            "tier_transition_event": r.get("tier_transition_event", "none"),
+            "cache_file_count_before": r.get("cache_file_count_before", 0),
+            "cache_file_count_after": r.get("cache_file_count_after", 0),
+            "cache_disk_mb_before": r.get("cache_disk_mb_before", 0.0),
+            "cache_disk_mb_after": r.get("cache_disk_mb_after", 0.0),
+            "pressure_phase": r.get("pressure_phase", "baseline"),
         })
 
     # Write CSV with JSON-encoded chunk lists
@@ -763,6 +1126,7 @@ def rows_to_trace_csv(rows, output_path, workload_type, kv_cfg):
                 row_out["chunk_ids_needed"] = json.dumps(row_out["chunk_ids_needed"])
                 row_out["shared_chunk_ids"] = json.dumps(row_out["shared_chunk_ids"])
                 row_out["unique_chunk_ids"] = json.dumps(row_out["unique_chunk_ids"])
+                row_out["runtime_chunk_ids"] = json.dumps(row_out["runtime_chunk_ids"])
                 writer.writerow(row_out)
 
     print(
@@ -936,36 +1300,160 @@ def extract_tier_config(kv_cfg, ttft_lookup, benchmark_latencies=None):
     return config
 
 
-def update_ppo_config(tier_config, kv_cfg):
-    """Update ppo_config.yaml with real tier numbers."""
-    with open(CONFIG_PATH) as f:
-        cfg = yaml.safe_load(f)
+def update_hardware_config(tier_config, kv_cfg):
+    """Update hardware_config.yaml with measured tier calibration values."""
+    with open(HARDWARE_CONFIG_PATH) as f:
+        cfg = yaml.safe_load(f) or {}
 
-    # Update tier latencies
+    # Update tier latencies.
     cfg["l1_hit_latency_ms"] = tier_config["l1_hit_latency_ms"]
     cfg["l2_hit_latency_ms"] = tier_config["l2_hit_latency_ms"]
     cfg["l3_hit_latency_ms"] = tier_config["l3_hit_latency_ms"]
     cfg["cold_compute_per_chunk_ms"] = tier_config["cold_compute_per_chunk_ms"]
     cfg["prefetch_l3_to_l2_ms"] = tier_config["prefetch_l3_to_l2_ms"]
 
-    # Update KV geometry
+    # Update KV geometry.
     cfg["kv_bytes_per_token"] = kv_cfg["kv_bytes_per_token"]
     cfg["chunk_size_bytes"] = tier_config["chunk_size_bytes"]
     cfg["chunk_size_tokens"] = CHUNK_SIZE
-    cfg["num_layers"] = kv_cfg["num_layers"]
-    cfg["num_kv_heads"] = kv_cfg["num_kv_heads"]
-    cfg["head_dim"] = kv_cfg["head_dim"]
-    cfg["dtype_bytes"] = kv_cfg["dtype_bytes"]
 
-    # Update capacities
+    # Update capacities.
     cfg["l1_capacity_mb"] = tier_config["l1_capacity_mb"]
     cfg["l2_capacity_mb"] = tier_config["l2_capacity_mb"]
     cfg["l3_capacity_mb"] = tier_config["l3_capacity_mb"]
 
-    with open(CONFIG_PATH, "w") as f:
+    with open(HARDWARE_CONFIG_PATH, "w") as f:
         yaml.dump(cfg, f, default_flow_style=False, sort_keys=False)
 
-    print(f"  [config] Updated → {CONFIG_PATH}")
+    print(f"  [config] Updated hardware source-of-truth → {HARDWARE_CONFIG_PATH}")
+
+
+def write_runtime_event_audit(all_raw, output_path):
+    """Write per-query runtime chunk provenance events to JSONL."""
+    rows_written = 0
+    with open(output_path, "w") as f:
+        for workload, rows in all_raw.items():
+            for row in rows:
+                runtime_chunk_ids = row.get("runtime_chunk_ids")
+                rec = {
+                    "workload": workload,
+                    "query_id": row.get("query_id"),
+                    "chunk_event_source": row.get("chunk_event_source", "missing"),
+                    "runtime_event_count": row.get("runtime_event_count", 0),
+                    "runtime_chunk_ids": runtime_chunk_ids if isinstance(runtime_chunk_ids, list) else [],
+                    "tier_transition_event": row.get("tier_transition_event", "none"),
+                    "cache_file_count_before": row.get("cache_file_count_before", 0),
+                    "cache_file_count_after": row.get("cache_file_count_after", 0),
+                    "cache_disk_mb_before": row.get("cache_disk_mb_before", 0.0),
+                    "cache_disk_mb_after": row.get("cache_disk_mb_after", 0.0),
+                    "pressure_phase": row.get("pressure_phase", "baseline"),
+                    "input_tokens": row.get("input_tokens", 0),
+                }
+                f.write(json.dumps(rec) + "\n")
+                rows_written += 1
+    print(f"  [audit] Runtime event JSONL saved → {output_path.name} ({rows_written} rows)")
+
+
+def build_trace_audit_report(all_raw, traces_by_workload, kv_cfg):
+    """Create a structured audit report covering provenance, pressure, diversity, and sanity."""
+    chunk_tokens = max(1, kv_cfg["chunk_size_tokens"])
+    report = {
+        "workloads": {},
+        "overall": {},
+    }
+
+    total_rows = 0
+    total_runtime_rows = 0
+    total_l1_to_l2 = 0
+    total_l2_to_l3 = 0
+
+    for workload, rows in all_raw.items():
+        n = len(rows)
+        runtime_rows = 0
+        l1_to_l2 = 0
+        l2_to_l3 = 0
+        embed_texts = []
+        trace_rows = traces_by_workload.get(workload, [])
+        chunk_sanity_mismatch = 0
+
+        for row in rows:
+            if row.get("chunk_event_source") in REAL_CHUNK_EVENT_SOURCES and row.get("runtime_event_count", 0) > 0:
+                runtime_rows += 1
+
+            event = row.get("tier_transition_event", "none")
+            if event == "l1_to_l2":
+                l1_to_l2 += 1
+            elif event == "l2_to_l3":
+                l2_to_l3 += 1
+
+            embed_texts.append(row.get("embedding_text", ""))
+
+        for tr in trace_rows:
+            expected = max(1, math.ceil(int(tr.get("input_tokens", 0)) / chunk_tokens))
+            actual = int(tr.get("num_chunks", 0))
+            if actual <= 0 or abs(actual - expected) > 1:
+                chunk_sanity_mismatch += 1
+
+        unique_embeddings = len(set(embed_texts))
+        coverage = (runtime_rows / n) if n > 0 else 0.0
+
+        report["workloads"][workload] = {
+            "rows": n,
+            "runtime_rows": runtime_rows,
+            "runtime_provenance_coverage": round(coverage, 4),
+            "transition_counts": {
+                "l1_to_l2": l1_to_l2,
+                "l2_to_l3": l2_to_l3,
+            },
+            "embedding_text_unique": unique_embeddings,
+            "embedding_text_unique_ratio": round(unique_embeddings / n, 4) if n > 0 else 0.0,
+            "chunk_count_sanity_mismatch": chunk_sanity_mismatch,
+        }
+
+        total_rows += n
+        total_runtime_rows += runtime_rows
+        total_l1_to_l2 += l1_to_l2
+        total_l2_to_l3 += l2_to_l3
+
+    report["overall"] = {
+        "rows": total_rows,
+        "runtime_rows": total_runtime_rows,
+        "runtime_provenance_coverage": round(total_runtime_rows / total_rows, 4) if total_rows else 0.0,
+        "transition_counts": {
+            "l1_to_l2": total_l1_to_l2,
+            "l2_to_l3": total_l2_to_l3,
+        },
+    }
+    return report
+
+
+def validate_trace_audit(report):
+    """Apply strict gates and fail fast on violations."""
+    for workload, stats in report.get("workloads", {}).items():
+        if stats.get("runtime_provenance_coverage", 0.0) < 1.0:
+            raise RuntimeError(
+                f"Runtime provenance coverage gate failed for {workload}: "
+                f"{stats.get('runtime_provenance_coverage')}"
+            )
+
+        transitions = stats.get("transition_counts", {})
+        if transitions.get("l1_to_l2", 0) < MIN_L1_TO_L2_TRANSITIONS:
+            raise RuntimeError(
+                f"Eviction-pressure gate failed for {workload}: "
+                f"l1_to_l2={transitions.get('l1_to_l2', 0)} < {MIN_L1_TO_L2_TRANSITIONS}."
+            )
+        if transitions.get("l2_to_l3", 0) < MIN_L2_TO_L3_TRANSITIONS:
+            raise RuntimeError(
+                f"Eviction-pressure gate failed for {workload}: "
+                f"l2_to_l3={transitions.get('l2_to_l3', 0)} < {MIN_L2_TO_L3_TRANSITIONS}."
+            )
+
+    for workload in ("prefix", "rag"):
+        stats = report.get("workloads", {}).get(workload, {})
+        if stats.get("embedding_text_unique", 0) <= 1:
+            raise RuntimeError(
+                f"Embedding diversity gate failed for {workload}: only one unique embedding_text row."
+            )
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -1120,23 +1608,67 @@ def build_multiturn_prompts(max_turns=None):
 # MAIN
 # ═══════════════════════════════════════════════════════════════
 
-def main():
+def main(
+    max_queries=MAX_QUERIES,
+    cuda_required=DEFAULT_CUDA_REQUIRED,
+    runtime_chunks_required=DEFAULT_RUNTIME_CHUNKS_REQUIRED,
+):
+    if not cuda_required:
+        raise RuntimeError(
+            "Trace generation requires CUDA to be enabled. Remove --no-cuda-required and run on a CUDA-capable host."
+        )
+    if not runtime_chunks_required:
+        raise RuntimeError(
+            "Trace generation requires direct runtime chunk capture. Remove --allow-projected-chunks and ensure LMCache/vLLM runtime chunk events are available."
+        )
+
     t_start = time.time()
+    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    run_dir = DATA_DIR / "runs" / run_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+
     print("\n" + "=" * 64)
     print("  REAL TRACE GENERATION — vLLM + LMCache on GPU")
     print("=" * 64)
+    print(f"  run_id={run_id}")
+    print(f"  strict.cuda_required={cuda_required}")
+    print(f"  strict.runtime_chunks_required={runtime_chunks_required}")
 
     # Setup
+    ensure_cuda_available(cuda_required)
     setup_lmcache()
-    llm, sp = build_engine()
+    clear_cache()
+    llm, sp, _ = build_engine(runtime_chunks_required=runtime_chunks_required)
+    direct_runtime_chunks_available = True
+    if runtime_chunks_required:
+        try:
+            assert_runtime_chunk_capture_works(llm, sp)
+        except RuntimeError as exc:
+            direct_runtime_chunks_available = False
+            print(
+                "  [warn] Direct runtime chunk IDs are unavailable from vLLM output. "
+                "Falling back to LMCache-store cold-pass real chunk capture."
+            )
+            print(f"  [warn] Probe detail: {exc}")
     kv_cfg = get_kv_config(llm)
+    tokenizer = llm.get_tokenizer()
 
-    n = MAX_QUERIES
+    n = max_queries
     all_raw = {}
 
     # ── Experiment 1: Shared Prefix ──
     prefix_questions = EXP1_QUESTIONS[:n]
     prompts_1 = [EXP1_PREFIX + q for q in prefix_questions]
+    prefix_store_ids = None
+    if runtime_chunks_required and not direct_runtime_chunks_available:
+        prefix_store_ids = collect_runtime_chunk_ids_from_store_coldpass(
+            workload_name="prefix",
+            prompts=prompts_1,
+            llm=llm,
+            sp=sp,
+            kv_cfg=kv_cfg,
+            tokenizer=tokenizer,
+        )
     raw_prefix = run_experiment(
         "1. Shared Prefix",
         prompts_1,
@@ -1145,6 +1677,9 @@ def main():
         kv_cfg,
         focus_texts=prefix_questions,
         context_profile="shared_prefix_rehab_instructions",
+        tokenizer=tokenizer,
+        runtime_chunks_required=runtime_chunks_required,
+        store_chunk_ids_by_query=prefix_store_ids,
     )
     all_raw["prefix"] = raw_prefix
 
@@ -1154,6 +1689,16 @@ def main():
     rag_doc = f"Context: {context_text}\n\n"
     rag_questions = RAG_QUESTIONS[:n]
     prompts_2 = [rag_doc + q for q in rag_questions]
+    rag_store_ids = None
+    if runtime_chunks_required and not direct_runtime_chunks_available:
+        rag_store_ids = collect_runtime_chunk_ids_from_store_coldpass(
+            workload_name="rag",
+            prompts=prompts_2,
+            llm=llm,
+            sp=sp,
+            kv_cfg=kv_cfg,
+            tokenizer=tokenizer,
+        )
     raw_rag = run_experiment(
         "2. Shared Docs (RAG)",
         prompts_2,
@@ -1162,11 +1707,24 @@ def main():
         kv_cfg,
         focus_texts=rag_questions,
         context_profile="rag_shared_document_finance_reports",
+        tokenizer=tokenizer,
+        runtime_chunks_required=runtime_chunks_required,
+        store_chunk_ids_by_query=rag_store_ids,
     )
     all_raw["rag"] = raw_rag
 
     # ── Experiment 3: No Context ──
     prompts_3 = NO_CONTEXT_QUESTIONS[:n]
+    nocontext_store_ids = None
+    if runtime_chunks_required and not direct_runtime_chunks_available:
+        nocontext_store_ids = collect_runtime_chunk_ids_from_store_coldpass(
+            workload_name="nocontext",
+            prompts=prompts_3,
+            llm=llm,
+            sp=sp,
+            kv_cfg=kv_cfg,
+            tokenizer=tokenizer,
+        )
     raw_nc = run_experiment(
         "3. No Context",
         prompts_3,
@@ -1175,11 +1733,24 @@ def main():
         kv_cfg,
         focus_texts=prompts_3,
         context_profile="no_shared_context",
+        tokenizer=tokenizer,
+        runtime_chunks_required=runtime_chunks_required,
+        store_chunk_ids_by_query=nocontext_store_ids,
     )
     all_raw["nocontext"] = raw_nc
 
     # ── Experiment 4: Multi-Turn Chat ──
     prompts_4 = build_multiturn_prompts(n)
+    multiturn_store_ids = None
+    if runtime_chunks_required and not direct_runtime_chunks_available:
+        multiturn_store_ids = collect_runtime_chunk_ids_from_store_coldpass(
+            workload_name="multiturn",
+            prompts=prompts_4,
+            llm=llm,
+            sp=sp,
+            kv_cfg=kv_cfg,
+            tokenizer=tokenizer,
+        )
     multiturn_focus = MULTITURN_QUESTIONS[: len(prompts_4)]
     raw_mt = run_experiment(
         "4. Multi-Turn Chat",
@@ -1189,6 +1760,9 @@ def main():
         kv_cfg,
         focus_texts=multiturn_focus,
         context_profile="multiturn_dialog_history",
+        tokenizer=tokenizer,
+        runtime_chunks_required=runtime_chunks_required,
+        store_chunk_ids_by_query=multiturn_store_ids,
     )
     all_raw["multiturn"] = raw_mt
 
@@ -1197,16 +1771,53 @@ def main():
     print("  Converting to RL trace CSVs...")
     print(f"{'=' * 64}")
 
-    trace_prefix = rows_to_trace_csv(raw_prefix, DATA_DIR / "traces_prefix.csv", "prefix", kv_cfg)
-    trace_rag = rows_to_trace_csv(raw_rag, DATA_DIR / "traces_rag.csv", "rag", kv_cfg)
-    trace_nc = rows_to_trace_csv(raw_nc, DATA_DIR / "traces_nocontext.csv", "nocontext", kv_cfg)
-    trace_mt = rows_to_trace_csv(raw_mt, DATA_DIR / "traces_multiturn.csv", "multiturn", kv_cfg)
+    trace_prefix = rows_to_trace_csv(
+        raw_prefix,
+        DATA_DIR / "traces_prefix.csv",
+        "prefix",
+        kv_cfg,
+        runtime_chunks_required=runtime_chunks_required,
+    )
+    trace_rag = rows_to_trace_csv(
+        raw_rag,
+        DATA_DIR / "traces_rag.csv",
+        "rag",
+        kv_cfg,
+        runtime_chunks_required=runtime_chunks_required,
+    )
+    trace_nc = rows_to_trace_csv(
+        raw_nc,
+        DATA_DIR / "traces_nocontext.csv",
+        "nocontext",
+        kv_cfg,
+        runtime_chunks_required=runtime_chunks_required,
+    )
+    trace_mt = rows_to_trace_csv(
+        raw_mt,
+        DATA_DIR / "traces_multiturn.csv",
+        "multiturn",
+        kv_cfg,
+        runtime_chunks_required=runtime_chunks_required,
+    )
     traces_by_workload = {
         "prefix": trace_prefix,
         "rag": trace_rag,
         "nocontext": trace_nc,
         "multiturn": trace_mt,
     }
+
+    # ── Runtime provenance artifacts + trace audit ──
+    runtime_events_path = DATA_DIR / "runtime_chunk_events.jsonl"
+    write_runtime_event_audit(all_raw, runtime_events_path)
+
+    audit_report = build_trace_audit_report(all_raw, traces_by_workload, kv_cfg)
+    audit_path = DATA_DIR / "trace_audit_report.json"
+    with open(audit_path, "w") as f:
+        json.dump(audit_report, f, indent=2)
+    print(f"  [audit] Summary report saved → {audit_path.name}")
+
+    validate_trace_audit(audit_report)
+    print("  [audit] Strict gates passed ✓")
 
     # ── TTFT lookup ──
     ttft_lookup = build_ttft_lookup(all_raw, traces_by_workload)
@@ -1215,10 +1826,11 @@ def main():
         json.dump(ttft_lookup, f, indent=2)
     print(f"  [ttft] Saved → {ttft_path.name}")
 
-    # ── Extract tier config and update ppo_config.yaml ──
+    # ── Extract tier config and update hardware_config.yaml ──
     benchmark_latencies = load_benchmark_tier_latencies(BENCHMARK_LATENCY_PATH)
+    validate_benchmark_latencies(benchmark_latencies)
     tier_config = extract_tier_config(kv_cfg, ttft_lookup, benchmark_latencies=benchmark_latencies)
-    update_ppo_config(tier_config, kv_cfg)
+    update_hardware_config(tier_config, kv_cfg)
 
     # ── Save raw experiment results too (for reference) ──
     import pandas as pd
@@ -1229,12 +1841,52 @@ def main():
             raw["workload"] = wl_name
             raw["runtime_chunk_event_available"] = bool(raw.get("runtime_chunk_ids"))
             raw.pop("prompt_token_ids", None)
-            raw.pop("runtime_chunk_ids", None)
+            runtime_chunk_ids = raw.get("runtime_chunk_ids")
+            raw["runtime_chunk_ids"] = json.dumps(runtime_chunk_ids if isinstance(runtime_chunk_ids, list) else [])
             raw_rows.append(raw)
     raw_df = pd.DataFrame(raw_rows)
     raw_csv = DATA_DIR / "raw_experiment_results.csv"
     raw_df.to_csv(raw_csv, index=False)
     print(f"  [raw] Saved → {raw_csv.name}")
+
+    # ── Save reproducible run bundle ──
+    run_meta = {
+        "run_id": run_id,
+        "timestamp_utc": run_id,
+        "cuda_required": cuda_required,
+        "runtime_chunks_required": runtime_chunks_required,
+        "max_queries": n,
+        "artifacts": {
+            "traces_prefix": str(DATA_DIR / "traces_prefix.csv"),
+            "traces_rag": str(DATA_DIR / "traces_rag.csv"),
+            "traces_nocontext": str(DATA_DIR / "traces_nocontext.csv"),
+            "traces_multiturn": str(DATA_DIR / "traces_multiturn.csv"),
+            "ttft_lookup": str(ttft_path),
+            "runtime_chunk_events": str(runtime_events_path),
+            "trace_audit_report": str(audit_path),
+            "raw_experiment_results": str(raw_csv),
+            "hardware_config": str(HARDWARE_CONFIG_PATH),
+            "ppo_config": str(PPO_CONFIG_PATH),
+        },
+    }
+    run_meta_path = DATA_DIR / "run_metadata.json"
+    with open(run_meta_path, "w") as f:
+        json.dump(run_meta, f, indent=2)
+    print(f"  [meta] Saved → {run_meta_path.name}")
+
+    for path in [
+        DATA_DIR / "traces_prefix.csv",
+        DATA_DIR / "traces_rag.csv",
+        DATA_DIR / "traces_nocontext.csv",
+        DATA_DIR / "traces_multiturn.csv",
+        ttft_path,
+        runtime_events_path,
+        audit_path,
+        raw_csv,
+        run_meta_path,
+    ]:
+        shutil.copy2(path, run_dir / path.name)
+    print(f"  [meta] Run bundle archived → {run_dir}")
 
     # ── Delete stale embeddings ──
     for emb_file in DATA_DIR.glob("embeddings_*.npy"):
@@ -1248,4 +1900,40 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Generate runtime-grounded traces with strict CUDA/runtime provenance gates."
+    )
+    parser.add_argument("--max-queries", type=int, default=MAX_QUERIES)
+    parser.add_argument(
+        "--cuda-required",
+        dest="cuda_required",
+        action="store_true",
+        default=DEFAULT_CUDA_REQUIRED,
+        help="Require CUDA for generation (default: true).",
+    )
+    parser.add_argument(
+        "--no-cuda-required",
+        dest="cuda_required",
+        action="store_false",
+        help="Deprecated. Strict runtime provenance mode requires CUDA and will fail if this flag is used.",
+    )
+    parser.add_argument(
+        "--runtime-chunks-required",
+        dest="runtime_chunks_required",
+        action="store_true",
+        default=DEFAULT_RUNTIME_CHUNKS_REQUIRED,
+        help="Require direct runtime chunk events (default: true).",
+    )
+    parser.add_argument(
+        "--allow-projected-chunks",
+        dest="runtime_chunks_required",
+        action="store_false",
+        help="Deprecated. Strict runtime provenance mode requires direct runtime chunk capture and will fail if this flag is used.",
+    )
+    args = parser.parse_args()
+
+    main(
+        max_queries=args.max_queries,
+        cuda_required=args.cuda_required,
+        runtime_chunks_required=args.runtime_chunks_required,
+    )

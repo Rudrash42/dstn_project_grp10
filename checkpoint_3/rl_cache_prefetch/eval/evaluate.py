@@ -26,6 +26,46 @@ from agent.state_encoder import StateEncoder
 from eval.baselines import run_lru_baseline, run_no_cache_baseline, run_oracle_baseline
 
 
+REQUIRED_TRACE_COLUMNS = {
+    "query_id",
+    "query_text",
+    "embedding_text",
+    "chunk_ids_needed",
+    "runtime_chunk_ids",
+    "chunk_event_source",
+    "runtime_event_count",
+    "tier_transition_event",
+    "cache_file_count_before",
+    "cache_file_count_after",
+    "cache_disk_mb_before",
+    "cache_disk_mb_after",
+}
+VALID_CHUNK_EVENT_SOURCES = {
+    "direct_runtime",
+    "lmcache_store_runtime_snapshot",
+    "lmcache_store_coldpass",
+}
+
+
+def validate_trace_schema(trace_path: Path):
+    """Fail fast when traces are stale or missing runtime provenance columns."""
+    df = pd.read_csv(trace_path)
+    missing = [c for c in REQUIRED_TRACE_COLUMNS if c not in df.columns]
+    if missing:
+        raise RuntimeError(
+            f"Trace {trace_path} is stale/incompatible. Missing columns: {missing}. "
+            "Regenerate traces with: python data/generate_traces.py"
+        )
+
+    sources = set(str(v).strip() for v in df["chunk_event_source"].dropna().unique())
+    invalid = {s for s in sources if s and s not in VALID_CHUNK_EVENT_SOURCES}
+    if invalid:
+        raise RuntimeError(
+            f"Trace {trace_path} has non-runtime chunk rows: {sorted(invalid)}. "
+            "Regenerate traces with strict runtime chunk capture."
+        )
+
+
 def evaluate_rl_agent(
     trace_path: str | Path,
     model_path: str | Path,
@@ -54,6 +94,7 @@ def evaluate_rl_agent(
             "reward": reward,
             "access_latency_ms": info.get("access_latency_ms", 0),
             "prefetch_cost_ms": info.get("prefetch_cost_ms", 0),
+            "total_ttft_ms": info.get("access_latency_ms", 0) + info.get("prefetch_cost_ms", 0),
             "baseline_latency_ms": info.get("baseline_latency_ms", 0),
             "n_prefetched": info.get("n_prefetched", 0),
             "n_useful": info.get("n_useful", 0),
@@ -68,10 +109,14 @@ def evaluate_rl_agent(
     return {
         "strategy": "RL Agent (PPO)",
         "per_query": per_query,
-        "avg_latency_ms": np.mean([r["access_latency_ms"] for r in per_query]),
-        "total_latency_ms": sum(r["access_latency_ms"] for r in per_query),
+        "avg_ttft_ms": np.mean([r["total_ttft_ms"] for r in per_query]),
+        "total_ttft_ms": sum(r["total_ttft_ms"] for r in per_query),
+        "avg_latency_ms": np.mean([r["total_ttft_ms"] for r in per_query]),
+        "total_latency_ms": sum(r["total_ttft_ms"] for r in per_query),
         "total_reward": total_reward,
         "hit_rate_pct": episode.get("hit_rate_pct", 0),
+        "cache_hit_rate_pct": episode.get("cache_hit_rate_pct", episode.get("hit_rate_pct", 0)),
+        "local_hit_rate_pct": episode.get("local_hit_rate_pct", episode.get("hit_rate_pct", 0)),
         "total_prefetches": episode.get("total_prefetches", 0),
         "useful_prefetches": episode.get("useful_prefetches", 0),
         "prefetch_accuracy_pct": episode.get("prefetch_accuracy_pct", 0),
@@ -105,6 +150,7 @@ def run_full_evaluation(model_path: Optional[str] = None, include_interleaved: b
         if not path.exists():
             print(f"[evaluate] Skipping {name}: trace file not found at {path}")
             continue
+        validate_trace_schema(path)
         emb_path = PROJECT_ROOT / "data" / f"embeddings_{name}.npy"
         if emb_path.exists():
             embeddings[name] = StateEncoder.load_embeddings(emb_path)
@@ -129,55 +175,83 @@ def run_full_evaluation(model_path: Optional[str] = None, include_interleaved: b
 
         # LRU Baseline
         lru = run_lru_baseline(trace_path, tier_cfg)
+        lru_avg_ttft = lru.get("avg_ttft_ms", lru["avg_latency_ms"])
+        lru_total_ttft = lru.get("total_ttft_ms", lru["total_latency_ms"])
         wl_results["lru"] = {
-            "avg_latency_ms": lru["avg_latency_ms"],
+            "avg_ttft_ms": lru_avg_ttft,
+            "avg_latency_ms": lru_avg_ttft,
             "hit_rate_pct": lru["hit_rate_pct"],
-            "total_latency_ms": lru["total_latency_ms"],
+                        "cache_hit_rate_pct": lru.get("cache_hit_rate_pct", lru["hit_rate_pct"]),
+                        "local_hit_rate_pct": lru.get("local_hit_rate_pct", lru["hit_rate_pct"]),
+            "total_ttft_ms": lru_total_ttft,
+            "total_latency_ms": lru_total_ttft,
         }
-        print(f"  LRU:    avg_lat={lru['avg_latency_ms']:7.2f}ms  "
-              f"hit_rate={lru['hit_rate_pct']:5.1f}%")
+        print(f"  LRU:    avg_ttft={lru_avg_ttft:7.2f}ms  "
+                            f"hit_rate={lru['hit_rate_pct']:5.1f}%  "
+                            f"local={lru.get('local_hit_rate_pct', lru['hit_rate_pct']):5.1f}%")
 
         # No-Cache Baseline
         nc = run_no_cache_baseline(trace_path, tier_cfg)
+        nc_avg_ttft = nc.get("avg_ttft_ms", nc["avg_latency_ms"])
+        nc_total_ttft = nc.get("total_ttft_ms", nc["total_latency_ms"])
         wl_results["no_cache"] = {
-            "avg_latency_ms": nc["avg_latency_ms"],
+            "avg_ttft_ms": nc_avg_ttft,
+            "avg_latency_ms": nc_avg_ttft,
             "hit_rate_pct": nc["hit_rate_pct"],
-            "total_latency_ms": nc["total_latency_ms"],
+                        "cache_hit_rate_pct": nc.get("cache_hit_rate_pct", nc["hit_rate_pct"]),
+                        "local_hit_rate_pct": nc.get("local_hit_rate_pct", nc["hit_rate_pct"]),
+            "total_ttft_ms": nc_total_ttft,
+            "total_latency_ms": nc_total_ttft,
         }
-        print(f"  NoCache: avg_lat={nc['avg_latency_ms']:7.2f}ms  "
-              f"hit_rate={nc['hit_rate_pct']:5.1f}%")
+        print(f"  NoCache: avg_ttft={nc_avg_ttft:7.2f}ms  "
+                            f"hit_rate={nc['hit_rate_pct']:5.1f}%  "
+                            f"local={nc.get('local_hit_rate_pct', nc['hit_rate_pct']):5.1f}%")
 
         # Oracle Baseline
         oracle = run_oracle_baseline(trace_path, tier_cfg)
+        oracle_avg_ttft = oracle.get("avg_ttft_ms", oracle["avg_latency_ms"])
+        oracle_total_ttft = oracle.get("total_ttft_ms", oracle["total_latency_ms"])
         wl_results["oracle"] = {
-            "avg_latency_ms": oracle["avg_latency_ms"],
+            "avg_ttft_ms": oracle_avg_ttft,
+            "avg_latency_ms": oracle_avg_ttft,
             "hit_rate_pct": oracle["hit_rate_pct"],
-            "total_latency_ms": oracle["total_latency_ms"],
+                        "cache_hit_rate_pct": oracle.get("cache_hit_rate_pct", oracle["hit_rate_pct"]),
+                        "local_hit_rate_pct": oracle.get("local_hit_rate_pct", oracle["hit_rate_pct"]),
+            "total_ttft_ms": oracle_total_ttft,
+            "total_latency_ms": oracle_total_ttft,
         }
-        print(f"  Oracle: avg_lat={oracle['avg_latency_ms']:7.2f}ms  "
-              f"hit_rate={oracle['hit_rate_pct']:5.1f}%")
+        print(f"  Oracle: avg_ttft={oracle_avg_ttft:7.2f}ms  "
+                            f"hit_rate={oracle['hit_rate_pct']:5.1f}%  "
+                            f"local={oracle.get('local_hit_rate_pct', oracle['hit_rate_pct']):5.1f}%")
 
         # RL Agent
         if Path(model_path).exists():
             rl = evaluate_rl_agent(
                 trace_path, model_path, tier_cfg, embeddings[wl_name]
             )
+            rl_avg_ttft = rl.get("avg_ttft_ms", rl["avg_latency_ms"])
+            rl_total_ttft = rl.get("total_ttft_ms", rl["total_latency_ms"])
             wl_results["rl_agent"] = {
-                "avg_latency_ms": rl["avg_latency_ms"],
+                "avg_ttft_ms": rl_avg_ttft,
+                "avg_latency_ms": rl_avg_ttft,
                 "hit_rate_pct": rl["hit_rate_pct"],
-                "total_latency_ms": rl["total_latency_ms"],
+                                "cache_hit_rate_pct": rl.get("cache_hit_rate_pct", rl["hit_rate_pct"]),
+                                "local_hit_rate_pct": rl.get("local_hit_rate_pct", rl["hit_rate_pct"]),
+                "total_ttft_ms": rl_total_ttft,
+                "total_latency_ms": rl_total_ttft,
                 "total_prefetches": rl["total_prefetches"],
                 "useful_prefetches": rl.get("useful_prefetches", 0),
                 "prefetch_accuracy_pct": rl.get("prefetch_accuracy_pct", 0),
                 "total_reward": rl["total_reward"],
             }
-            print(f"  RL:     avg_lat={rl['avg_latency_ms']:7.2f}ms  "
-                  f"hit_rate={rl['hit_rate_pct']:5.1f}%  "
+            print(f"  RL:     avg_ttft={rl_avg_ttft:7.2f}ms  "
+                                    f"hit_rate={rl['hit_rate_pct']:5.1f}%  "
+                                    f"local={rl.get('local_hit_rate_pct', rl['hit_rate_pct']):5.1f}%  "
                   f"prefetch_acc={rl.get('prefetch_accuracy_pct', 0):5.1f}%")
 
             # Speedup
-            if lru["avg_latency_ms"] > 0:
-                speedup = lru["avg_latency_ms"] / rl["avg_latency_ms"]
+            if lru_avg_ttft > 0:
+                speedup = lru_avg_ttft / rl_avg_ttft
                 wl_results["rl_agent"]["speedup_vs_lru"] = round(speedup, 3)
                 print(f"  RL vs LRU speedup: {speedup:.3f}x")
         else:

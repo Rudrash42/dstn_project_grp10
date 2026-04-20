@@ -2,7 +2,7 @@
 Baseline prefetching strategies for comparison.
 1. LRU (reactive) — no prefetching at all
 2. NoCache — every access is a cold miss
-3. OraclePrefetch — perfect knowledge of next query's chunks
+3. Oracle — perfect knowledge of next query's chunks (includes prefetch cost in TTFT)
 """
 
 from __future__ import annotations
@@ -41,27 +41,40 @@ def run_lru_baseline(
         total_ms, tier_counts = sim.access_chunks(chunks)
 
         total = sum(tier_counts.values())
-        hits = tier_counts["L1"] + tier_counts["L2"]
+        local_hits = tier_counts["L1"] + tier_counts["L2"]
+        cache_hits = local_hits + tier_counts["L3"]
+
+        prefetch_cost_ms = 0.0
+        total_ttft_ms = total_ms + prefetch_cost_ms
 
         results.append({
             "query_id": row["query_id"],
             "access_latency_ms": total_ms,
+            "prefetch_cost_ms": prefetch_cost_ms,
+            "total_ttft_ms": total_ttft_ms,
             "tier_counts": tier_counts,
-            "hit_rate": hits / total if total > 0 else 0,
+            "local_hit_rate": local_hits / total if total > 0 else 0,
+            "cache_hit_rate": cache_hits / total if total > 0 else 0,
+            "hit_rate": cache_hits / total if total > 0 else 0,
             "num_chunks": len(chunks),
         })
 
     # Aggregate
-    all_latencies = [r["access_latency_ms"] for r in results]
-    all_hits = sum(r["hit_rate"] * r["num_chunks"] for r in results)
+    all_ttft = [r["total_ttft_ms"] for r in results]
+    all_local_hits = sum(r["local_hit_rate"] * r["num_chunks"] for r in results)
+    all_cache_hits = sum(r["cache_hit_rate"] * r["num_chunks"] for r in results)
     all_total = sum(r["num_chunks"] for r in results)
 
     return {
         "strategy": "LRU (reactive)",
         "per_query": results,
-        "avg_latency_ms": np.mean(all_latencies),
-        "total_latency_ms": sum(all_latencies),
-        "hit_rate_pct": (all_hits / all_total * 100) if all_total > 0 else 0,
+        "avg_ttft_ms": np.mean(all_ttft),
+        "total_ttft_ms": sum(all_ttft),
+        "avg_latency_ms": np.mean(all_ttft),
+        "total_latency_ms": sum(all_ttft),
+        "hit_rate_pct": (all_cache_hits / all_total * 100) if all_total > 0 else 0,
+        "cache_hit_rate_pct": (all_cache_hits / all_total * 100) if all_total > 0 else 0,
+        "local_hit_rate_pct": (all_local_hits / all_total * 100) if all_total > 0 else 0,
         "total_prefetches": 0,
     }
 
@@ -84,22 +97,31 @@ def run_no_cache_baseline(
         # Everything is cold
         total_ms = len(chunks) * cfg.cold_compute_per_chunk_ms
 
+        prefetch_cost_ms = 0.0
+        total_ttft_ms = total_ms + prefetch_cost_ms
+
         results.append({
             "query_id": row["query_id"],
             "access_latency_ms": total_ms,
+            "prefetch_cost_ms": prefetch_cost_ms,
+            "total_ttft_ms": total_ttft_ms,
             "tier_counts": {"L1": 0, "L2": 0, "L3": 0, "MISS": len(chunks)},
             "hit_rate": 0.0,
             "num_chunks": len(chunks),
         })
 
-    all_latencies = [r["access_latency_ms"] for r in results]
+    all_ttft = [r["total_ttft_ms"] for r in results]
 
     return {
         "strategy": "No Cache",
         "per_query": results,
-        "avg_latency_ms": np.mean(all_latencies),
-        "total_latency_ms": sum(all_latencies),
+        "avg_ttft_ms": np.mean(all_ttft),
+        "total_ttft_ms": sum(all_ttft),
+        "avg_latency_ms": np.mean(all_ttft),
+        "total_latency_ms": sum(all_ttft),
         "hit_rate_pct": 0.0,
+        "cache_hit_rate_pct": 0.0,
+        "local_hit_rate_pct": 0.0,
         "total_prefetches": 0,
     }
 
@@ -128,13 +150,18 @@ def run_oracle_baseline(
         total_ms, tier_counts = sim.access_chunks(chunks)
 
         total = sum(tier_counts.values())
-        hits = tier_counts["L1"] + tier_counts["L2"]
+        local_hits = tier_counts["L1"] + tier_counts["L2"]
+        cache_hits = local_hits + tier_counts["L3"]
 
         results.append({
             "query_id": row["query_id"],
             "access_latency_ms": total_ms,
+            "prefetch_cost_ms": 0.0,
+            "total_ttft_ms": total_ms,
             "tier_counts": tier_counts,
-            "hit_rate": hits / total if total > 0 else 0,
+            "local_hit_rate": local_hits / total if total > 0 else 0,
+            "cache_hit_rate": cache_hits / total if total > 0 else 0,
+            "hit_rate": cache_hits / total if total > 0 else 0,
             "num_chunks": len(chunks),
         })
 
@@ -152,18 +179,24 @@ def run_oracle_baseline(
                     prefetched += 1
                 elif loc == "L3":
                     cost = sim.prefetch(cid)
-                    results[-1]["access_latency_ms"] += cost
+                    results[-1]["prefetch_cost_ms"] += cost
+                    results[-1]["total_ttft_ms"] += cost
                     prefetched += 1
 
-    all_latencies = [r["access_latency_ms"] for r in results]
-    all_hits = sum(r["hit_rate"] * r["num_chunks"] for r in results)
+    all_ttft = [r["total_ttft_ms"] for r in results]
+    all_local_hits = sum(r["local_hit_rate"] * r["num_chunks"] for r in results)
+    all_cache_hits = sum(r["cache_hit_rate"] * r["num_chunks"] for r in results)
     all_total = sum(r["num_chunks"] for r in results)
 
     return {
         "strategy": "Oracle",
         "per_query": results,
-        "avg_latency_ms": np.mean(all_latencies),
-        "total_latency_ms": sum(all_latencies),
-        "hit_rate_pct": (all_hits / all_total * 100) if all_total > 0 else 0,
+        "avg_ttft_ms": np.mean(all_ttft),
+        "total_ttft_ms": sum(all_ttft),
+        "avg_latency_ms": np.mean(all_ttft),
+        "total_latency_ms": sum(all_ttft),
+        "hit_rate_pct": (all_cache_hits / all_total * 100) if all_total > 0 else 0,
+        "cache_hit_rate_pct": (all_cache_hits / all_total * 100) if all_total > 0 else 0,
+        "local_hit_rate_pct": (all_local_hits / all_total * 100) if all_total > 0 else 0,
         "total_prefetches": sum(1 for _ in range(len(df) - 1)),
     }

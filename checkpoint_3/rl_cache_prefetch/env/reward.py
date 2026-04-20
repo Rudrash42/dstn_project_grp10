@@ -41,8 +41,10 @@ def compute_reward(
     float
         The scalar reward.
     """
-    # Time saved by prefetching (can be negative if prefetch overhead > savings)
-    time_saved_ms = baseline_latency_ms - access_latency_ms
+    # Time saved must be measured against end-to-end query TTFT.
+    # For prefetching strategies: TTFT = prefetch_cost + access_latency.
+    total_ttft_ms = access_latency_ms + prefetch_cost_ms
+    time_saved_ms = baseline_latency_ms - total_ttft_ms
 
     # Bytes migrated = number of prefetched chunks × chunk size
     bytes_migrated = len(prefetched_chunk_ids) * config.chunk_size_bytes

@@ -883,14 +883,11 @@ class HardwareCache:
         print(f"{'─' * 50}\n")
 
     def __del__(self):
-        """Cleanup: try to free resources when object is garbage collected."""
+        """Best-effort memory cleanup without touching shared on-disk cache files."""
         try:
-            # Clean up disk files
-            if hasattr(self, '_disk_dir') and self._disk_dir.exists():
-                for f in self._disk_dir.glob("chunk_*.bin"):
-                    try:
-                        f.unlink()
-                    except Exception:
-                        pass
+            self.l1.clear()
+            self.l2.clear()
+            if self.use_cuda:
+                torch.cuda.empty_cache()
         except Exception:
             pass

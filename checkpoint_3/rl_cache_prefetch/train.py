@@ -34,6 +34,27 @@ from env.tier_config import TierConfig
 from env.cache_env import CacheEnv
 from agent.state_encoder import StateEncoder
 
+
+REQUIRED_TRACE_COLUMNS = {
+    "query_id",
+    "query_text",
+    "embedding_text",
+    "chunk_ids_needed",
+    "runtime_chunk_ids",
+    "chunk_event_source",
+    "runtime_event_count",
+    "tier_transition_event",
+    "cache_file_count_before",
+    "cache_file_count_after",
+    "cache_disk_mb_before",
+    "cache_disk_mb_after",
+}
+VALID_CHUNK_EVENT_SOURCES = {
+    "direct_runtime",
+    "lmcache_store_runtime_snapshot",
+    "lmcache_store_coldpass",
+}
+
 # ═══════════════════════════════════════════════════════════════
 # HELPERS
 # ═══════════════════════════════════════════════════════════════
@@ -62,6 +83,27 @@ def get_trace_paths() -> dict:
     }
 
 
+def validate_trace_schema(trace_path: Path):
+    """Fail fast when traces are stale or missing runtime provenance columns."""
+    import pandas as pd
+
+    df = pd.read_csv(trace_path)
+    missing = [c for c in REQUIRED_TRACE_COLUMNS if c not in df.columns]
+    if missing:
+        raise RuntimeError(
+            f"Trace {trace_path} is stale/incompatible. Missing columns: {missing}. "
+            "Regenerate traces with: python data/generate_traces.py"
+        )
+
+    sources = set(str(v).strip() for v in df["chunk_event_source"].dropna().unique())
+    invalid = {s for s in sources if s and s not in VALID_CHUNK_EVENT_SOURCES}
+    if invalid:
+        raise RuntimeError(
+            f"Trace {trace_path} has non-runtime chunk rows: {sorted(invalid)}. "
+            "Regenerate traces with strict runtime chunk capture."
+        )
+
+
 def ensure_embeddings(traces: dict, tier_cfg: TierConfig) -> dict:
     """
     Pre-compute or load embeddings for all traces.
@@ -72,6 +114,7 @@ def ensure_embeddings(traces: dict, tier_cfg: TierConfig) -> dict:
 
     embeddings = {}
     for name, trace_path in traces.items():
+        validate_trace_schema(Path(trace_path))
         emb_path = data_dir / f"embeddings_{name}.npy"
         if emb_path.exists():
             embeddings[name] = StateEncoder.load_embeddings(emb_path)

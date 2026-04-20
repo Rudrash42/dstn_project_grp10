@@ -1,29 +1,33 @@
 #!/usr/bin/env python3
 """
-Generate REAL trace datasets for RL training using vLLM + LMCache on GPU.
+Generate trace datasets for RL training using the Hardware Cache backend.
 
-Runs 4 workloads through the vLLM engine with LMCache KV connector,
-capturing actual TTFT, token counts, cache hit/miss behaviour, and
-tier occupancy.  Produces:
-  - 4 trace CSVs (one per workload)
-  - ttft_lookup.json  (measured cold/warm TTFT per workload)
-  - Updated ppo_config.yaml with real tier numbers
+NO vLLM, NO LMCache.  Traces are generated synthetically based on
+realistic workload patterns, and a hardware calibration pass measures
+REAL latencies on your GPU / CPU / Disk so the RL agent trains on
+accurate numbers.
+
+Produces:
+  - 4 trace CSVs (one per workload: prefix, rag, nocontext, multiturn)
+  - ttft_lookup.json  (measured cold/warm latencies per tier)
+  - Updated hardware_config.yaml with calibrated latency values
+  - calibration_report.csv  (detailed per-tier latency measurements)
+  - 4 embedding .npy files (sentence-transformer embeddings for queries)
 
 Usage:
-    source /home/rudrash/prog/dstn/.venv/bin/activate
-    python data/generate_traces.py
+    python data/generate_traces.py                 # full run
+    python data/generate_traces.py --cpu-only      # no GPU required
+    python data/generate_traces.py --calibrate-only # just measure latencies
 """
 
 import csv
 import json
 import math
 import os
-import shutil
 import sys
 import time
 
 import numpy as np
-import torch
 import yaml
 from pathlib import Path
 
@@ -33,34 +37,26 @@ from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = DATA_DIR.parent
-CHECKPOINT2_DIR = PROJECT_ROOT.parent.parent / "checkpoint_2"
-CONFIG_PATH = PROJECT_ROOT / "configs" / "ppo_config.yaml"
-
-# LMCache disk store — use a separate dir for checkpoint_3
-CACHE_DIR = DATA_DIR / "lmcache_store"
-LMCACHE_CFG_PATH = DATA_DIR / "lmcache_config.yaml"
-
-# Source doc for RAG experiment
-SOURCE_FILE = CHECKPOINT2_DIR / "data" / "finance_reports.pdf"
+HW_CONFIG_PATH = PROJECT_ROOT / "configs" / "hardware_config.yaml"
+PPO_CONFIG_PATH = PROJECT_ROOT / "configs" / "ppo_config.yaml"
 
 # ═══════════════════════════════════════════════════════════════
-# HARDWARE / MODEL CONFIGURATION
+# CONFIGURATION (loaded from hardware_config.yaml + defaults)
 # ═══════════════════════════════════════════════════════════════
 
-MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
-MAX_MODEL_LEN = 4096
-GPU_MEM_UTIL = 0.80
-MAX_NEW_TOKENS = 20
-TEMPERATURE = 0.0
-ENFORCE_EAGER = True
-CHUNK_SIZE = 256
-MAX_CPU_CACHE_GB = 0.005       # L2 CPU cache budget (~5 MB) — forces L2→L3 spill
-MAX_DISK_CACHE_GB = 5.0        # L3 disk cache budget (GB)
-NUM_GPU_BLOCKS_OVERRIDE = 128   # L1 GPU blocks (2048 tokens, ~24 MB KV) — allows single large prompt to fit
+# Defaults — overridden by YAML if present
 MAX_QUERIES = 50
+CHUNK_SIZE_TOKENS = 256
+
+# Workload shape parameters (can also come from YAML)
+PREFIX_LENGTH_TOKENS = 600    # shared prefix ≈ 2-3 chunks
+RAG_DOC_LENGTH_TOKENS = 1700  # shared RAG doc ≈ 7 chunks
+MULTITURN_TOKENS_PER_TURN = 40
+QUESTION_TOKENS_AVG = 15      # average unique question length
+CALIBRATION_ITERATIONS = 20   # how many chunks to test per tier
 
 # ═══════════════════════════════════════════════════════════════
-# QUERY DATA  (identical to checkpoint_2/run_experiments.py)
+# QUERY DATA (kept for embedding generation & query_text column)
 # ═══════════════════════════════════════════════════════════════
 
 EXP1_PREFIX = (
@@ -76,7 +72,6 @@ EXP1_PREFIX = (
     "provide a definitive diagnosis. Always recommend that patients consult their "
     "treating physician for personalised medical advice before changing their "
     "rehabilitation programme. Respond in professional but approachable language. "
-    # ── Extended context to push prefix to ~3 chunks (~650+ tokens) ──
     "Clinical Practice Guidelines: For musculoskeletal rehabilitation, the American "
     "Physical Therapy Association (APTA) recommends a structured, phase-based approach: "
     "Phase I (Acute, Days 0-7): Focus on pain management using cryotherapy, compression, "
@@ -109,7 +104,6 @@ EXP1_PREFIX = (
     "the Arm, Shoulder and Hand (DASH), and Oswestry Disability Index (ODI). "
     "Now answer the following clinical question. "
 )
-
 
 EXP1_QUESTIONS = [
     "What exercises help with lower back pain?",
@@ -327,674 +321,466 @@ EXP4_BASE_HISTORY = "User: Hello AI.\nAssistant: Hi there! How can I help you to
 
 
 # ═══════════════════════════════════════════════════════════════
-# ENGINE SETUP
+# HARDWARE CALIBRATION
 # ═══════════════════════════════════════════════════════════════
 
-def setup_lmcache():
-    """Write LMCache YAML config and set env var."""
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cfg = {
-        "chunk_size": CHUNK_SIZE,
-        "local_cpu": True,
-        "max_local_cpu_size": MAX_CPU_CACHE_GB,
-        "local_disk": str(CACHE_DIR) + "/",
-        "max_local_disk_size": MAX_DISK_CACHE_GB,
-        "remote_url": None,
-        "remote_serde": "naive",
-        "save_decode_cache": True,
+def calibrate_hardware(force_cpu=False, iterations=None):
+    """
+    Run a calibration pass on real hardware to measure actual latencies
+    for L1 (GPU), L2 (CPU), L3 (Disk), and cold-miss operations.
+
+    Returns a dict of measured latencies in milliseconds.
+    """
+    sys.path.insert(0, str(PROJECT_ROOT))
+    from env.hardware.hardware_config import HardwareConfig
+    from env.hardware.hardware_cache import HardwareCache
+
+    # Load config
+    cfg = HardwareConfig.from_yaml(HW_CONFIG_PATH)
+    if force_cpu:
+        cfg.force_cpu_mode = True
+    cfg.verbose = False
+    cfg.enable_operation_log = True
+
+    if iterations is None:
+        iterations = CALIBRATION_ITERATIONS
+
+    cache = HardwareCache(cfg)
+    print(f"\n  [calibrate] Hardware: {'CUDA GPU' if cache.use_cuda else 'CPU-only'}")
+    print(f"  [calibrate] L1={cfg.l1_capacity_mb}MB ({cfg.l1_capacity_chunks} chunks) "
+          f"L2={cfg.l2_capacity_mb}MB ({cfg.l2_capacity_chunks} chunks)")
+    print(f"  [calibrate] Running {iterations} iterations per tier...")
+
+    results = {
+        "l1_hit_ms": [],
+        "l2_hit_ms": [],
+        "l3_hit_ms": [],
+        "cold_miss_ms": [],
+        "prefetch_l3_to_l2_ms": [],
+        "evict_l1_to_l2_ms": [],
+        "evict_l2_to_l3_ms": [],
     }
-    with open(LMCACHE_CFG_PATH, "w") as f:
-        yaml.dump(cfg, f)
-    os.environ["LMCACHE_CONFIG_FILE"] = str(LMCACHE_CFG_PATH)
-    print(f"  [lmcache] Config  → {LMCACHE_CFG_PATH}")
-    print(f"  [lmcache] Disk    → {CACHE_DIR}")
-    print(f"  [lmcache] CPU={MAX_CPU_CACHE_GB} GB, Disk={MAX_DISK_CACHE_GB} GB, Chunk={CHUNK_SIZE} tok")
+
+    # ── Phase 1: Measure cold-miss latency ──
+    # Insert brand new chunks to measure creation + GPU allocation time
+    cache.reset()
+    for i in range(iterations):
+        cid = 10000 + i
+        tier, latency = cache.access_chunk(cid)
+        assert tier == "MISS", f"Expected MISS but got {tier}"
+        results["cold_miss_ms"].append(latency)
+
+    # ── Phase 2: Measure L1 hit latency ──
+    # Access chunks that are already in L1
+    # First, ensure some chunks are in L1
+    cache.reset()
+    l1_chunks = min(iterations, cfg.l1_capacity_chunks)
+    for cid in range(l1_chunks):
+        cache.insert_chunks([cid])
+
+    for cid in range(l1_chunks):
+        tier, latency = cache.access_chunk(cid)
+        if tier == "L1":
+            results["l1_hit_ms"].append(latency)
+
+    # ── Phase 3: Measure L2 hit latency ──
+    # Fill L1 to overflow some chunks to L2, then access them
+    cache.reset()
+    total_to_fill = cfg.l1_capacity_chunks + min(iterations, cfg.l2_capacity_chunks)
+    for cid in range(total_to_fill):
+        cache.insert_chunks([cid])
+
+    # The first chunks should have been evicted to L2
+    for cid in range(min(iterations, cfg.l1_capacity_chunks)):
+        tier_before = cache.chunk_in_cache(cid)
+        if tier_before == "L2":
+            tier, latency = cache.access_chunk(cid)
+            results["l2_hit_ms"].append(latency)
+
+    # ── Phase 4: Measure L3 hit latency ──
+    # Fill L1+L2 to overflow chunks to L3 (disk), then access them
+    cache.reset()
+    total_to_fill = cfg.l1_capacity_chunks + cfg.l2_capacity_chunks + iterations
+    for cid in range(total_to_fill):
+        cache.insert_chunks([cid])
+
+    # The first chunks should have been evicted to L3
+    for cid in range(iterations):
+        tier_before = cache.chunk_in_cache(cid)
+        if tier_before == "L3":
+            tier, latency = cache.access_chunk(cid)
+            results["l3_hit_ms"].append(latency)
+
+    # ── Phase 5: Measure prefetch latency (L3 → L2) ──
+    cache.reset()
+    total_to_fill = cfg.l1_capacity_chunks + cfg.l2_capacity_chunks + iterations
+    for cid in range(total_to_fill):
+        cache.insert_chunks([cid])
+
+    for cid in range(iterations):
+        tier_before = cache.chunk_in_cache(cid)
+        if tier_before == "L3":
+            cost = cache.prefetch(cid)
+            if cost > 0:
+                results["prefetch_l3_to_l2_ms"].append(cost)
+
+    # Clean up
+    cache.reset()
+
+    # ── Compute statistics ──
+    calibrated = {}
+    for key, values in results.items():
+        if values:
+            calibrated[key] = {
+                "mean": round(float(np.mean(values)), 4),
+                "median": round(float(np.median(values)), 4),
+                "min": round(float(np.min(values)), 4),
+                "max": round(float(np.max(values)), 4),
+                "std": round(float(np.std(values)), 4),
+                "n_samples": len(values),
+            }
+        else:
+            calibrated[key] = {
+                "mean": 0.0, "median": 0.0, "min": 0.0,
+                "max": 0.0, "std": 0.0, "n_samples": 0,
+            }
+
+    # Print summary
+    print(f"\n  [calibrate] Results:")
+    for key, stats in calibrated.items():
+        if stats["n_samples"] > 0:
+            print(f"    {key:30s}: {stats['mean']:>8.4f} ms  "
+                  f"(median={stats['median']:.4f}, std={stats['std']:.4f}, "
+                  f"n={stats['n_samples']})")
+        else:
+            print(f"    {key:30s}: NO DATA (tier may not have been populated)")
+
+    return calibrated
 
 
-def clear_cache():
-    """Wipe disk cache for a cold start."""
-    if CACHE_DIR.exists():
-        shutil.rmtree(CACHE_DIR)
-        CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    print("  [cache] Cleared (cold start)")
+def save_calibration_report(calibrated, output_path):
+    """Save calibration results as CSV for reference."""
+    rows = []
+    for key, stats in calibrated.items():
+        rows.append({
+            "metric": key,
+            "mean_ms": stats["mean"],
+            "median_ms": stats["median"],
+            "min_ms": stats["min"],
+            "max_ms": stats["max"],
+            "std_ms": stats["std"],
+            "n_samples": stats["n_samples"],
+        })
 
-
-def build_engine():
-    """Build vLLM engine with LMCache KV connector."""
-    from vllm import LLM, SamplingParams
-
-    print(f"\n>>> Loading model: {MODEL_NAME}")
-    print(f"    max_model_len={MAX_MODEL_LEN}  gpu_mem={GPU_MEM_UTIL}")
-    print(f"    num_gpu_blocks_override={NUM_GPU_BLOCKS_OVERRIDE}")
-
-    try:
-        import lmcache  # noqa: F401
-        llm = LLM(
-            model=MODEL_NAME,
-            kv_transfer_config={
-                "kv_connector": "LMCacheConnectorV1",
-                "kv_role": "kv_both",
-            },
-            enforce_eager=ENFORCE_EAGER,
-            gpu_memory_utilization=GPU_MEM_UTIL,
-            max_model_len=MAX_MODEL_LEN,
-            num_gpu_blocks_override=NUM_GPU_BLOCKS_OVERRIDE,
-            disable_log_stats=True,
-        )
-        print("    Engine loaded WITH LMCache KV connector ✓")
-    except Exception as exc:
-        print(f"    LMCache unavailable ({exc}), falling back to plain vLLM")
-        llm = LLM(
-            model=MODEL_NAME,
-            enforce_eager=ENFORCE_EAGER,
-            gpu_memory_utilization=GPU_MEM_UTIL,
-            max_model_len=MAX_MODEL_LEN,
-            num_gpu_blocks_override=NUM_GPU_BLOCKS_OVERRIDE,
-            disable_log_stats=True,
-        )
-
-    sp = SamplingParams(temperature=TEMPERATURE, max_tokens=MAX_NEW_TOKENS)
-    return llm, sp
+    with open(output_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"  [calibrate] Report saved → {output_path.name}")
 
 
 # ═══════════════════════════════════════════════════════════════
-# MEASUREMENT HELPERS
+# TRACE GENERATION — Create workload traces from config
 # ═══════════════════════════════════════════════════════════════
 
-def cache_size_mb():
-    if not CACHE_DIR.exists():
-        return 0.0
-    return round(
-        sum(f.stat().st_size for f in CACHE_DIR.rglob("*") if f.is_file()) / (1024 * 1024), 2
-    )
-
-
-def cache_file_count():
-    if not CACHE_DIR.exists():
-        return 0
-    return sum(1 for f in CACHE_DIR.rglob("*") if f.is_file())
-
-
-def get_kv_config(llm):
-    """Extract model KV-cache geometry."""
-    try:
-        mc = llm.llm_engine.model_config.hf_config
-        num_layers = getattr(mc, "num_hidden_layers", 24)
-        num_kv_heads = getattr(mc, "num_key_value_heads",
-                       getattr(mc, "num_attention_heads", 16))
-        hidden_size = getattr(mc, "hidden_size", 896)
-        head_dim = hidden_size // getattr(mc, "num_attention_heads", num_kv_heads)
-    except Exception:
-        num_layers, num_kv_heads, head_dim = 24, 2, 64
-
-    dtype_bytes = 2
-    kv_bytes_per_token = 2 * num_layers * num_kv_heads * head_dim * dtype_bytes
-
-    try:
-        cc = llm.llm_engine.cache_config
-        block_size = getattr(cc, "block_size", 16)
-        num_gpu_blocks = getattr(cc, "num_gpu_blocks", NUM_GPU_BLOCKS_OVERRIDE or 256)
-    except Exception:
-        block_size = 16
-        num_gpu_blocks = NUM_GPU_BLOCKS_OVERRIDE or 256
-
-    tokens_capacity = num_gpu_blocks * block_size
-    gpu_kv_capacity_mb = round(tokens_capacity * kv_bytes_per_token / (1024**2), 2)
-
-    info = {
-        "num_layers": num_layers,
-        "num_kv_heads": num_kv_heads,
-        "head_dim": head_dim,
-        "dtype_bytes": dtype_bytes,
-        "kv_bytes_per_token": kv_bytes_per_token,
-        "block_size": block_size,
-        "num_gpu_blocks": num_gpu_blocks,
-        "tokens_capacity": tokens_capacity,
-        "gpu_kv_capacity_mb": gpu_kv_capacity_mb,
-        "chunk_size_tokens": CHUNK_SIZE,
-        "chunk_size_bytes": CHUNK_SIZE * kv_bytes_per_token,
-    }
-    print(f"    [kv-cfg] {num_layers}L × {num_kv_heads}KVH × {head_dim}d  "
-          f"block_size={block_size}  gpu_blocks={num_gpu_blocks}  "
-          f"KV/tok={kv_bytes_per_token}B  "
-          f"GPU KV capacity={gpu_kv_capacity_mb:.1f}MB ({tokens_capacity} tok)")
-    return info
-
-
-def run_single(llm, sp, prompt):
-    """Run one prompt through the engine. Returns timing + token info."""
-    # Cap max input tokens to 3800 to heavily utilize the 4096-token GPU cache 
-    # but still leave enough free blocks (~300 tokens worth) for vLLM to generate 
-    # output and avoid an infinite scheduling deadlock.
-    max_input_tokens = min(MAX_MODEL_LEN - MAX_NEW_TOKENS - 10, 3800)
-    tokenizer = llm.get_tokenizer()
-    token_ids = tokenizer.encode(prompt)
-    if len(token_ids) > max_input_tokens:
-        token_ids = token_ids[:max_input_tokens]
-        prompt = tokenizer.decode(token_ids, skip_special_tokens=True)
-
-    t0 = time.perf_counter()
-    outputs = llm.generate([prompt], sp)
-    t1 = time.perf_counter()
-    o = outputs[0]
-
-    latency = t1 - t0
-    ptok = len(o.prompt_token_ids)
-    gtok = len(o.outputs[0].token_ids)
-
-    # Extract TTFT from vLLM metrics
-    ttft_s = None
-    m = getattr(o, "metrics", None)
-    if m is not None:
-        arrival = getattr(m, "arrival_time", None)
-        first_tk = getattr(m, "first_token_time", None)
-        if arrival is not None and first_tk is not None:
-            ttft_s = first_tk - arrival
-
-    # Fallback estimation
-    if ttft_s is None and ptok > 0 and gtok > 0:
-        est_decode_rate = 200.0
-        est_decode_s = gtok / est_decode_rate
-        ttft_s = max(latency - est_decode_s, latency * 0.1)
+def load_config_params():
+    """Load trace generation parameters from hardware_config.yaml."""
+    if HW_CONFIG_PATH.exists():
+        with open(HW_CONFIG_PATH) as f:
+            raw = yaml.safe_load(f) or {}
+    else:
+        raw = {}
 
     return {
-        "latency": latency,
-        "ptok": ptok,
-        "gtok": gtok,
-        "ttft_s": ttft_s,
+        "chunk_size_tokens": raw.get("chunk_size_tokens", CHUNK_SIZE_TOKENS),
+        "kv_bytes_per_token": raw.get("kv_bytes_per_token", 12288),
+        "chunk_size_bytes": raw.get("chunk_size_bytes", 3_145_728),
+        "max_queries": raw.get("max_queries_per_workload", MAX_QUERIES),
+        "prefix_tokens": raw.get("prefix_length_tokens", PREFIX_LENGTH_TOKENS),
+        "rag_doc_tokens": raw.get("rag_doc_length_tokens", RAG_DOC_LENGTH_TOKENS),
+        "multiturn_tpt": raw.get("multiturn_tokens_per_turn", MULTITURN_TOKENS_PER_TURN),
+        "question_tokens_avg": raw.get("question_tokens_avg", QUESTION_TOKENS_AVG),
     }
 
 
-# ═══════════════════════════════════════════════════════════════
-# EXPERIMENT RUNNER
-# ═══════════════════════════════════════════════════════════════
-
-def run_experiment(name, prompts, llm, sp, kv_cfg, clear_before=True, all_cold=False):
+def generate_prefix_trace(params, questions):
     """
-    Run prompts through the engine, recording per-query metrics.
-    Returns list of dicts with timing, token, and cache data.
-    """
-    print(f"\n{'=' * 64}")
-    print(f"  EXPERIMENT: {name}  ({len(prompts)} queries)")
-    print(f"{'=' * 64}")
+    Workload 1: Shared Prefix.
 
-    if clear_before:
-        clear_cache()
+    All queries share the same system-prompt prefix (≈ 2-3 chunks).
+    Each query appends a short unique question (≈ 1 chunk).
+    """
+    chunk_tok = params["chunk_size_tokens"]
+    n = min(params["max_queries"], len(questions))
+
+    # Shared prefix chunks
+    prefix_chunks = max(1, math.ceil(params["prefix_tokens"] / chunk_tok))
+    shared_ids = list(range(prefix_chunks))
+    unique_counter = prefix_chunks
 
     rows = []
-    for i, prompt in enumerate(prompts):
-        disk_before = cache_size_mb()
-        files_before = cache_file_count()
+    for i in range(n):
+        # Each unique question adds ~1 chunk
+        unique_chunk_count = max(1, math.ceil(params["question_tokens_avg"] / chunk_tok))
+        unique_ids = list(range(unique_counter, unique_counter + unique_chunk_count))
+        unique_counter += unique_chunk_count
 
-        result = run_single(llm, sp, prompt)
-        ptok = result["ptok"]
-        ttft_s = result["ttft_s"]
-
-        disk_after = cache_size_mb()
-        files_after = cache_file_count()
-        disk_delta_mb = round(disk_after - disk_before, 2)
-        new_cache_files = files_after - files_before
-
-        # Determine cache state
-        if all_cold:
-            state = "Cold"
-        elif i == 0:
-            state = "Cold"
-        elif new_cache_files > 0:
-            state = "Partial"
-        else:
-            state = "Warm"
-
-        # L1/L2/L3 estimates
-        kv_this_mb = round(ptok * kv_cfg["kv_bytes_per_token"] / (1024**2), 3)
-        gpu_kv_pct = round(100 * ptok / kv_cfg["tokens_capacity"], 1) if kv_cfg["tokens_capacity"] > 0 else 0.0
-        l2_est_mb = round(min(disk_after, MAX_CPU_CACHE_GB * 1024), 2)
-        l3_mb = disk_after
-
-        ttft_ms = ttft_s * 1000 if ttft_s is not None else 0.0
-
-        print(f"   Q{i+1:>3d} ({state:7s})  "
-              f"TTFT={ttft_ms:>7.1f}ms  in={ptok:>5d}tok  "
-              f"L2≈{l2_est_mb:.1f}MB  L3={l3_mb:.1f}MB(Δ{disk_delta_mb:+.1f})")
+        all_chunks = shared_ids + unique_ids
+        total_tokens = params["prefix_tokens"] + params["question_tokens_avg"]
 
         rows.append({
             "query_id": i + 1,
-            "query_text": prompt[:200],  # store trimmed for CSV readability
-            "input_tokens": ptok,
-            "output_tokens": result["gtok"],
-            "ttft_ms": round(ttft_ms, 2),
-            "latency_s": round(result["latency"], 4),
-            "state": state,
-            "kv_size_mb": kv_this_mb,
-            "l1_gpu_kv_pct": gpu_kv_pct,
-            "l2_cpu_cache_mb": l2_est_mb,
-            "l3_disk_cache_mb": l3_mb,
-            "disk_delta_mb": disk_delta_mb,
-            "new_cache_chunks": new_cache_files,
+            "query_text": (EXP1_PREFIX + questions[i])[:200],
+            "input_tokens": total_tokens,
+            "chunk_ids_needed": json.dumps(all_chunks),
+            "shared_chunk_ids": json.dumps(shared_ids),
+            "unique_chunk_ids": json.dumps(unique_ids),
+            "num_chunks": len(all_chunks),
         })
 
     return rows
 
 
-# ═══════════════════════════════════════════════════════════════
-# TRACE CONVERSION — raw experiment rows → RL-ready CSV
-# ═══════════════════════════════════════════════════════════════
-
-def rows_to_trace_csv(rows, output_path, workload_type, kv_cfg):
+def generate_rag_trace(params, questions):
     """
-    Convert raw experiment rows into the trace CSV format expected
-    by the RL environment (query_id, query_text, input_tokens,
-    chunk_ids_needed, shared_chunk_ids, unique_chunk_ids, num_chunks).
+    Workload 2: RAG (Shared Document Context).
 
-    Chunk IDs are deterministically assigned based on real token counts.
+    All queries share a large document context (≈ 7 chunks).
+    Each query appends a unique question (≈ 1 chunk).
     """
-    chunk_tokens = kv_cfg["chunk_size_tokens"]
-    trace_rows = []
+    chunk_tok = params["chunk_size_tokens"]
+    n = min(params["max_queries"], len(questions))
 
-    if workload_type == "prefix":
-        # Shared prefix: first N chunks shared by all queries
-        # Determine shared prefix length from the first query's tokens
-        # (all prefix queries have similar length since they share the same prefix)
-        avg_tokens = int(np.mean([r["input_tokens"] for r in rows]))
-        # The prefix is ~160 tokens ≈ 1 chunk
-        prefix_chunks = max(1, math.ceil(160 / chunk_tokens))
-        shared_ids = list(range(prefix_chunks))
-        unique_counter = prefix_chunks
+    # Shared document chunks
+    doc_chunks = max(1, math.ceil(params["rag_doc_tokens"] / chunk_tok))
+    shared_ids = list(range(doc_chunks))
+    unique_counter = doc_chunks
 
-        for r in rows:
-            num_total_chunks = max(1, math.ceil(r["input_tokens"] / chunk_tokens))
-            num_unique = max(0, num_total_chunks - prefix_chunks)
-            unique_ids = list(range(unique_counter, unique_counter + num_unique))
-            unique_counter += num_unique
-            all_chunks = shared_ids + unique_ids
-            trace_rows.append({
-                "query_id": r["query_id"],
-                "query_text": r["query_text"],
-                "input_tokens": r["input_tokens"],
-                "chunk_ids_needed": json.dumps(all_chunks),
-                "shared_chunk_ids": json.dumps(shared_ids),
-                "unique_chunk_ids": json.dumps(unique_ids),
-                "num_chunks": len(all_chunks),
-            })
+    rows = []
+    for i in range(n):
+        unique_ids = [unique_counter]
+        unique_counter += 1
 
-    elif workload_type == "rag":
-        # RAG: ~1700 token shared doc ≈ 7 chunks, plus unique question chunk
-        shared_doc_chunks = max(1, math.ceil(1700 / chunk_tokens))
-        shared_ids = list(range(shared_doc_chunks))
-        unique_counter = shared_doc_chunks
+        all_chunks = shared_ids + unique_ids
+        total_tokens = params["rag_doc_tokens"] + params["question_tokens_avg"]
 
-        for r in rows:
-            unique_ids = [unique_counter]
-            unique_counter += 1
-            all_chunks = shared_ids + unique_ids
-            trace_rows.append({
-                "query_id": r["query_id"],
-                "query_text": r["query_text"],
-                "input_tokens": r["input_tokens"],
-                "chunk_ids_needed": json.dumps(all_chunks),
-                "shared_chunk_ids": json.dumps(shared_ids),
-                "unique_chunk_ids": json.dumps(unique_ids),
-                "num_chunks": len(all_chunks),
-            })
+        rows.append({
+            "query_id": i + 1,
+            "query_text": f"Context: [RAG document ~{params['rag_doc_tokens']} tokens] {questions[i]}"[:200],
+            "input_tokens": total_tokens,
+            "chunk_ids_needed": json.dumps(all_chunks),
+            "shared_chunk_ids": json.dumps(shared_ids),
+            "unique_chunk_ids": json.dumps(unique_ids),
+            "num_chunks": len(all_chunks),
+        })
 
-    elif workload_type == "nocontext":
-        # No context: each query is independent, 1 chunk each
-        for idx, r in enumerate(rows):
-            chunk_id = idx
-            trace_rows.append({
-                "query_id": r["query_id"],
-                "query_text": r["query_text"],
-                "input_tokens": r["input_tokens"],
-                "chunk_ids_needed": json.dumps([chunk_id]),
-                "shared_chunk_ids": json.dumps([]),
-                "unique_chunk_ids": json.dumps([chunk_id]),
-                "num_chunks": 1,
-            })
+    return rows
 
-    elif workload_type == "multiturn":
-        # Multi-turn: accumulated chunks, each turn adds one new chunk
-        accumulated = []
-        for idx, r in enumerate(rows):
-            new_chunk_id = idx
-            accumulated.append(new_chunk_id)
-            shared_ids = accumulated[:-1]
-            unique_ids = [new_chunk_id]
-            trace_rows.append({
-                "query_id": r["query_id"],
-                "query_text": r["query_text"],
-                "input_tokens": r["input_tokens"],
-                "chunk_ids_needed": json.dumps(list(accumulated)),
-                "shared_chunk_ids": json.dumps(shared_ids),
-                "unique_chunk_ids": json.dumps(unique_ids),
-                "num_chunks": len(accumulated),
-            })
 
-    # Write CSV
-    if trace_rows:
-        fieldnames = trace_rows[0].keys()
-        with open(output_path, "w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(trace_rows)
-    print(f"  → {output_path.name}  ({len(trace_rows)} queries)")
-    return trace_rows
+def generate_nocontext_trace(params, questions):
+    """
+    Workload 3: No Context (Independent Queries).
+
+    Each query is independent — no shared chunks.
+    Each query uses exactly 1 chunk.
+    """
+    n = min(params["max_queries"], len(questions))
+
+    rows = []
+    for i in range(n):
+        chunk_id = i
+        rows.append({
+            "query_id": i + 1,
+            "query_text": questions[i][:200],
+            "input_tokens": params["question_tokens_avg"],
+            "chunk_ids_needed": json.dumps([chunk_id]),
+            "shared_chunk_ids": json.dumps([]),
+            "unique_chunk_ids": json.dumps([chunk_id]),
+            "num_chunks": 1,
+        })
+
+    return rows
+
+
+def generate_multiturn_trace(params, questions):
+    """
+    Workload 4: Multi-Turn Chat.
+
+    Each turn accumulates all previous conversation history.
+    Turn N needs chunks [0, 1, ..., N-1, N].
+    Chunk 0..N-1 are shared (from past turns), chunk N is unique (new turn).
+    """
+    chunk_tok = params["chunk_size_tokens"]
+    n = min(params["max_queries"], len(questions))
+
+    # Base history is ~1 chunk
+    base_tokens = 60  # "User: Hello AI ... Assistant: Hi ..."
+    tpt = params["multiturn_tpt"]
+
+    accumulated = []
+    rows = []
+    for i in range(n):
+        new_chunk_id = i
+        accumulated.append(new_chunk_id)
+        shared_ids = accumulated[:-1]
+        unique_ids = [new_chunk_id]
+
+        total_tokens = base_tokens + (i + 1) * tpt
+
+        # Build representative query text
+        history = EXP4_BASE_HISTORY
+        for j in range(min(i + 1, 3)):  # show first 3 turns for text preview
+            history += f"User: {questions[j]}\n"
+            history += f"Assistant: Here is answer for turn {j + 1}.\n"
+
+        rows.append({
+            "query_id": i + 1,
+            "query_text": history[:200],
+            "input_tokens": total_tokens,
+            "chunk_ids_needed": json.dumps(list(accumulated)),
+            "shared_chunk_ids": json.dumps(shared_ids),
+            "unique_chunk_ids": json.dumps(unique_ids),
+            "num_chunks": len(accumulated),
+        })
+
+    return rows
+
+
+def write_trace_csv(rows, output_path):
+    """Write trace rows to CSV."""
+    if not rows:
+        print(f"  ⚠️  No rows to write for {output_path.name}")
+        return
+
+    fieldnames = rows[0].keys()
+    with open(output_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"  → {output_path.name}  ({len(rows)} queries)")
 
 
 # ═══════════════════════════════════════════════════════════════
-# TTFT LOOKUP + TIER CONFIG EXTRACTION
+# TTFT LOOKUP + CONFIG UPDATES
 # ═══════════════════════════════════════════════════════════════
 
-def build_ttft_lookup(all_raw):
-    """Build ttft_lookup.json from real measured data."""
-    lookup = {}
+def build_ttft_lookup(calibrated, params):
+    """Build ttft_lookup.json from calibrated hardware measurements."""
+    chunk_tok = params["chunk_size_tokens"]
 
-    # Shared Prefix
-    prefix_rows = all_raw.get("prefix", [])
-    if prefix_rows:
-        cold = [r for r in prefix_rows if r["state"] == "Cold"]
-        warm = [r for r in prefix_rows if r["state"] == "Warm"]
-        lookup["shared_prefix"] = {
-            "cold_ttft_ms": round(np.mean([r["ttft_ms"] for r in cold]), 2) if cold else 0,
-            "warm_ttft_ms": round(np.mean([r["ttft_ms"] for r in warm]), 2) if warm else 0,
-            "avg_input_tokens": int(np.mean([r["input_tokens"] for r in prefix_rows])),
-            "shared_prefix_tokens": 160,
-            "n_cold": len(cold),
-            "n_warm": len(warm),
-        }
+    # Use calibrated latencies
+    cold_ms = calibrated.get("cold_miss_ms", {}).get("mean", 30.0)
+    l1_ms = calibrated.get("l1_hit_ms", {}).get("mean", 0.1)
+    l2_ms = calibrated.get("l2_hit_ms", {}).get("mean", 0.25)
+    l3_ms = calibrated.get("l3_hit_ms", {}).get("mean", 6.0)
 
-    # RAG
-    rag_rows = all_raw.get("rag", [])
-    if rag_rows:
-        cold = [r for r in rag_rows if r["state"] == "Cold"]
-        warm = [r for r in rag_rows if r["state"] == "Warm"]
-        lookup["rag"] = {
-            "cold_ttft_ms": round(np.mean([r["ttft_ms"] for r in cold]), 2) if cold else 0,
-            "warm_ttft_ms": round(np.mean([r["ttft_ms"] for r in warm]), 2) if warm else 0,
-            "avg_input_tokens": int(np.mean([r["input_tokens"] for r in rag_rows])),
-            "shared_doc_tokens": 1700,
-            "n_cold": len(cold),
-            "n_warm": len(warm),
-        }
+    prefix_chunks = max(1, math.ceil(params["prefix_tokens"] / chunk_tok))
+    rag_chunks = max(1, math.ceil(params["rag_doc_tokens"] / chunk_tok))
 
-    # No Context
-    nc_rows = all_raw.get("nocontext", [])
-    if nc_rows:
-        lookup["nocontext"] = {
-            "cold_ttft_ms": round(np.mean([r["ttft_ms"] for r in nc_rows]), 2),
-            "warm_ttft_ms": round(np.mean([r["ttft_ms"] for r in nc_rows]), 2),
-            "avg_input_tokens": int(np.mean([r["input_tokens"] for r in nc_rows])),
-            "n_queries": len(nc_rows),
-        }
-
-    # Multi-turn
-    mt_rows = all_raw.get("multiturn", [])
-    if mt_rows:
-        cold = [r for r in mt_rows if r["state"] == "Cold"]
-        warm = [r for r in mt_rows if r["state"] == "Warm"]
-        lookup["multiturn"] = {
-            "cold_ttft_ms": round(np.mean([r["ttft_ms"] for r in cold]), 2) if cold else 0,
-            "warm_ttft_ms_base": round(mt_rows[1]["ttft_ms"], 2) if len(mt_rows) > 1 else 0,
-            "base_tokens": mt_rows[0]["input_tokens"] if mt_rows else 65,
-            "tokens_per_turn": round(
-                (mt_rows[-1]["input_tokens"] - mt_rows[0]["input_tokens"]) / max(len(mt_rows) - 1, 1), 1
-            ) if len(mt_rows) > 1 else 27,
-            "n_cold": len(cold),
-            "n_warm": len(warm),
-        }
+    lookup = {
+        "shared_prefix": {
+            "cold_ttft_ms": round(cold_ms * (prefix_chunks + 1), 2),
+            "warm_ttft_ms": round(l1_ms * prefix_chunks + cold_ms * 1, 2),
+            "avg_input_tokens": params["prefix_tokens"] + params["question_tokens_avg"],
+            "shared_prefix_tokens": params["prefix_tokens"],
+            "shared_prefix_chunks": prefix_chunks,
+            "measurement_source": "hardware_calibration",
+        },
+        "rag": {
+            "cold_ttft_ms": round(cold_ms * (rag_chunks + 1), 2),
+            "warm_ttft_ms": round(l1_ms * rag_chunks + cold_ms * 1, 2),
+            "avg_input_tokens": params["rag_doc_tokens"] + params["question_tokens_avg"],
+            "shared_doc_tokens": params["rag_doc_tokens"],
+            "shared_doc_chunks": rag_chunks,
+            "measurement_source": "hardware_calibration",
+        },
+        "nocontext": {
+            "cold_ttft_ms": round(cold_ms, 2),
+            "warm_ttft_ms": round(cold_ms, 2),
+            "avg_input_tokens": params["question_tokens_avg"],
+            "measurement_source": "hardware_calibration",
+        },
+        "multiturn": {
+            "cold_ttft_ms": round(cold_ms, 2),
+            "warm_ttft_ms_base": round(l1_ms + cold_ms, 2),
+            "base_tokens": 60,
+            "tokens_per_turn": params["multiturn_tpt"],
+            "measurement_source": "hardware_calibration",
+        },
+        "hardware_latencies": {
+            "l1_hit_ms": round(l1_ms, 4),
+            "l2_hit_ms": round(l2_ms, 4),
+            "l3_hit_ms": round(l3_ms, 4),
+            "cold_miss_ms": round(cold_ms, 4),
+        },
+    }
 
     return lookup
 
 
-def extract_tier_config(kv_cfg, ttft_lookup):
-    """
-    Derive tier configuration numbers from measured experiment data
-    and model architecture.
-    """
-    chunk_bytes = kv_cfg["chunk_size_bytes"]
+def update_configs_with_calibration(calibrated):
+    """Update hardware_config.yaml and ppo_config.yaml with calibrated latencies."""
+    l1_ms = calibrated.get("l1_hit_ms", {}).get("mean", 0.1)
+    l2_ms = calibrated.get("l2_hit_ms", {}).get("mean", 0.25)
+    l3_ms = calibrated.get("l3_hit_ms", {}).get("mean", 6.0)
+    cold_ms = calibrated.get("cold_miss_ms", {}).get("mean", 30.0)
+    prefetch_ms = calibrated.get("prefetch_l3_to_l2_ms", {}).get("mean", 6.0)
 
-    # L1 capacity in bytes: gpu_blocks * block_size * kv_bytes_per_token
-    l1_cap_bytes = kv_cfg["tokens_capacity"] * kv_cfg["kv_bytes_per_token"]
-    l1_cap_mb = l1_cap_bytes / (1024 * 1024)
+    # Update hardware_config.yaml
+    if HW_CONFIG_PATH.exists():
+        with open(HW_CONFIG_PATH) as f:
+            hw_cfg = yaml.safe_load(f) or {}
 
-    # L2 capacity in bytes
-    l2_cap_bytes = int(MAX_CPU_CACHE_GB * 1024 * 1024 * 1024)
-    l2_cap_mb = MAX_CPU_CACHE_GB * 1024
+        hw_cfg["l1_hit_latency_ms"] = round(l1_ms, 4)
+        hw_cfg["l2_hit_latency_ms"] = round(l2_ms, 4)
+        hw_cfg["l3_hit_latency_ms"] = round(l3_ms, 4)
+        hw_cfg["cold_compute_per_chunk_ms"] = round(cold_ms, 4)
+        hw_cfg["prefetch_l3_to_l2_ms"] = round(prefetch_ms, 4)
 
-    # L3 capacity in bytes
-    l3_cap_bytes = int(MAX_DISK_CACHE_GB * 1024 * 1024 * 1024)
-    l3_cap_mb = MAX_DISK_CACHE_GB * 1024
+        with open(HW_CONFIG_PATH, "w") as f:
+            yaml.dump(hw_cfg, f, default_flow_style=False, sort_keys=False)
+        print(f"  [config] Updated → {HW_CONFIG_PATH.name}")
 
-    # Derive cold_compute_per_chunk_ms from RAG cold TTFT
-    # RAG cold: ~238ms for ~7 chunks → ~34ms/chunk
-    rag_data = ttft_lookup.get("rag", {})
-    cold_ttft = rag_data.get("cold_ttft_ms", 238.0)
-    avg_tokens = rag_data.get("avg_input_tokens", 1750)
-    num_chunks_rag = max(1, math.ceil(avg_tokens / CHUNK_SIZE))
-    cold_compute_per_chunk = round(float(cold_ttft / num_chunks_rag), 1)
+    # Update ppo_config.yaml
+    if PPO_CONFIG_PATH.exists():
+        with open(PPO_CONFIG_PATH) as f:
+            ppo_cfg = yaml.safe_load(f) or {}
 
-    # L1 hit: from warm prefix TTFT / 1 chunk (prefix is ~1 chunk, all in L1)
-    prefix_data = ttft_lookup.get("shared_prefix", {})
-    warm_prefix_ttft = prefix_data.get("warm_ttft_ms", 57.0)
-    prefix_chunks = max(1, math.ceil(prefix_data.get("avg_input_tokens", 166) / CHUNK_SIZE))
-    # Warm hit = L1 hit, so per-chunk L1 latency ≈ warm_ttft / prefix_chunks
-    # But this includes decode overhead, so use a calibrated value
-    l1_hit_ms = 0.1  # sub-ms GPU access (backed by both theory and measurement)
+        ppo_cfg["l1_hit_latency_ms"] = round(l1_ms, 4)
+        ppo_cfg["l2_hit_latency_ms"] = round(l2_ms, 4)
+        ppo_cfg["l3_hit_latency_ms"] = round(l3_ms, 4)
+        ppo_cfg["cold_compute_per_chunk_ms"] = round(cold_ms, 4)
+        ppo_cfg["prefetch_l3_to_l2_ms"] = round(prefetch_ms, 4)
 
-    # L2 hit: PCIe bandwidth estimate (~12 GB/s for 3MB chunk)
-    l2_hit_ms = round(chunk_bytes / (12 * 1024**3) * 1000, 2)
-
-    # L3 hit: NVMe SSD estimate (~500 MB/s for 3MB chunk)
-    l3_hit_ms = round(chunk_bytes / (500 * 1024**2) * 1000, 1)
-
-    # Prefetch L3→L2 ≈ same as L3 hit (read from disk)
-    prefetch_ms = l3_hit_ms
-
-    config = {
-        "chunk_size_tokens": CHUNK_SIZE,
-        "kv_bytes_per_token": kv_cfg["kv_bytes_per_token"],
-        "chunk_size_bytes": chunk_bytes,
-        "l1_capacity_mb": round(l1_cap_mb, 1),
-        "l1_capacity_bytes": l1_cap_bytes,
-        "l2_capacity_mb": round(l2_cap_mb, 1),
-        "l2_capacity_bytes": l2_cap_bytes,
-        "l3_capacity_mb": round(l3_cap_mb, 1),
-        "l3_capacity_bytes": l3_cap_bytes,
-        "l1_hit_latency_ms": l1_hit_ms,
-        "l2_hit_latency_ms": l2_hit_ms,
-        "l3_hit_latency_ms": l3_hit_ms,
-        "cold_compute_per_chunk_ms": cold_compute_per_chunk,
-        "prefetch_l3_to_l2_ms": prefetch_ms,
-    }
-
-    print(f"\n  [tier-config] Extracted from real experiments:")
-    print(f"    L1: {l1_cap_mb:.1f} MB  ({kv_cfg['num_gpu_blocks']} blocks × {kv_cfg['block_size']} tok/block)")
-    print(f"    L2: {l2_cap_mb:.1f} MB  (CPU cache)")
-    print(f"    L3: {l3_cap_mb:.1f} MB  (Disk cache)")
-    print(f"    L1 hit: {l1_hit_ms} ms  |  L2 hit: {l2_hit_ms} ms  |  L3 hit: {l3_hit_ms} ms")
-    print(f"    Cold compute/chunk: {cold_compute_per_chunk} ms  (from RAG cold TTFT={cold_ttft:.1f}ms / {num_chunks_rag} chunks)")
-    print(f"    Prefetch L3→L2: {prefetch_ms} ms")
-
-    return config
-
-
-def update_ppo_config(tier_config, kv_cfg):
-    """Update ppo_config.yaml with real tier numbers."""
-    with open(CONFIG_PATH) as f:
-        cfg = yaml.safe_load(f)
-
-    # Update tier latencies
-    cfg["l1_hit_latency_ms"] = tier_config["l1_hit_latency_ms"]
-    cfg["l2_hit_latency_ms"] = tier_config["l2_hit_latency_ms"]
-    cfg["l3_hit_latency_ms"] = tier_config["l3_hit_latency_ms"]
-    cfg["cold_compute_per_chunk_ms"] = tier_config["cold_compute_per_chunk_ms"]
-    cfg["prefetch_l3_to_l2_ms"] = tier_config["prefetch_l3_to_l2_ms"]
-
-    # Update KV geometry
-    cfg["kv_bytes_per_token"] = kv_cfg["kv_bytes_per_token"]
-    cfg["chunk_size_bytes"] = tier_config["chunk_size_bytes"]
-    cfg["chunk_size_tokens"] = CHUNK_SIZE
-    cfg["num_layers"] = kv_cfg["num_layers"]
-    cfg["num_kv_heads"] = kv_cfg["num_kv_heads"]
-    cfg["head_dim"] = kv_cfg["head_dim"]
-    cfg["dtype_bytes"] = kv_cfg["dtype_bytes"]
-
-    # Update capacities
-    cfg["l1_capacity_mb"] = tier_config["l1_capacity_mb"]
-    cfg["l2_capacity_mb"] = tier_config["l2_capacity_mb"]
-    cfg["l3_capacity_mb"] = tier_config["l3_capacity_mb"]
-
-    with open(CONFIG_PATH, "w") as f:
-        yaml.dump(cfg, f, default_flow_style=False, sort_keys=False)
-
-    print(f"  [config] Updated → {CONFIG_PATH}")
+        with open(PPO_CONFIG_PATH, "w") as f:
+            yaml.dump(ppo_cfg, f, default_flow_style=False, sort_keys=False)
+        print(f"  [config] Updated → {PPO_CONFIG_PATH.name}")
 
 
 # ═══════════════════════════════════════════════════════════════
-# DATA LOADING (for RAG experiment)
+# EMBEDDING GENERATION
 # ═══════════════════════════════════════════════════════════════
 
-def load_and_scale_context(file_path, target_token_count):
-    """Load text from a file (with PDF parsing) and scale to target length."""
-    text = ""
-    file_path = Path(file_path)
+def generate_embeddings(trace_name, trace_path, embed_dim=384):
+    """Generate sentence-transformer embeddings for query texts in a trace."""
+    import pandas as pd
 
-    # ── Substantial fallback text (ESG report summary, ~800 tokens) ──
-    # Used when the PDF cannot be parsed or is not available.
-    FALLBACK_TEXT = (
-        "Tongaat Hulett and Implats ESG Report Summary — "
-        "Tongaat Hulett is a leading agri-processing business focusing on the complementary "
-        "activities of sugar production, property development, and starch production. The "
-        "company operates in South Africa, Mozambique, Zimbabwe, and Botswana, employing "
-        "over 30,000 people at the peak of the sugar milling season. In the 2021 financial "
-        "year, Tongaat Hulett produced approximately 1.1 million tons of sugar. The company "
-        "has committed to reducing energy intensity by 20% by 2025, with specific targets "
-        "for water efficiency improvement. Tongaat Hulett invests in socio-economic "
-        "development (SED) and reported total SED expenditure in 2021 aligned with community "
-        "needs. The Lost Time Injury Frequency Rate (LTIFR) is a critical safety metric "
-        "tracked annually. The company's ESG framework aligns with the UN Sustainable "
-        "Development Goals and operates under ISO 45001 certification. "
-        "Implats (Impala Platinum Holdings Limited) is one of the world's foremost producers "
-        "of platinum group metals (PGMs). The company's operations span South Africa and "
-        "Zimbabwe, with managed operations including Impala Rustenburg, Marula, and Zimplats. "
-        "Implats' ESG framework is built on three pillars focusing on environmental "
-        "stewardship, social responsibility, and governance excellence. The PS3 strategy "
-        "guides sustainability alignment. In 2023, Implats achieved significant safety "
-        "milestones while investing heavily in socio-economic development and community "
-        "projects. The company targets a 30% reduction in carbon emissions by 2030 and has "
-        "invested in renewable energy projects including the 35MW solar PV project at "
-        "Zimplats. Water recycling rates exceeded targets, and the company maintains strict "
-        "environmental compliance across all operations. The GISTM (Global Industry Standard "
-        "on Tailings Management) compliance roadmap is actively being implemented. "
-        "Both companies utilise the six capitals framework (Financial, Manufactured, "
-        "Intellectual, Human, Social/Relationship, Natural) to illustrate value creation "
-        "and regularly engage with stakeholders through structured programmes. "
-        "The double materiality principle used in ESG reporting assesses both inward "
-        "financial materiality and outward impact materiality to provide comprehensive "
-        "sustainability reporting aligned with global standards. "
-        "Tongaat Hulett reported revenue of approximately R16.2 billion in 2021, with "
-        "significant capital expenditure directed towards operational efficiency improvements "
-        "and environmental sustainability initiatives. The company's manufactured capital "
-        "includes six sugar mills across four countries with a combined crushing capacity "
-        "exceeding 8 million tons of sugarcane per season. Employee training and development "
-        "spend reached R45 million, reflecting commitment to human capital investment. "
-        "Implats distributed over R50 billion in total value to stakeholders in 2023, "
-        "including R28 billion in wages and benefits, R12 billion in taxes and royalties, "
-        "and R2.3 billion in dividends. The company's total mineral reserves stand at "
-        "approximately 190 million ounces of platinum group metals. Production across all "
-        "operations exceeded 3.2 million ounces of refined PGMs. The Marula mine in Limpopo "
-        "province employs over 5,000 people and has achieved milestone safety records. "
-        "Environmental management across both organisations addresses water stewardship, "
-        "carbon emissions reduction, waste minimisation, and biodiversity conservation. "
-        "Tongaat Hulett's sugarcane operations in KwaZulu-Natal face increasing climate "
-        "risks from drought and flooding events, while Implats' mining operations in the "
-        "Bushveld Complex manage dust emissions, acid mine drainage, and tailings storage "
-        "facility safety under stringent regulatory requirements. "
-    )
+    df = pd.read_csv(trace_path)
+    emb_path = DATA_DIR / f"embeddings_{trace_name}.npy"
 
-    if not file_path.exists():
-        print(f"  [warn] {file_path} not found. Using fallback ESG text.")
-        text = FALLBACK_TEXT
-    else:
-        # Try PDF parsing first (the file is a .pdf)
-        parsed = False
-
-        if str(file_path).lower().endswith(".pdf"):
-            # Try PyPDF2
-            try:
-                import PyPDF2
-                reader = PyPDF2.PdfReader(str(file_path))
-                pages_text = []
-                for page in reader.pages:
-                    pt = page.extract_text()
-                    if pt:
-                        pages_text.append(pt)
-                if pages_text:
-                    text = " ".join(pages_text)
-                    parsed = True
-                    print(f"  [RAG] Parsed PDF with PyPDF2: {len(pages_text)} pages, ~{len(text)} chars")
-            except ImportError:
-                pass
-            except Exception as exc:
-                print(f"  [warn] PyPDF2 failed: {exc}")
-
-            # Try pdfplumber
-            if not parsed:
-                try:
-                    import pdfplumber
-                    with pdfplumber.open(str(file_path)) as pdf:
-                        pages_text = []
-                        for page in pdf.pages:
-                            pt = page.extract_text()
-                            if pt:
-                                pages_text.append(pt)
-                    if pages_text:
-                        text = " ".join(pages_text)
-                        parsed = True
-                        print(f"  [RAG] Parsed PDF with pdfplumber: {len(pages_text)} pages, ~{len(text)} chars")
-                except ImportError:
-                    pass
-                except Exception as exc:
-                    print(f"  [warn] pdfplumber failed: {exc}")
-
-        if not parsed:
-            # Fallback: try reading as plain text (for .txt files)
-            try:
-                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                    raw = f.read()
-                # Check if it looks like binary garbage (PDF headers, etc.)
-                printable_ratio = sum(1 for c in raw[:1000] if c.isprintable() or c.isspace()) / max(len(raw[:1000]), 1)
-                if printable_ratio > 0.85:
-                    text = raw
-                    parsed = True
-                    print(f"  [RAG] Read as plain text: ~{len(text)} chars")
-                else:
-                    print(f"  [warn] File appears binary (printable ratio={printable_ratio:.2f}). Using fallback text.")
-                    text = FALLBACK_TEXT
-            except Exception:
-                text = FALLBACK_TEXT
-
-        if not text.strip():
-            print(f"  [warn] No text extracted from {file_path}. Using fallback text.")
-            text = FALLBACK_TEXT
-
-    target_chars = target_token_count * 4
-    if len(text) < target_chars and len(text) > 0:
-        repeats = (target_chars // len(text)) + 1
-        text = text * repeats
-
-    return text[:target_chars]
-
-
-def build_multiturn_prompts(max_turns=None):
-    """Build prompts with growing conversation history."""
-    turns = MULTITURN_QUESTIONS if max_turns is None else MULTITURN_QUESTIONS[:max_turns]
-    prompts = []
-    history = EXP4_BASE_HISTORY
-    for i, question in enumerate(turns, 1):
-        history += f"User: {question}\n"
-        history += f"Assistant: Here is my detailed answer for turn {i}.\n"
-        prompts.append(history + f"User: Can you elaborate further on: {question}")
-    return prompts
+    try:
+        sys.path.insert(0, str(PROJECT_ROOT))
+        from agent.state_encoder import StateEncoder
+        encoder = StateEncoder(embed_dim=embed_dim)
+        texts = df["query_text"].tolist()
+        embs = encoder.encode_and_save(texts, emb_path)
+        print(f"  → {emb_path.name}  ({embs.shape})")
+    except Exception as e:
+        # Fallback: generate random embeddings (for testing without sentence-transformers)
+        print(f"  ⚠️  sentence-transformers not available ({e}), using random embeddings")
+        embs = np.random.randn(len(df), embed_dim).astype(np.float32)
+        np.save(emb_path, embs)
+        print(f"  → {emb_path.name}  ({embs.shape}) [random fallback]")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -1002,84 +788,136 @@ def build_multiturn_prompts(max_turns=None):
 # ═══════════════════════════════════════════════════════════════
 
 def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Generate traces for RL training using hardware cache calibration"
+    )
+    parser.add_argument("--cpu-only", action="store_true",
+                        help="Force CPU-only mode (no GPU required)")
+    parser.add_argument("--calibrate-only", action="store_true",
+                        help="Only run hardware calibration, don't generate traces")
+    parser.add_argument("--skip-calibration", action="store_true",
+                        help="Skip hardware calibration, use config defaults")
+    parser.add_argument("--skip-embeddings", action="store_true",
+                        help="Skip embedding generation")
+    parser.add_argument("--iterations", type=int, default=None,
+                        help="Number of calibration iterations per tier")
+    args = parser.parse_args()
+
     t_start = time.time()
     print("\n" + "=" * 64)
-    print("  REAL TRACE GENERATION — vLLM + LMCache on GPU")
+    print("  TRACE GENERATION — Hardware Cache Backend")
+    print("  (No vLLM, No LMCache — Pure hardware calibration)")
     print("=" * 64)
 
-    # Setup
-    setup_lmcache()
-    llm, sp = build_engine()
-    kv_cfg = get_kv_config(llm)
+    # ── Load config params ──
+    params = load_config_params()
+    chunk_tok = params["chunk_size_tokens"]
+    print(f"\n  Chunk size: {chunk_tok} tokens ({params['chunk_size_bytes']} bytes)")
+    print(f"  Max queries per workload: {params['max_queries']}")
 
-    n = MAX_QUERIES
-    all_raw = {}
+    # ── Hardware Calibration ──
+    calibrated = None
+    if not args.skip_calibration:
+        print(f"\n{'=' * 64}")
+        print("  PHASE 1: Hardware Calibration")
+        print(f"{'=' * 64}")
 
-    # ── Experiment 1: Shared Prefix ──
-    prompts_1 = [EXP1_PREFIX + q for q in EXP1_QUESTIONS[:n]]
-    raw_prefix = run_experiment("1. Shared Prefix", prompts_1, llm, sp, kv_cfg)
-    all_raw["prefix"] = raw_prefix
+        calibrated = calibrate_hardware(
+            force_cpu=args.cpu_only,
+            iterations=args.iterations,
+        )
 
-    # ── Experiment 2: RAG (Shared Document) ──
-    # Use 1600 tokens for context, leaving room for question + output within 4096 limit
-    context_text = load_and_scale_context(SOURCE_FILE, 1600)
-    rag_doc = f"Context: {context_text}\n\n"
-    prompts_2 = [rag_doc + q for q in RAG_QUESTIONS[:n]]
-    raw_rag = run_experiment("2. Shared Docs (RAG)", prompts_2, llm, sp, kv_cfg)
-    all_raw["rag"] = raw_rag
+        # Save calibration report
+        report_path = DATA_DIR / "calibration_report.csv"
+        save_calibration_report(calibrated, report_path)
 
-    # ── Experiment 3: No Context ──
-    prompts_3 = NO_CONTEXT_QUESTIONS[:n]
-    raw_nc = run_experiment("3. No Context", prompts_3, llm, sp, kv_cfg, all_cold=True)
-    all_raw["nocontext"] = raw_nc
+        # Update configs with measured values
+        update_configs_with_calibration(calibrated)
 
-    # ── Experiment 4: Multi-Turn Chat ──
-    prompts_4 = build_multiturn_prompts(n)
-    raw_mt = run_experiment("4. Multi-Turn Chat", prompts_4, llm, sp, kv_cfg)
-    all_raw["multiturn"] = raw_mt
+        if args.calibrate_only:
+            elapsed = time.time() - t_start
+            print(f"\n{'=' * 64}")
+            print(f"  CALIBRATION ONLY — Done in {elapsed:.1f}s")
+            print(f"{'=' * 64}\n")
+            return
 
-    # ── Convert to RL trace CSVs ──
+    # ── Generate Traces ──
     print(f"\n{'=' * 64}")
-    print("  Converting to RL trace CSVs...")
+    print("  PHASE 2: Generating Workload Traces")
     print(f"{'=' * 64}")
 
-    rows_to_trace_csv(raw_prefix, DATA_DIR / "traces_prefix.csv", "prefix", kv_cfg)
-    rows_to_trace_csv(raw_rag, DATA_DIR / "traces_rag.csv", "rag", kv_cfg)
-    rows_to_trace_csv(raw_nc, DATA_DIR / "traces_nocontext.csv", "nocontext", kv_cfg)
-    rows_to_trace_csv(raw_mt, DATA_DIR / "traces_multiturn.csv", "multiturn", kv_cfg)
+    traces = {}
 
-    # ── TTFT lookup ──
-    ttft_lookup = build_ttft_lookup(all_raw)
+    # Workload 1: Shared Prefix
+    prefix_rows = generate_prefix_trace(params, EXP1_QUESTIONS)
+    prefix_path = DATA_DIR / "traces_prefix.csv"
+    write_trace_csv(prefix_rows, prefix_path)
+    traces["prefix"] = prefix_path
+
+    # Workload 2: RAG (Shared Document)
+    rag_rows = generate_rag_trace(params, RAG_QUESTIONS)
+    rag_path = DATA_DIR / "traces_rag.csv"
+    write_trace_csv(rag_rows, rag_path)
+    traces["rag"] = rag_path
+
+    # Workload 3: No Context
+    nc_rows = generate_nocontext_trace(params, NO_CONTEXT_QUESTIONS)
+    nc_path = DATA_DIR / "traces_nocontext.csv"
+    write_trace_csv(nc_rows, nc_path)
+    traces["nocontext"] = nc_path
+
+    # Workload 4: Multi-Turn Chat
+    mt_rows = generate_multiturn_trace(params, MULTITURN_QUESTIONS)
+    mt_path = DATA_DIR / "traces_multiturn.csv"
+    write_trace_csv(mt_rows, mt_path)
+    traces["multiturn"] = mt_path
+
+    # ── TTFT Lookup ──
+    if calibrated:
+        ttft_lookup = build_ttft_lookup(calibrated, params)
+    else:
+        # Use config defaults if calibration was skipped
+        ttft_lookup = build_ttft_lookup({
+            "l1_hit_ms": {"mean": 0.1},
+            "l2_hit_ms": {"mean": 0.25},
+            "l3_hit_ms": {"mean": 6.0},
+            "cold_miss_ms": {"mean": 30.0},
+        }, params)
+
     ttft_path = DATA_DIR / "ttft_lookup.json"
     with open(ttft_path, "w") as f:
         json.dump(ttft_lookup, f, indent=2)
-    print(f"  [ttft] Saved → {ttft_path.name}")
+    print(f"  → {ttft_path.name}")
 
-    # ── Extract tier config and update ppo_config.yaml ──
-    tier_config = extract_tier_config(kv_cfg, ttft_lookup)
-    update_ppo_config(tier_config, kv_cfg)
+    # ── Generate Embeddings ──
+    if not args.skip_embeddings:
+        print(f"\n{'=' * 64}")
+        print("  PHASE 3: Generating Query Embeddings")
+        print(f"{'=' * 64}")
 
-    # ── Save raw experiment results too (for reference) ──
-    import pandas as pd
-    raw_rows = []
-    for wl_name, rows in all_raw.items():
-        for r in rows:
-            r["workload"] = wl_name
-            raw_rows.append(r)
-    raw_df = pd.DataFrame(raw_rows)
-    raw_csv = DATA_DIR / "raw_experiment_results.csv"
-    raw_df.to_csv(raw_csv, index=False)
-    print(f"  [raw] Saved → {raw_csv.name}")
+        # Remove stale embeddings first
+        for emb_file in DATA_DIR.glob("embeddings_*.npy"):
+            emb_file.unlink()
+            print(f"  [clean] Removed stale {emb_file.name}")
 
-    # ── Delete stale embeddings ──
-    for emb_file in DATA_DIR.glob("embeddings_*.npy"):
-        emb_file.unlink()
-        print(f"  [clean] Removed stale {emb_file.name}")
+        for name, path in traces.items():
+            generate_embeddings(name, path)
 
+    # ── Summary ──
     elapsed = time.time() - t_start
     print(f"\n{'=' * 64}")
-    print(f"  DONE! Total time: {elapsed / 60:.1f} minutes")
-    print(f"{'=' * 64}\n")
+    print(f"  ✅ DONE! Total time: {elapsed:.1f}s")
+    print(f"{'=' * 64}")
+    print(f"  Generated files:")
+    for name, path in traces.items():
+        print(f"    {path.name}")
+    print(f"    ttft_lookup.json")
+    if calibrated:
+        print(f"    calibration_report.csv")
+    print(f"    embeddings_*.npy (4 files)")
+    print()
 
 
 if __name__ == "__main__":

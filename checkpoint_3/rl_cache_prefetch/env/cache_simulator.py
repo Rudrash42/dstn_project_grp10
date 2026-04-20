@@ -1,7 +1,7 @@
 """
 3-Tier Cache Simulator (L1 GPU / L2 CPU / L3 Disk)
 ===================================================
-Lightweight Python-only simulation of LMCache's cache hierarchy.
+Lightweight Python-only simulation of the 3-tier cache hierarchy.
 No GPU required — operates on chunk IDs and tracks which tier holds each chunk.
 """
 
@@ -14,7 +14,7 @@ from .tier_config import TierConfig
 
 
 class CacheSimulator:
-    """Simulates LMCache's L1 (GPU) / L2 (CPU) / L3 (Disk) hierarchy."""
+    """Simulates the L1 (GPU) / L2 (CPU) / L3 (Disk) cache hierarchy."""
 
     def __init__(self, config: Optional[TierConfig] = None):
         self.cfg = config or TierConfig()
@@ -64,7 +64,7 @@ class CacheSimulator:
     def insert_chunks(self, chunk_ids: List[int]):
         """
         Insert newly-computed chunks into L1.  Overflow evicts LRU from L1
-        into L2, and from L2 into L3 (mirroring LMCache's waterfall).
+        into L2, and from L2 into L3 (waterfall eviction).
         Chunks already present in any tier are skipped (touch only).
         """
         for cid in chunk_ids:

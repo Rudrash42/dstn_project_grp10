@@ -1,9 +1,10 @@
 # ═══════════════════════════════════════════════════════════════
-#  ⚡ Hardware Cache Configuration
+#  ⚡ Hardware Cache Configuration (No LMCache)
 # ═══════════════════════════════════════════════════════════════
 #
 #  Edit these values to match YOUR hardware (RTX 3050 laptop).
-#  This file is loaded by train_hardware.py and evaluate_hardware.py.
+#  This file is loaded by generate_traces.py, train_hardware.py,
+#  and evaluate_hardware.py.
 #
 #  🔑 KEY INSIGHT:
 #  If L1 is too big → all chunks fit in GPU → agent learns nothing.
@@ -78,3 +79,11 @@ force_cpu_mode: false           # Set true to test without GPU
 verbose: false                  # Set true to see every cache operation
 enable_operation_log: true      # Log all ops for CSV export
 cuda_warmup_iterations: 5       # GPU warmup before measurement
+
+# ── Trace Generation (used by data/generate_traces.py) ──────
+max_queries_per_workload: 50
+prefix_length_tokens: 600       # shared prefix ≈ 2-3 chunks
+rag_doc_length_tokens: 1700     # shared RAG doc context ≈ 7 chunks
+multiturn_tokens_per_turn: 40   # tokens added per conversation turn
+question_tokens_avg: 15         # average unique question length
+calibration_iterations: 20      # iterations to calibrate latencies

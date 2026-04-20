@@ -1,6 +1,6 @@
-# RL-Based KV Cache Prefetching for LMCache
+# RL-Based KV Cache Prefetching (Hardware-Only)
 
-Replaces LMCache's reactive fetching with a proactive **PPO-trained RL agent** that predicts which KV-cache chunks will be needed and pre-migrates them from L3 (disk) → L2 (CPU) before they're requested.
+Proactive **PPO-trained RL agent** that predicts which KV-cache chunks will be needed and pre-migrates them from L3 (NVMe Disk) → L2 (CPU RAM) before they're requested. Uses **real GPU/CPU/Disk hardware** for training and evaluation — no vLLM or LMCache required.
 
 ## Quick Start
 
@@ -8,23 +8,24 @@ Replaces LMCache's reactive fetching with a proactive **PPO-trained RL agent** t
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Generate trace data
+# 2. Generate traces (calibrates real hardware + builds workload traces)
 python data/generate_traces.py
 
-# 3. Train the agent (full pipeline, ~10 min)
-python train.py
+# 3. Train the agent on real hardware
+python train_hardware.py
 
-# 4. Evaluate against baselines
-python eval/evaluate.py
+# 4. Evaluate against baselines on real hardware
+python eval/evaluate_hardware.py
 
-# 5. Generate plots
-python eval/plot_results.py
+# Or run the full pipeline in one go:
+bash run_pipeline.sh
 ```
 
 ## Smoke Test
 
 ```bash
-python train.py --quick      # 500-step test (< 1 min)
+python train_hardware.py --quick      # 500-step hardware smoke test (< 5 min)
+python data/generate_traces.py --cpu-only  # Generate traces without GPU
 ```
 
 ## Architecture
@@ -33,28 +34,32 @@ python train.py --quick      # 500-step test (< 1 min)
 Agent observes: [query embedding (384d)] + [cache stats (3d)] + [candidate scores (16d)]
 Agent decides:  which of 16 L3 candidate chunks to prefetch → MultiBinary(16)
 Reward:         R = α·time_saved − β·bytes_migrated − γ·unused_prefetches
+Hardware:       L1 = GPU VRAM | L2 = CPU Pinned RAM | L3 = NVMe Disk
 ```
 
 ## Training Pipeline
 
-1. **Stage A** — Behavioral cloning from oracle labels (what *should* have been prefetched)
-2. **Stage B** — PPO fine-tuning against the cache simulator (learns cost/benefit tradeoffs)
+1. **Stage A** — Behavioral cloning from oracle labels (simulated for speed)
+2. **Stage B** — PPO fine-tuning on **real hardware cache** (actual GPU/CPU/Disk data movement)
 
 ## Evaluation
 
 Compares against:
 - **No Cache** — every access is a cold miss (worst case)
-- **LRU** — reactive LRU caching, no prefetching (current system)
+- **LRU** — reactive LRU caching, no prefetching (baseline)
 - **Oracle** — perfect future knowledge (theoretical best)
+
+All evaluations run on **real hardware** with measured latencies.
 
 ## Directory Structure
 
 ```
-data/               Trace datasets + embeddings
+data/               Trace datasets + embeddings + calibration report
 env/                Cache simulator + Gymnasium env + reward function
+env/hardware/       REAL hardware cache (GPU VRAM / CPU RAM / NVMe Disk)
 agent/              State encoder + policy network
-eval/               Evaluation, baselines, ablation, plotting
-configs/            PPO hyperparameters
+eval/               Evaluation, baselines, plotting (hardware)
+configs/            Hardware config + PPO hyperparameters
 models/             Saved checkpoints
 results/            Metrics + plots (auto-generated)
 ```

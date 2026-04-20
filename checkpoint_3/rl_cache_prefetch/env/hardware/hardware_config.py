@@ -53,7 +53,7 @@ class HardwareConfig:
     # ║  CHUNK GEOMETRY — How big is each KV cache chunk?        ║
     # ╚═══════════════════════════════════════════════════════════╝
 
-    # Number of tokens per chunk (must match LMCache's chunk_size)
+    # Number of tokens per chunk (defines the granularity of cache management)
     chunk_size_tokens: int = 256
 
     # Bytes of KV cache data per token

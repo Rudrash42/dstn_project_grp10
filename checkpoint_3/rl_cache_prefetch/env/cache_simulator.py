@@ -180,11 +180,17 @@ class CacheSimulator:
 
     def prefetch(self, chunk_id: int) -> float:
         """
-        Move a chunk from L3 → L2.  Returns the migration cost in ms.
-        If the chunk is not in L3 (or already in L1/L2), returns 0.
+        Move a chunk from L3 → L2, or L2 → L1.  Returns the migration cost in ms.
+        If the chunk is already in L1, returns 0.
         """
-        if chunk_id in self.l1 or chunk_id in self.l2:
+        if chunk_id in self.l1:
             return 0.0  # already warm
+
+        if chunk_id in self.l2:
+            size = self.l2.pop(chunk_id)
+            self.l2_bytes -= size
+            self._insert_l1(chunk_id, size)
+            return self.cfg.prefetch_l2_to_l1_ms
 
         if chunk_id in self.l3:
             size = self.l3.pop(chunk_id)

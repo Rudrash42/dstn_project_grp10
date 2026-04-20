@@ -152,7 +152,6 @@ def run_oracle_baseline(
                     prefetched += 1
                 elif loc == "L3":
                     cost = sim.prefetch(cid)
-                    results[-1]["access_latency_ms"] += cost
                     prefetched += 1
 
     all_latencies = [r["access_latency_ms"] for r in results]

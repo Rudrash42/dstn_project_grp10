@@ -196,7 +196,6 @@ def run_oracle_baseline_hw(
                     prefetched += 1
                 elif in_l3:
                     cost = cache.prefetch(cid)  # Real disk → CPU transfer
-                    results[-1]["access_latency_ms"] += cost
                     prefetched += 1
     all_latencies = [r["access_latency_ms"] for r in results]
     all_hits = sum(r["hit_rate"] * r["num_chunks"] for r in results)

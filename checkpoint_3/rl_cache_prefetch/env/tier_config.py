@@ -26,8 +26,8 @@ class TierConfig:
     l1_hit_latency_ms: float = 0.1
     l2_hit_latency_ms: float = 0.25
     l3_hit_latency_ms: float = 6.0
-    cold_compute_per_chunk_ms: float = 37.0
     prefetch_l3_to_l2_ms: float = 6.0
+    prefetch_l2_to_l1_ms: float = 0.1
 
     # ── Reward knobs ──────────────────────────────────────────
     alpha: float = 1.0       # weight for time saved
@@ -70,6 +70,7 @@ class TierConfig:
             "l3_hit_latency_ms": "l3_hit_latency_ms",
             "cold_compute_per_chunk_ms": "cold_compute_per_chunk_ms",
             "prefetch_l3_to_l2_ms": "prefetch_l3_to_l2_ms",
+            "prefetch_l2_to_l1_ms": "prefetch_l2_to_l1_ms",
             "alpha": "alpha",
             "beta": "beta",
             "gamma_reward": "gamma_reward",

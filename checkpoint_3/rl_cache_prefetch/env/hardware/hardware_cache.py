@@ -739,9 +739,33 @@ class HardwareCache:
         float
             Cost of the prefetch in milliseconds (0 if chunk wasn't in L3).
         """
-        # Already in L1 or L2? No need to prefetch.
-        if chunk_id in self.l1 or chunk_id in self.l2:
+        # Already in L1? No need to prefetch.
+        if chunk_id in self.l1:
             return 0.0
+
+        # In L2? Move it to L1.
+        if chunk_id in self.l2:
+            t0 = time.perf_counter()
+
+            # Get the CPU tensor and copy to GPU
+            cpu_tensor = self.l2.pop(chunk_id)
+            self.l2_bytes -= self.cfg.chunk_size_bytes
+
+            if self.use_cuda:
+                gpu_tensor = cpu_tensor.to("cuda", non_blocking=False)
+            else:
+                gpu_tensor = cpu_tensor.clone()
+
+            self._insert_l1_tensor(chunk_id, gpu_tensor)
+
+            elapsed_ms = (time.perf_counter() - t0) * 1000
+
+            if self.cfg.verbose:
+                print(f"  [PREFETCH] L2→L1  chunk={chunk_id:<5d}  "
+                      f"cost={elapsed_ms:.3f}ms")
+
+            self._log_operation("prefetch", chunk_id, "L2→L1", elapsed_ms)
+            return elapsed_ms
 
         # In L3? Move it to L2.
         if chunk_id in self.l3:

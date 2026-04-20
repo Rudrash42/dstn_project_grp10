@@ -126,6 +126,9 @@ class HardwareConfig:
     # Prefetch cost (L3 → L2) — reading from disk to CPU RAM
     prefetch_l3_to_l2_ms: float = 6.0
 
+    # Prefetch cost (L2 → L1) — reading from CPU RAM to GPU VRAM
+    prefetch_l2_to_l1_ms: float = 0.1
+
     # ╔═══════════════════════════════════════════════════════════╗
     # ║  REWARD FUNCTION KNOBS                                    ║
     # ║                                                           ║
@@ -237,6 +240,7 @@ class HardwareConfig:
         print(f"     L3 hit:          {self.l3_hit_latency_ms:>6.2f} ms")
         print(f"     Cold miss:       {self.cold_compute_per_chunk_ms:>6.2f} ms")
         print(f"     Prefetch L3→L2:  {self.prefetch_l3_to_l2_ms:>6.2f} ms")
+        print(f"     Prefetch L2→L1:  {self.prefetch_l2_to_l1_ms:>6.2f} ms")
 
         print(f"\n  🎯 Reward Weights:")
         print(f"     α (time saved):     {self.alpha}")
@@ -310,6 +314,7 @@ class HardwareConfig:
             "l3_hit_latency_ms": self.l3_hit_latency_ms,
             "cold_compute_per_chunk_ms": self.cold_compute_per_chunk_ms,
             "prefetch_l3_to_l2_ms": self.prefetch_l3_to_l2_ms,
+            "prefetch_l2_to_l1_ms": self.prefetch_l2_to_l1_ms,
             "alpha": self.alpha,
             "beta": self.beta,
             "gamma_reward": self.gamma_reward,

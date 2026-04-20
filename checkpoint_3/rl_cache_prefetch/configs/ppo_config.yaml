@@ -8,14 +8,15 @@ dtype_bytes: 2
 chunk_size_tokens: 256
 kv_bytes_per_token: 12288
 chunk_size_bytes: 3145728
-l1_capacity_mb: 7.5
-l2_capacity_mb: 15.0
+l1_capacity_mb: 3.0
+l2_capacity_mb: 4.5
 l3_capacity_mb: 5120.0
 l1_hit_latency_ms: 0.1
 l2_hit_latency_ms: 0.24
 l3_hit_latency_ms: 6.0
 cold_compute_per_chunk_ms: 33.1
 prefetch_l3_to_l2_ms: 6.0
+prefetch_l2_to_l1_ms: 0.1
 alpha: 1.0
 beta: 0.01
 gamma_reward: 0.1

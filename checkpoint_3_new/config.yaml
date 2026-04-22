@@ -1,0 +1,104 @@
+# ═══════════════════════════════════════════════════════════════════
+#  RL-Based KV Cache Prefetching — Configuration
+# ═══════════════════════════════════════════════════════════════════
+#
+#  ⚙️  HOW TO CONFIGURE FOR YOUR HARDWARE:
+#
+#  1. MODEL SETTINGS:
+#     - model_name: HuggingFace model ID. We use Qwen2.5-0.5B because
+#       it fits in 4GB VRAM. You can use any model, but update
+#       kv_bytes_per_token and chunk_size_bytes accordingly.
+#     - To compute kv_bytes_per_token for your model:
+#       kv_bytes_per_token = 2 × num_layers × num_kv_heads × head_dim × dtype_bytes
+#       For Qwen2.5-0.5B: 2 × 24 × 2 × 64 × 2 = 12,288 bytes/token
+#
+#  2. GPU/CACHE SETTINGS (most important to tune!):
+#     - l1_capacity_mb: How much GPU VRAM for KV cache.
+#       ❗ If too large → all chunks fit in GPU → agent has nothing to learn
+#       ❗ If too small → everything is a miss → agent can't help
+#       Rule of thumb: set so ~50% of chunks fit in L1.
+#       For RTX 3050 (4GB): try 24-96 MB (8-32 chunks of 3MB each).
+#     - l2_capacity_mb: Pinned CPU RAM. Safe up to ~256MB on 16GB RAM.
+#     - l3_capacity_mb: Disk cache. Can be large (SSDs have plenty of space).
+#
+#  3. TRAINING SETTINGS:
+#     - total_timesteps: More = better learning, but slower.
+#       50K is a good starting point (~10-30 min on RTX 3050).
+#       For quick testing: use --quick flag (500 steps, ~2 min).
+#     - policy_net_arch: [64,64] is fine for this problem size.
+#
+# ═══════════════════════════════════════════════════════════════════
+
+# ── LLM Model ────────────────────────────────────────────────────
+model_name: "Qwen/Qwen2.5-0.5B-Instruct"
+max_model_len: 4096
+gpu_memory_utilization: 0.80
+max_new_tokens: 20
+
+# ── KV Cache Geometry ────────────────────────────────────────────
+# These come from the model architecture. Change if you switch models.
+chunk_size_tokens: 256                 # Tokens per KV cache chunk
+kv_bytes_per_token: 12288              # 2 × 24L × 2KVH × 64d × 2B (fp16)
+chunk_size_bytes: 3145728              # 256 × 12288 = 3 MB per chunk
+
+# ── Cache Tier Capacities ────────────────────────────────────────
+# L1 = GPU VRAM (your RTX 3050 has 4096 MB total, but model uses ~2GB)
+l1_capacity_mb: 48.0                   # ~15 chunks (good cache pressure)
+
+# L2 = Pinned CPU RAM (allocates physical RAM that can't be swapped)
+l2_capacity_mb: 51.2                   # ~16 chunks
+
+# L3 = NVMe Disk (your SSD — plenty of space)
+l3_capacity_mb: 5120.0                 # ~1600 chunks
+
+# Where to store L3 chunk files on disk
+l3_disk_dir: "./data/cache_store"
+
+# ── Latency Estimates (for reward baseline computation) ──────────
+# These are used to compute "what would have happened without prefetch"
+# so the reward function can compute time_saved.
+# The ACTUAL latencies are always MEASURED on real hardware during training.
+#
+# To calibrate for YOUR hardware:
+#   Run: python -c "import torch; t=torch.randn(786432); t.cuda(); ..."
+#   Or use the benchmark in run_all.py --benchmark
+l1_hit_latency_ms: 0.1                # GPU VRAM access (sub-ms)
+l2_hit_latency_ms: 0.24               # CPU→GPU via PCIe (~12 GB/s for 3MB)
+l3_hit_latency_ms: 6.0                # SSD read + CPU→GPU (~500MB/s for 3MB)
+cold_compute_per_chunk_ms: 30.8        # Full forward pass for 256 tokens
+prefetch_l3_to_l2_ms: 6.0             # Same as L3 hit (read from disk)
+
+# ── Reward Function ──────────────────────────────────────────────
+# R = α × time_saved - β × MB_migrated - γ × unused_prefetches
+alpha: 1.0                             # Reward time savings
+beta: 0.01                             # Penalize data migration
+gamma_reward: 0.1                      # Penalize wasted prefetches
+
+# ── Observation Space ────────────────────────────────────────────
+embed_dim: 384                         # MiniLM-L6-v2 output dimension
+max_candidates: 16                     # Number of prefetch candidates per step
+history_len: 5                         # Recent access history length
+
+# ── PPO Hyperparameters ──────────────────────────────────────────
+learning_rate: 0.0003
+n_steps: 2048
+batch_size: 64
+n_epochs: 10
+gamma_discount: 0.99
+clip_range: 0.2
+ent_coef: 0.01
+vf_coef: 0.5
+max_grad_norm: 0.5
+total_timesteps: 50000
+policy_net_arch: [64, 64]
+
+# ── Behavioral Cloning (Stage A) ────────────────────────────────
+bc_epochs: 20
+bc_lr: 0.001
+
+# ── Trace Generation ────────────────────────────────────────────
+max_queries: 50                        # Queries per workload trace
+
+# ── Hardware Flags ───────────────────────────────────────────────
+force_cpu_mode: false                  # true = skip GPU, use CPU tensors only
+cuda_warmup_iterations: 5             # GPU warmup before latency measurement

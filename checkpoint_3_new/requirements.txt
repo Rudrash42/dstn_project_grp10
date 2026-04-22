@@ -1,0 +1,27 @@
+# RL Cache Prefetching — Dependencies
+# =============================================
+# Install: pip install -r requirements.txt
+#
+# For GPU (RTX 3050), install PyTorch with CUDA FIRST:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+#
+# For trace generation only, also install:
+#   pip install vllm
+
+# Core RL
+stable-baselines3>=2.3.0
+gymnasium>=1.0.0
+
+# Embeddings (for query encoding)
+sentence-transformers>=3.0.0
+
+# ML Framework (install with CUDA separately — see above)
+torch>=2.0.0
+
+# Visualization
+matplotlib>=3.7.0
+
+# Data
+pandas>=2.0.0
+numpy>=1.24.0
+pyyaml>=6.0

@@ -30,6 +30,43 @@ from env.hardware.hardware_cache import HardwareCache
 from env.hardware.hardware_config import HardwareConfig
 
 
+def _aggregate_hit_rates(results: list[dict]) -> dict:
+    """Compute L1/local/overall hit-rate variants from per-query tier counts."""
+    total_accesses = 0
+    l1_hits = 0
+    local_hits = 0
+    overall_hits = 0
+
+    for row in results:
+        tc = row.get("tier_counts", {})
+        q_total = int(sum(tc.values()))
+        row_l1 = int(tc.get("L1", 0))
+        row_l2 = int(tc.get("L2", 0))
+        row_l3 = int(tc.get("L3", 0))
+        total_accesses += q_total
+        l1_hits += row_l1
+        local_hits += row_l1 + row_l2
+        overall_hits += row_l1 + row_l2 + row_l3
+
+    if total_accesses <= 0:
+        return {
+            "hit_rate_pct": 0.0,
+            "l1_hit_rate_pct": 0.0,
+            "local_hit_rate_pct": 0.0,
+            "overall_hit_rate_pct": 0.0,
+        }
+
+    l1_rate = l1_hits / total_accesses * 100.0
+    local_rate = local_hits / total_accesses * 100.0
+    overall_rate = overall_hits / total_accesses * 100.0
+    return {
+        "hit_rate_pct": float(l1_rate),
+        "l1_hit_rate_pct": float(l1_rate),
+        "local_hit_rate_pct": float(local_rate),
+        "overall_hit_rate_pct": float(overall_rate),
+    }
+
+
 def run_lru_baseline_hw(
     trace_path: str | Path,
     config: Optional[HardwareConfig] = None,
@@ -54,21 +91,17 @@ def run_lru_baseline_hw(
         # Access reactively — no prefetching, just LRU cache
         total_ms, tier_counts = cache.access_chunks(chunks)
 
-        total = sum(tier_counts.values())
-        hits = tier_counts["L1"] + tier_counts["L2"]
-
         results.append({
             "query_id": row["query_id"],
             "access_latency_ms": total_ms,
+            "end_to_end_latency_ms": total_ms,
             "tier_counts": tier_counts,
-            "hit_rate": hits / total if total > 0 else 0,
             "num_chunks": len(chunks),
         })
 
     # Aggregate
     all_latencies = [r["access_latency_ms"] for r in results]
-    all_hits = sum(r["hit_rate"] * r["num_chunks"] for r in results)
-    all_total = sum(r["num_chunks"] for r in results)
+    hit_rates = _aggregate_hit_rates(results)
 
     # Clean up
     cache.reset()
@@ -77,9 +110,12 @@ def run_lru_baseline_hw(
         "strategy": "LRU (reactive) [HARDWARE]",
         "per_query": results,
         "avg_latency_ms": float(np.mean(all_latencies)),
+        "avg_end_to_end_latency_ms": float(np.mean(all_latencies)),
         "total_latency_ms": float(sum(all_latencies)),
-        "hit_rate_pct": float((all_hits / all_total * 100) if all_total > 0 else 0),
+        "total_end_to_end_latency_ms": float(sum(all_latencies)),
+        **hit_rates,
         "total_prefetches": 0,
+        "total_prefetch_cost_ms": 0.0,
     }
 
 
@@ -122,8 +158,8 @@ def run_no_cache_baseline_hw(
         results.append({
             "query_id": row["query_id"],
             "access_latency_ms": total_ms,
+            "end_to_end_latency_ms": total_ms,
             "tier_counts": tier_counts,
-            "hit_rate": 0.0,
             "num_chunks": len(chunks),
         })
 
@@ -133,9 +169,15 @@ def run_no_cache_baseline_hw(
         "strategy": "No Cache [HARDWARE]",
         "per_query": results,
         "avg_latency_ms": float(np.mean(all_latencies)),
+        "avg_end_to_end_latency_ms": float(np.mean(all_latencies)),
         "total_latency_ms": float(sum(all_latencies)),
+        "total_end_to_end_latency_ms": float(sum(all_latencies)),
         "hit_rate_pct": 0.0,
+        "l1_hit_rate_pct": 0.0,
+        "local_hit_rate_pct": 0.0,
+        "overall_hit_rate_pct": 0.0,
         "total_prefetches": 0,
+        "total_prefetch_cost_ms": 0.0,
     }
 
 
@@ -164,14 +206,11 @@ def run_oracle_baseline_hw(
         # Access this query's chunks (with real hardware timing)
         total_ms, tier_counts = cache.access_chunks(chunks)
 
-        total = sum(tier_counts.values())
-        hits = tier_counts["L1"] + tier_counts["L2"]
-
         results.append({
             "query_id": row["query_id"],
             "access_latency_ms": total_ms,
+            "end_to_end_latency_ms": total_ms,
             "tier_counts": tier_counts,
-            "hit_rate": hits / total if total > 0 else 0,
             "num_chunks": len(chunks),
         })
 
@@ -198,8 +237,7 @@ def run_oracle_baseline_hw(
                     cost = cache.prefetch(cid)  # Real disk → CPU transfer
                     prefetched += 1
     all_latencies = [r["access_latency_ms"] for r in results]
-    all_hits = sum(r["hit_rate"] * r["num_chunks"] for r in results)
-    all_total = sum(r["num_chunks"] for r in results)
+    hit_rates = _aggregate_hit_rates(results)
 
     # Clean up
     cache.reset()
@@ -208,7 +246,10 @@ def run_oracle_baseline_hw(
         "strategy": "Oracle [HARDWARE]",
         "per_query": results,
         "avg_latency_ms": float(np.mean(all_latencies)),
+        "avg_end_to_end_latency_ms": float(np.mean(all_latencies)),
         "total_latency_ms": float(sum(all_latencies)),
-        "hit_rate_pct": float((all_hits / all_total * 100) if all_total > 0 else 0),
+        "total_end_to_end_latency_ms": float(sum(all_latencies)),
+        **hit_rates,
         "total_prefetches": sum(1 for _ in range(len(df) - 1)),
+        "total_prefetch_cost_ms": 0.0,
     }

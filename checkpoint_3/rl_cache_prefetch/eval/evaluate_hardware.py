@@ -100,10 +100,16 @@ def evaluate_rl_agent_hw(
             "query_id": info.get("step", 0),
             "reward": reward,
             "access_latency_ms": info.get("access_latency_ms", 0),
+            "end_to_end_latency_ms": info.get(
+                "end_to_end_latency_ms",
+                info.get("access_latency_ms", 0) + info.get("prefetch_cost_ms", 0),
+            ),
             "baseline_latency_ms": info.get("baseline_latency_ms", 0),
+            "baseline_actual_latency_ms": info.get("baseline_actual_latency_ms", 0),
             "prefetch_cost_ms": info.get("prefetch_cost_ms", 0),
             "n_prefetched": info.get("n_prefetched", 0),
             "n_useful": info.get("n_useful", 0),
+            "n_realized_useful": info.get("n_realized_useful", 0),
             "tier_counts": info.get("tier_counts", {}),
         })
 
@@ -111,17 +117,33 @@ def evaluate_rl_agent_hw(
             break
 
     episode = info.get("episode_summary", {})
+    avg_access = float(np.mean([r["access_latency_ms"] for r in per_query])) if per_query else 0.0
+    avg_end_to_end = float(np.mean([r["end_to_end_latency_ms"] for r in per_query])) if per_query else 0.0
+    total_access = float(sum(r["access_latency_ms"] for r in per_query))
+    total_end_to_end = float(sum(r["end_to_end_latency_ms"] for r in per_query))
 
     return {
         "strategy": "RL Agent (PPO) [HARDWARE]",
         "per_query": per_query,
-        "avg_latency_ms": float(np.mean([r["access_latency_ms"] for r in per_query])),
-        "total_latency_ms": float(sum(r["access_latency_ms"] for r in per_query)),
+        "avg_latency_ms": avg_end_to_end,
+        "avg_access_latency_ms": avg_access,
+        "avg_end_to_end_latency_ms": avg_end_to_end,
+        "total_latency_ms": total_end_to_end,
+        "total_access_latency_ms": total_access,
+        "total_end_to_end_latency_ms": total_end_to_end,
         "total_reward": float(total_reward),
         "hit_rate_pct": float(episode.get("hit_rate_pct", 0)),
+        "l1_hit_rate_pct": float(episode.get("l1_hit_rate_pct", episode.get("hit_rate_pct", 0))),
+        "local_hit_rate_pct": float(episode.get("local_hit_rate_pct", 0)),
+        "overall_hit_rate_pct": float(episode.get("overall_hit_rate_pct", 0)),
         "total_prefetches": episode.get("total_prefetches", 0),
         "useful_prefetches": episode.get("useful_prefetches", 0),
+        "overlap_useful_prefetches": episode.get("overlap_useful_prefetches", 0),
         "prefetch_accuracy_pct": float(episode.get("prefetch_accuracy_pct", 0)),
+        "overlap_prefetch_accuracy_pct": float(episode.get("overlap_prefetch_accuracy_pct", 0)),
+        "avg_end_to_end_latency_ms": float(episode.get("avg_end_to_end_latency_ms", avg_end_to_end)),
+        "avg_baseline_actual_latency_ms": float(episode.get("avg_baseline_actual_latency_ms", 0)),
+        "total_prefetch_cost_ms": float(episode.get("total_prefetch_cost_ms", 0)),
         "avg_measured_latency_ms": float(episode.get("avg_measured_latency_ms", 0)),
         "avg_baseline_latency_ms": float(episode.get("avg_baseline_latency_ms", 0)),
     }
@@ -217,33 +239,48 @@ def run_full_evaluation_hw(
         lru = run_lru_baseline_hw(trace_path, quiet_cfg)
         wl_results["lru_hw"] = {
             "avg_latency_ms": lru["avg_latency_ms"],
+            "avg_end_to_end_latency_ms": lru.get("avg_end_to_end_latency_ms", lru["avg_latency_ms"]),
             "hit_rate_pct": lru["hit_rate_pct"],
+            "l1_hit_rate_pct": lru.get("l1_hit_rate_pct", lru["hit_rate_pct"]),
+            "local_hit_rate_pct": lru.get("local_hit_rate_pct", 0),
+            "overall_hit_rate_pct": lru.get("overall_hit_rate_pct", 0),
             "total_latency_ms": lru["total_latency_ms"],
+            "total_end_to_end_latency_ms": lru.get("total_end_to_end_latency_ms", lru["total_latency_ms"]),
         }
-        print(f"  LRU [HW]:    avg_lat={lru['avg_latency_ms']:>8.2f}ms  "
-              f"hit_rate={lru['hit_rate_pct']:5.1f}%")
+        print(f"  LRU [HW]:    avg_e2e={lru['avg_end_to_end_latency_ms']:>8.2f}ms  "
+              f"L1_hit={lru['hit_rate_pct']:5.1f}%")
 
         # ── No-Cache Baseline (hardware) ──
         print(f"  Running No-Cache baseline on real hardware...")
         nc = run_no_cache_baseline_hw(trace_path, quiet_cfg)
         wl_results["no_cache_hw"] = {
             "avg_latency_ms": nc["avg_latency_ms"],
+            "avg_end_to_end_latency_ms": nc.get("avg_end_to_end_latency_ms", nc["avg_latency_ms"]),
             "hit_rate_pct": nc["hit_rate_pct"],
+            "l1_hit_rate_pct": nc.get("l1_hit_rate_pct", nc["hit_rate_pct"]),
+            "local_hit_rate_pct": nc.get("local_hit_rate_pct", 0),
+            "overall_hit_rate_pct": nc.get("overall_hit_rate_pct", 0),
             "total_latency_ms": nc["total_latency_ms"],
+            "total_end_to_end_latency_ms": nc.get("total_end_to_end_latency_ms", nc["total_latency_ms"]),
         }
-        print(f"  NoCache[HW]: avg_lat={nc['avg_latency_ms']:>8.2f}ms  "
-              f"hit_rate={nc['hit_rate_pct']:5.1f}%")
+        print(f"  NoCache[HW]: avg_e2e={nc['avg_end_to_end_latency_ms']:>8.2f}ms  "
+              f"L1_hit={nc['hit_rate_pct']:5.1f}%")
 
         # ── Oracle Baseline (hardware) ──
         print(f"  Running Oracle baseline on real hardware...")
         oracle = run_oracle_baseline_hw(trace_path, quiet_cfg)
         wl_results["oracle_hw"] = {
             "avg_latency_ms": oracle["avg_latency_ms"],
+            "avg_end_to_end_latency_ms": oracle.get("avg_end_to_end_latency_ms", oracle["avg_latency_ms"]),
             "hit_rate_pct": oracle["hit_rate_pct"],
+            "l1_hit_rate_pct": oracle.get("l1_hit_rate_pct", oracle["hit_rate_pct"]),
+            "local_hit_rate_pct": oracle.get("local_hit_rate_pct", 0),
+            "overall_hit_rate_pct": oracle.get("overall_hit_rate_pct", 0),
             "total_latency_ms": oracle["total_latency_ms"],
+            "total_end_to_end_latency_ms": oracle.get("total_end_to_end_latency_ms", oracle["total_latency_ms"]),
         }
-        print(f"  Oracle[HW]:  avg_lat={oracle['avg_latency_ms']:>8.2f}ms  "
-              f"hit_rate={oracle['hit_rate_pct']:5.1f}%")
+        print(f"  Oracle[HW]:  avg_e2e={oracle['avg_end_to_end_latency_ms']:>8.2f}ms  "
+              f"L1_hit={oracle['hit_rate_pct']:5.1f}%")
 
         # ── RL Agent (hardware) ──
         if Path(model_path).exists():
@@ -253,21 +290,31 @@ def run_full_evaluation_hw(
             )
             wl_results["rl_agent_hw"] = {
                 "avg_latency_ms": rl["avg_latency_ms"],
+                "avg_access_latency_ms": rl.get("avg_access_latency_ms", 0),
+                "avg_end_to_end_latency_ms": rl.get("avg_end_to_end_latency_ms", rl["avg_latency_ms"]),
                 "hit_rate_pct": rl["hit_rate_pct"],
+                "l1_hit_rate_pct": rl.get("l1_hit_rate_pct", rl["hit_rate_pct"]),
+                "local_hit_rate_pct": rl.get("local_hit_rate_pct", 0),
+                "overall_hit_rate_pct": rl.get("overall_hit_rate_pct", 0),
                 "total_latency_ms": rl["total_latency_ms"],
+                "total_end_to_end_latency_ms": rl.get("total_end_to_end_latency_ms", rl["total_latency_ms"]),
                 "total_prefetches": rl["total_prefetches"],
                 "useful_prefetches": rl.get("useful_prefetches", 0),
                 "prefetch_accuracy_pct": rl.get("prefetch_accuracy_pct", 0),
+                "total_prefetch_cost_ms": rl.get("total_prefetch_cost_ms", 0),
                 "total_reward": rl["total_reward"],
                 "avg_measured_latency_ms": rl.get("avg_measured_latency_ms", 0),
+                "avg_baseline_actual_latency_ms": rl.get("avg_baseline_actual_latency_ms", 0),
             }
-            print(f"  RL [HW]:     avg_lat={rl['avg_latency_ms']:>8.2f}ms  "
-                  f"hit_rate={rl['hit_rate_pct']:5.1f}%  "
+            print(f"  RL [HW]:     avg_e2e={rl['avg_end_to_end_latency_ms']:>8.2f}ms  "
+                  f"L1_hit={rl['hit_rate_pct']:5.1f}%  "
                   f"pf_acc={rl.get('prefetch_accuracy_pct', 0):5.1f}%")
 
             # Speedup vs LRU
-            if lru["avg_latency_ms"] > 0:
-                speedup = lru["avg_latency_ms"] / rl["avg_latency_ms"]
+            lru_avg_e2e = lru.get("avg_end_to_end_latency_ms", lru["avg_latency_ms"])
+            rl_avg_e2e = rl.get("avg_end_to_end_latency_ms", rl["avg_latency_ms"])
+            if lru_avg_e2e > 0:
+                speedup = lru_avg_e2e / rl_avg_e2e
                 wl_results["rl_agent_hw"]["speedup_vs_lru"] = round(speedup, 3)
                 print(f"  RL vs LRU speedup: {speedup:.3f}x")
 
@@ -278,10 +325,14 @@ def run_full_evaluation_hw(
                     "strategy": "RL_Agent",
                     "query_id": pq["query_id"],
                     "access_latency_ms": pq["access_latency_ms"],
+                    "end_to_end_latency_ms": pq.get("end_to_end_latency_ms", pq["access_latency_ms"]),
                     "baseline_latency_ms": pq["baseline_latency_ms"],
+                    "baseline_actual_latency_ms": pq.get("baseline_actual_latency_ms", 0),
+                    "prefetch_cost_ms": pq.get("prefetch_cost_ms", 0),
                     "reward": pq["reward"],
                     "n_prefetched": pq["n_prefetched"],
                     "n_useful": pq["n_useful"],
+                    "n_realized_useful": pq.get("n_realized_useful", 0),
                 })
         else:
             print(f"  RL:     [SKIP] Model not found at {model_path}")
@@ -337,7 +388,7 @@ def _plot_evaluation(all_results: dict, results_dir: Path):
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
-    # Plot 1: Average latency comparison
+    # Plot 1: Average end-to-end latency comparison
     x = np.arange(len(workloads))
     width = 0.18
 
@@ -346,33 +397,35 @@ def _plot_evaluation(all_results: dict, results_dir: Path):
         for wl in workloads:
             wl_data = all_results.get(wl, {})
             strat_data = wl_data.get(strat, {})
-            vals.append(strat_data.get("avg_latency_ms", 0))
+            vals.append(
+                strat_data.get("avg_end_to_end_latency_ms", strat_data.get("avg_latency_ms", 0))
+            )
         if any(v > 0 for v in vals):
             ax1.bar(x + i * width, vals, width, label=label,
                    color=color, alpha=0.8)
 
     ax1.set_xlabel("Workload")
-    ax1.set_ylabel("Avg Latency (ms)")
-    ax1.set_title("Average Access Latency [HARDWARE]")
+    ax1.set_ylabel("Avg End-to-End Latency (ms)")
+    ax1.set_title("Average End-to-End Latency [HARDWARE]")
     ax1.set_xticks(x + width * 1.5)
     ax1.set_xticklabels(workloads)
     ax1.legend()
     ax1.grid(True, alpha=0.3)
 
-    # Plot 2: Hit rate comparison
+    # Plot 2: L1 hit-rate comparison
     for i, (strat, label, color) in enumerate(zip(strategies, labels, colors)):
         vals = []
         for wl in workloads:
             wl_data = all_results.get(wl, {})
             strat_data = wl_data.get(strat, {})
-            vals.append(strat_data.get("hit_rate_pct", 0))
+            vals.append(strat_data.get("l1_hit_rate_pct", strat_data.get("hit_rate_pct", 0)))
         if any(v > 0 for v in vals):
             ax2.bar(x + i * width, vals, width, label=label,
                    color=color, alpha=0.8)
 
     ax2.set_xlabel("Workload")
-    ax2.set_ylabel("Hit Rate (%)")
-    ax2.set_title("Cache Hit Rate [HARDWARE]")
+    ax2.set_ylabel("L1 Hit Rate (%)")
+    ax2.set_title("L1 Hit Rate [HARDWARE]")
     ax2.set_xticks(x + width * 1.5)
     ax2.set_xticklabels(workloads)
     ax2.legend()
@@ -392,12 +445,12 @@ def _print_summary_table(all_results: dict):
     print(f"{'=' * 72}")
 
     header = (f"  {'Workload':<12} {'Strategy':<18} "
-              f"{'Avg Lat (ms)':<14} {'Hit Rate':<10} {'Speedup':<10}")
+              f"{'Avg E2E (ms)':<14} {'L1 Hit':<10} {'Speedup':<10}")
     print(header)
     print("  " + "─" * 66)
 
     for wl_name, wl_data in all_results.items():
-        lru_lat = wl_data.get("lru_hw", {}).get("avg_latency_ms", 1)
+        lru_lat = wl_data.get("lru_hw", {}).get("avg_end_to_end_latency_ms", 1)
 
         for strat_key, strat_label in [
             ("no_cache_hw", "No Cache"),
@@ -407,8 +460,8 @@ def _print_summary_table(all_results: dict):
         ]:
             if strat_key in wl_data:
                 d = wl_data[strat_key]
-                lat = d.get("avg_latency_ms", 0)
-                hr = d.get("hit_rate_pct", 0)
+                    lat = d.get("avg_end_to_end_latency_ms", d.get("avg_latency_ms", 0))
+                    hr = d.get("l1_hit_rate_pct", d.get("hit_rate_pct", 0))
                 sp = f"{lru_lat / lat:.2f}x" if lat > 0 else "N/A"
                 print(f"  {wl_name:<12} {strat_label:<18} "
                       f"{lat:<14.2f} {hr:<10.1f} {sp:<10}")

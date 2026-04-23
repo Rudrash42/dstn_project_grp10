@@ -123,11 +123,14 @@ class HardwareCacheEnv(gym.Env):
             low=-np.inf, high=np.inf,
             shape=(self.cfg.obs_dim,), dtype=np.float32,
         )
-        self.action_space = gym.spaces.MultiBinary(self.cfg.max_candidate_chunks)
+        # Action space: first max_candidate_chunks for prefetch, then max_eviction_candidates for eviction
+        total_action_dim = self.cfg.max_candidate_chunks + self.cfg.max_eviction_candidates
+        self.action_space = gym.spaces.MultiBinary(total_action_dim)
 
         # ─── Episode tracking ─────────────────────────────────
         self.current_step = 0
         self.candidate_ids: List[int] = []
+        self.eviction_candidate_ids: List[int] = []
 
         # ─── Metrics ──────────────────────────────────────────
         self.episode_rewards: List[float] = []
@@ -171,11 +174,12 @@ class HardwareCacheEnv(gym.Env):
         """
         Execute one step (one query arriving):
 
-        1. Decode action → decide which L3 candidates to prefetch
-        2. Execute prefetch (REAL disk → CPU transfer!)
-        3. Process the query (access needed chunks with REAL latency)
-        4. Compute reward based on measured vs baseline latency
-        5. Advance to next query
+        1. Decode action → decide which cached chunks to evict and which L3 candidates to prefetch
+        2. Execute evictions (free memory on hardware)
+        3. Execute prefetch (REAL disk → CPU transfer!)
+        4. Process the query (access needed chunks with REAL latency)
+        5. Compute reward based on measured vs baseline latency (prefetch cost not included)
+        6. Advance to next query
 
         The flow is identical to CacheEnv.step(), but with real hardware.
         """
@@ -205,28 +209,43 @@ class HardwareCacheEnv(gym.Env):
         )
 
         # ══════════════════════════════════════════════════════
-        # STEP 2: Execute prefetch actions (RL agent's decision!)
+        # STEP 2: Decode actions
+        # ══════════════════════════════════════════════════════
+        # First max_candidate_chunks for prefetch, rest for eviction
+        prefetch_action = action[:self.cfg.max_candidate_chunks]
+        eviction_action = action[self.cfg.max_candidate_chunks:]
+
+        # ══════════════════════════════════════════════════════
+        # STEP 3: Execute eviction actions (RL agent's decision!)
+        # ══════════════════════════════════════════════════════
+        evicted_ids = []
+        for i, do_evict in enumerate(eviction_action):
+            if do_evict and i < len(self.eviction_candidate_ids):
+                cid = self.eviction_candidate_ids[i]
+                if self.hw_cache.evict_chunk(cid):
+                    evicted_ids.append(cid)
+
+        # ══════════════════════════════════════════════════════
+        # STEP 4: Execute prefetch actions (RL agent's decision!)
         # ══════════════════════════════════════════════════════
         # The agent outputs a binary vector: [0,1,0,1,...] indicating
         # which of the 16 candidate chunks to prefetch from L3 → L2.
         prefetched_ids = []
-        total_prefetch_cost_ms = 0.0
 
-        for i, do_prefetch in enumerate(action):
+        for i, do_prefetch in enumerate(prefetch_action):
             if do_prefetch and i < len(self.candidate_ids):
                 cid = self.candidate_ids[i]
                 # REAL prefetch: loads chunk from NVMe disk → CPU pinned RAM
                 cost = self.hw_cache.prefetch(cid)
                 if cost > 0:
                     prefetched_ids.append(cid)
-                    total_prefetch_cost_ms += cost
 
         self.episode_prefetches += len(prefetched_ids)
         useful = set(prefetched_ids) & needed_set
         self.episode_useful_prefetches += len(useful)
 
         # ══════════════════════════════════════════════════════
-        # STEP 3: Process query — access all needed chunks
+        # STEP 5: Process query — access all needed chunks
         # ══════════════════════════════════════════════════════
         # This is where REAL data movement happens!
         # Chunks in L1 → trivial GPU read
@@ -242,7 +261,7 @@ class HardwareCacheEnv(gym.Env):
         self.episode_baseline_latencies.append(baseline_latency_ms)
 
         # ══════════════════════════════════════════════════════
-        # STEP 4: Compute reward
+        # STEP 6: Compute reward (prefetch cost not included)
         # ══════════════════════════════════════════════════════
         # R = α × (baseline - actual) - β × MB_migrated - γ × unused
         #
@@ -251,7 +270,6 @@ class HardwareCacheEnv(gym.Env):
         reward = compute_reward(
             prefetched_chunk_ids=prefetched_ids,
             actually_accessed_chunk_ids=needed_set,
-            prefetch_cost_ms=total_prefetch_cost_ms,
             access_latency_ms=access_latency_ms,
             baseline_latency_ms=baseline_latency_ms,
             config=self.cfg,
@@ -259,7 +277,7 @@ class HardwareCacheEnv(gym.Env):
         self.episode_rewards.append(reward)
 
         # ══════════════════════════════════════════════════════
-        # STEP 5: Advance to next query
+        # STEP 7: Advance to next query
         # ══════════════════════════════════════════════════════
         self.current_step += 1
         terminated = self.current_step >= self.n_queries
@@ -273,9 +291,9 @@ class HardwareCacheEnv(gym.Env):
             "reward": reward,
             "access_latency_ms": access_latency_ms,
             "baseline_latency_ms": baseline_latency_ms,
-            "prefetch_cost_ms": total_prefetch_cost_ms,
             "tier_counts": tier_counts,
             "n_prefetched": len(prefetched_ids),
+            "n_evicted": len(evicted_ids),
             "n_useful": len(useful),
             "hardware_mode": "CUDA" if self.hw_cache.use_cuda else "CPU-only",
         }
@@ -287,7 +305,7 @@ class HardwareCacheEnv(gym.Env):
                   f"access={access_latency_ms:.2f}ms  "
                   f"baseline={baseline_latency_ms:.2f}ms  "
                   f"saved={time_saved:+.2f}ms  "
-                  f"prefetched={len(prefetched_ids)} (useful={len(useful)})")
+                  f"prefetched={len(prefetched_ids)} evicted={len(evicted_ids)} (useful={len(useful)})")
 
         # ── End-of-episode summary ──
         if terminated:
@@ -341,13 +359,14 @@ class HardwareCacheEnv(gym.Env):
     def _build_obs(self) -> np.ndarray:
         """
         Build the observation vector (identical logic to CacheEnv):
-        [query_embedding(384) | cache_stats(3) | candidate_recency(16)]
+        [query_embedding(384) | cache_stats(3) | candidate_recency(16) | eviction_scores(16)]
 
         The observation is what the RL agent "sees" at each step.
         It contains:
           1. Embedding of the current query (what's being asked)
           2. Cache utilization stats (how full is each tier)
           3. Recency scores for candidate chunks (how recently each was used)
+          4. Eviction opportunity scores for cached chunks
         """
         # ── Part 1: Query embedding (384 dims) ──
         if self.current_step < self.n_queries:
@@ -381,7 +400,26 @@ class HardwareCacheEnv(gym.Env):
                 except ValueError:
                     recency_scores[i] = 0.0
 
-        obs = np.concatenate([embedding, cache_stats, recency_scores])
+        # ── Part 4: Eviction candidates + eviction opportunity scores (16 dims) ──
+        # Get chunks in L2+L3 (prioritize by LRU, most recent first)
+        l2_ids = list(reversed(list(self.hw_cache.l2.keys())))
+        l3_ids = list(reversed(list(self.hw_cache.l3.keys())))
+        self.eviction_candidate_ids = (l2_ids + l3_ids)[:self.cfg.max_eviction_candidates]
+
+        eviction_scores = np.zeros(self.cfg.max_eviction_candidates, dtype=np.float32)
+        for i, cid in enumerate(self.eviction_candidate_ids):
+            if cid in recent_set:
+                # Recent chunks have high scores (harder to evict)
+                try:
+                    pos = len(recent) - 1 - recent[::-1].index(cid)
+                    eviction_scores[i] = 1.0 - (pos / max(len(recent), 1))
+                except ValueError:
+                    eviction_scores[i] = 0.0
+            else:
+                # Old chunks have low scores (easier to evict)
+                eviction_scores[i] = 0.0
+
+        obs = np.concatenate([embedding, cache_stats, recency_scores, eviction_scores])
         return obs.astype(np.float32)
 
     def get_operation_log(self):

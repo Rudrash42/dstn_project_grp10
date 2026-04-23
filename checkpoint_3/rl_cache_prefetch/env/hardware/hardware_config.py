@@ -146,8 +146,11 @@ class HardwareConfig:
     # Dimension of query text embeddings (all-MiniLM-L6-v2 = 384)
     embed_dim: int = 384
 
-    # How many L3/L2 candidate chunks to show the agent
+    # How many L3/L2 candidate chunks to show the agent for prefetching
     max_candidate_chunks: int = 16
+
+    # How many cached chunks to show the agent for eviction decisions
+    max_eviction_candidates: int = 16
 
     # How many past accesses to track for recency scoring
     history_len: int = 5
@@ -177,8 +180,8 @@ class HardwareConfig:
 
     @property
     def obs_dim(self) -> int:
-        """Total observation vector size: embedding + cache_stats + candidates."""
-        return self.embed_dim + 3 + self.max_candidate_chunks
+        """Total observation vector size: embedding + cache_stats + candidates + eviction."""
+        return self.embed_dim + 3 + self.max_candidate_chunks + self.max_eviction_candidates
 
     @property
     def l1_capacity_bytes(self) -> int:

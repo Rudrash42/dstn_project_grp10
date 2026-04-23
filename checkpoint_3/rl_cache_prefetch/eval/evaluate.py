@@ -25,6 +25,24 @@ from agent.state_encoder import StateEncoder
 from eval.baselines import run_lru_baseline, run_no_cache_baseline, run_oracle_baseline
 
 
+def describe_trace_provenance(trace_path: Path) -> str:
+    """Return a short provenance label for a trace CSV."""
+    try:
+        df = pd.read_csv(trace_path, nrows=1)
+    except Exception as e:
+        return f"unreadable ({e})"
+
+    required = {"runtime_chunk_ids", "chunk_event_source"}
+    if not required.issubset(set(df.columns)):
+        return "synthetic_or_legacy(no runtime columns)"
+
+    if df.empty:
+        return "empty_trace"
+
+    source = str(df.iloc[0].get("chunk_event_source", "")).strip() or "unknown"
+    return f"runtime({source})"
+
+
 def evaluate_rl_agent(
     trace_path: str | Path,
     model_path: str | Path,
@@ -114,6 +132,7 @@ def run_full_evaluation(model_path: Optional[str] = None):
         print(f"\n{'─' * 50}")
         print(f"  Workload: {wl_name}")
         print(f"{'─' * 50}")
+        print(f"  Trace provenance: {describe_trace_provenance(trace_path)}")
 
         wl_results = {}
 

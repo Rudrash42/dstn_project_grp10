@@ -8,14 +8,14 @@ dtype_bytes: 2
 chunk_size_tokens: 256
 kv_bytes_per_token: 12288
 chunk_size_bytes: 3145728
-l1_capacity_mb: 3.0
-l2_capacity_mb: 4.5
+l1_capacity_mb: 48.0
+l2_capacity_mb: 96.0
 l3_capacity_mb: 5120.0
-l1_hit_latency_ms: 0.1
-l2_hit_latency_ms: 0.24
-l3_hit_latency_ms: 6.0
-cold_compute_per_chunk_ms: 33.1
-prefetch_l3_to_l2_ms: 6.0
+l1_hit_latency_ms: 0.4649
+l2_hit_latency_ms: 1.1105
+l3_hit_latency_ms: 4.0125
+cold_compute_per_chunk_ms: 31.6419
+prefetch_l3_to_l2_ms: 1.2478
 prefetch_l2_to_l1_ms: 0.1
 alpha: 1.0
 beta: 0.01
@@ -36,6 +36,6 @@ history_len: 5
 policy_net_arch:
 - 64
 - 64
-behavioral_cloning_epochs: 20
+behavioral_cloning_epochs: 500
 behavioral_cloning_lr: 0.001
 num_queries_per_episode: 50

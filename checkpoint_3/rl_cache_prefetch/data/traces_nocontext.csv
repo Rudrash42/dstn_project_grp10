@@ -1,51 +1,51 @@
 query_id,query_text,input_tokens,chunk_ids_needed,shared_chunk_ids,unique_chunk_ids,num_chunks
-1,Who is the founder of Microsoft?,7,[0],[],[0],1
-2,What is the chemical symbol for sodium?,8,[1],[],[1],1
-3,How many players are there in a baseball team?,10,[2],[],[2],1
-4,What year did World War II end?,8,[3],[],[3],1
-5,What is the tallest species of tree?,8,[4],[],[4],1
-6,Who wrote The Divine Comedy?,6,[5],[],[5],1
-7,What is the hardest rock type?,7,[6],[],[6],1
-8,How many hearts does a squid have?,8,[7],[],[7],1
-9,What is the main ingredient in guacamole?,10,[8],[],[8],1
-10,Who developed the polio vaccine?,7,[9],[],[9],1
-11,What is the longest-running Broadway show?,8,[10],[],[10],1
-12,What is the square of 25?,9,[11],[],[11],1
-13,Who was the first woman to win a Nobel Prize?,11,[12],[],[12],1
-14,What is the currency of Brazil?,7,[13],[],[13],1
-15,What gas do plants absorb during photosynthesis?,9,[14],[],[14],1
-16,Who directed the movie Jaws?,7,[15],[],[15],1
-17,What is the largest internal organ in the human body?,11,[16],[],[16],1
-18,How many elements are in the periodic table?,9,[17],[],[17],1
-19,What is the freezing point of mercury in Celsius?,10,[18],[],[18],1
-20,Who painted The School of Athens?,7,[19],[],[19],1
-21,What is the smallest unit of life?,8,[20],[],[20],1
-22,How many time zones are there in Russia?,9,[21],[],[21],1
-23,What is the main language spoken in Argentina?,9,[22],[],[22],1
-24,Who invented the diesel engine?,6,[23],[],[23],1
-25,What is the diameter of Earth in kilometers?,9,[24],[],[24],1
-26,What is the rarest blood type?,8,[25],[],[25],1
-27,Who composed The Magic Flute?,7,[26],[],[26],1
-28,What is the powerhouse of a computer?,8,[27],[],[27],1
-29,How many sides does a dodecagon have?,11,[28],[],[28],1
-30,What is the largest species of penguin?,9,[29],[],[29],1
-31,Who discovered the planet Neptune?,6,[30],[],[30],1
-32,What is the boiling point of nitrogen in Celsius?,10,[31],[],[31],1
-33,What is the fastest bird in a dive?,9,[32],[],[32],1
-34,Who wrote The Brothers Karamazov?,9,[33],[],[33],1
-35,What is the largest artery in the human body?,10,[34],[],[34],1
-36,How many keys are on a standard computer keyboard?,10,[35],[],[35],1
-37,What is the smallest country by population?,8,[36],[],[36],1
-38,Who invented the telescope?,5,[37],[],[37],1
-39,What is the main component of natural gas?,9,[38],[],[38],1
-40,How many amendments are in the U.S. Constitution?,11,[39],[],[39],1
-41,What is the deepest lake in the world?,9,[40],[],[40],1
-42,Who was the first emperor of China?,8,[41],[],[41],1
-43,What is the currency of South Africa?,8,[42],[],[42],1
-44,What is the longest bone in the arm?,9,[43],[],[43],1
-45,Who discovered the circulation of blood?,7,[44],[],[44],1
-46,What is the primary ingredient in hummus?,9,[45],[],[45],1
-47,How many moons does Mars have?,7,[46],[],[46],1
-48,What is the largest species of cat?,8,[47],[],[47],1
-49,Who wrote The Picture of Dorian Gray?,9,[48],[],[48],1
-50,What is the chemical formula for methane?,8,[49],[],[49],1
+1,Who is the founder of Microsoft?,96,[0],[],[0],1
+2,What is the chemical symbol for sodium?,96,[1],[],[1],1
+3,How many players are there in a baseball team?,96,[2],[],[2],1
+4,What year did World War II end?,96,[3],[],[3],1
+5,What is the tallest species of tree?,96,[4],[],[4],1
+6,Who wrote The Divine Comedy?,96,[5],[],[5],1
+7,What is the hardest rock type?,96,[6],[],[6],1
+8,How many hearts does a squid have?,96,[7],[],[7],1
+9,What is the main ingredient in guacamole?,96,[8],[],[8],1
+10,Who developed the polio vaccine?,96,[9],[],[9],1
+11,What is the longest-running Broadway show?,96,[10],[],[10],1
+12,What is the square of 25?,96,[11],[],[11],1
+13,Who was the first woman to win a Nobel Prize?,96,[12],[],[12],1
+14,What is the currency of Brazil?,96,[13],[],[13],1
+15,What gas do plants absorb during photosynthesis?,96,[14],[],[14],1
+16,Who directed the movie Jaws?,96,[15],[],[15],1
+17,What is the largest internal organ in the human body?,96,[16],[],[16],1
+18,How many elements are in the periodic table?,96,[17],[],[17],1
+19,What is the freezing point of mercury in Celsius?,96,[18],[],[18],1
+20,Who painted The School of Athens?,96,[19],[],[19],1
+21,What is the smallest unit of life?,96,[20],[],[20],1
+22,How many time zones are there in Russia?,96,[21],[],[21],1
+23,What is the main language spoken in Argentina?,96,[22],[],[22],1
+24,Who invented the diesel engine?,96,[23],[],[23],1
+25,What is the diameter of Earth in kilometers?,96,[24],[],[24],1
+26,What is the rarest blood type?,96,[25],[],[25],1
+27,Who composed The Magic Flute?,96,[26],[],[26],1
+28,What is the powerhouse of a computer?,96,[27],[],[27],1
+29,How many sides does a dodecagon have?,96,[28],[],[28],1
+30,What is the largest species of penguin?,96,[29],[],[29],1
+31,Who discovered the planet Neptune?,96,[30],[],[30],1
+32,What is the boiling point of nitrogen in Celsius?,96,[31],[],[31],1
+33,What is the fastest bird in a dive?,96,[32],[],[32],1
+34,Who wrote The Brothers Karamazov?,96,[33],[],[33],1
+35,What is the largest artery in the human body?,96,[34],[],[34],1
+36,How many keys are on a standard computer keyboard?,96,[35],[],[35],1
+37,What is the smallest country by population?,96,[36],[],[36],1
+38,Who invented the telescope?,96,[37],[],[37],1
+39,What is the main component of natural gas?,96,[38],[],[38],1
+40,How many amendments are in the U.S. Constitution?,96,[39],[],[39],1
+41,What is the deepest lake in the world?,96,[40],[],[40],1
+42,Who was the first emperor of China?,96,[41],[],[41],1
+43,What is the currency of South Africa?,96,[42],[],[42],1
+44,What is the longest bone in the arm?,96,[43],[],[43],1
+45,Who discovered the circulation of blood?,96,[44],[],[44],1
+46,What is the primary ingredient in hummus?,96,[45],[],[45],1
+47,How many moons does Mars have?,96,[46],[],[46],1
+48,What is the largest species of cat?,96,[47],[],[47],1
+49,Who wrote The Picture of Dorian Gray?,96,[48],[],[48],1
+50,What is the chemical formula for methane?,96,[49],[],[49],1

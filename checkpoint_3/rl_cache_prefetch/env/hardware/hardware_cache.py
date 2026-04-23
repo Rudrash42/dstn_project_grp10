@@ -852,6 +852,66 @@ class HardwareCache:
         return None
 
     # ═══════════════════════════════════════════════════════════════
+    # MODEL-DRIVEN EVICTION
+    # ═══════════════════════════════════════════════════════════════
+
+    def get_all_cached_chunks(self) -> List[int]:
+        """
+        Return all chunk IDs currently in the cache (L1+L2+L3),
+        ordered by tier (L1 first, then L2, then L3).
+        """
+        return list(self.l1.keys()) + list(self.l2.keys()) + list(self.l3.keys())
+
+    def evict_chunk(self, chunk_id: int) -> bool:
+        """
+        Explicitly evict a chunk by ID (not LRU-based).
+        Frees the underlying tensor/file resources.
+        Returns True if the chunk was found and evicted, False otherwise.
+        """
+        if chunk_id in self.l1:
+            if TORCH_AVAILABLE:
+                del self.l1[chunk_id]
+            self.l1_bytes -= self.cfg.chunk_size_bytes
+            if self.cfg.verbose:
+                self._log_operation("evict", chunk_id, "L1", 0.0, "")
+            return True
+
+        if chunk_id in self.l2:
+            if TORCH_AVAILABLE:
+                del self.l2[chunk_id]
+            self.l2_bytes -= self.cfg.chunk_size_bytes
+            if self.cfg.verbose:
+                self._log_operation("evict", chunk_id, "L2", 0.0, "")
+            return True
+
+        if chunk_id in self.l3:
+            if TORCH_AVAILABLE:
+                chunk_path = self._get_l3_chunk_path(chunk_id)
+                if chunk_path.exists():
+                    try:
+                        chunk_path.unlink()
+                    except Exception as e:
+                        if self.cfg.verbose:
+                            print(f"[HardwareCache] ⚠️  Failed to delete {chunk_path}: {e}")
+            del self.l3[chunk_id]
+            self.l3_bytes -= self.cfg.chunk_size_bytes
+            if self.cfg.verbose:
+                self._log_operation("evict", chunk_id, "L3", 0.0, "")
+            return True
+
+        return False
+
+    def evict_chunks(self, chunk_ids: List[int]) -> int:
+        """
+        Evict multiple chunks by ID. Returns the number of chunks successfully evicted.
+        """
+        count = 0
+        for cid in chunk_ids:
+            if self.evict_chunk(cid):
+                count += 1
+        return count
+
+    # ═══════════════════════════════════════════════════════════════
     # REPORTING & EXPORT
     # ═══════════════════════════════════════════════════════════════
 

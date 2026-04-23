@@ -20,11 +20,11 @@ from .reward import compute_reward, compute_baseline_latency
 
 class CacheEnv(gym.Env):
     """
-    RL Environment for KV-Cache prefetching decisions.
+    RL Environment for KV-Cache prefetching and eviction decisions.
 
-    Observation: [query_embedding(384) | cache_stats(3) | candidate_recency(16)]
-    Action:      MultiBinary(16) — which L3 candidates to prefetch
-    Reward:      α·time_saved − β·bytes_migrated − γ·unused_prefetches
+    Observation: [query_embedding(384) | cache_stats(3) | candidate_recency(16) | eviction_scores(16)]
+    Action:      MultiBinary(32) — first 16: which candidates to prefetch, last 16: which cached chunks to evict
+    Reward:      α·time_saved − β·bytes_migrated − γ·unused_prefetches (prefetch cost not included)
     """
 
     metadata = {"render_modes": []}
@@ -80,11 +80,14 @@ class CacheEnv(gym.Env):
             low=-np.inf, high=np.inf,
             shape=(self.cfg.obs_dim,), dtype=np.float32,
         )
-        self.action_space = gym.spaces.MultiBinary(self.cfg.max_candidate_chunks)
+        # Action space: first max_candidate_chunks for prefetch, then max_eviction_candidates for eviction
+        total_action_dim = self.cfg.max_candidate_chunks + self.cfg.max_eviction_candidates
+        self.action_space = gym.spaces.MultiBinary(total_action_dim)
 
         # Episode state
         self.current_step = 0
         self.candidate_ids: List[int] = []
+        self.eviction_candidate_ids: List[int] = []
 
         # Metrics tracking
         self.episode_rewards: List[float] = []
@@ -99,6 +102,7 @@ class CacheEnv(gym.Env):
         self.sim.reset()
         self.current_step = 0
         self.candidate_ids = []
+        self.eviction_candidate_ids = []
         self.episode_rewards = []
         self.episode_hits = {"L1": 0, "L2": 0, "L3": 0, "MISS": 0}
         self.episode_prefetches = 0
@@ -110,10 +114,12 @@ class CacheEnv(gym.Env):
     def step(self, action: np.ndarray) -> Tuple[np.ndarray, float, bool, bool, dict]:
         """
         Execute one step:
-        1. Decode action → prefetch selected L3 candidates
-        2. Process the query (access needed chunks)
-        3. Compute reward
-        4. Advance to next query
+        1. Decode action → eviction decisions and prefetch decisions
+        2. Execute evictions
+        3. Execute prefetches
+        4. Process the query (access needed chunks)
+        5. Compute reward (no prefetch cost included)
+        6. Advance to next query
         """
         if self.current_step >= self.n_queries:
             obs = self._build_obs()
@@ -123,7 +129,7 @@ class CacheEnv(gym.Env):
         needed_chunks = self.chunk_lists[self.current_step]
         needed_set = set(needed_chunks)
 
-        # ── 1. Snapshot pre-prefetch tier locations (for baseline) ──
+        # ── 1. Snapshot pre-action tier locations (for baseline) ──
         pre_tiers = {}
         for cid in needed_chunks:
             pre_tiers[cid] = self.sim.chunk_in_cache(cid)
@@ -132,39 +138,49 @@ class CacheEnv(gym.Env):
             needed_chunks, pre_tiers, self.cfg
         )
 
-        # ── 2. Execute prefetch actions ──
+        # ── 2. Decode actions ──
+        # First max_candidate_chunks for prefetch, rest for eviction
+        prefetch_action = action[:self.cfg.max_candidate_chunks]
+        eviction_action = action[self.cfg.max_candidate_chunks:]
+
+        # ── 3. Execute evictions first ──
+        evicted_ids = []
+        for i, do_evict in enumerate(eviction_action):
+            if do_evict and i < len(self.eviction_candidate_ids):
+                cid = self.eviction_candidate_ids[i]
+                if self.sim.evict_chunk(cid):
+                    evicted_ids.append(cid)
+
+        # ── 4. Execute prefetch actions ──
         prefetched_ids = []
-        total_prefetch_cost_ms = 0.0
-        for i, do_prefetch in enumerate(action):
+        for i, do_prefetch in enumerate(prefetch_action):
             if do_prefetch and i < len(self.candidate_ids):
                 cid = self.candidate_ids[i]
                 cost = self.sim.prefetch(cid)
                 if cost > 0:
                     prefetched_ids.append(cid)
-                    total_prefetch_cost_ms += cost
 
         self.episode_prefetches += len(prefetched_ids)
         useful = set(prefetched_ids) & needed_set
         self.episode_useful_prefetches += len(useful)
 
-        # ── 3. Process query (access needed chunks) ──
+        # ── 5. Process query (access needed chunks) ──
         access_latency_ms, tier_counts = self.sim.access_chunks(needed_chunks)
 
         for tier, count in tier_counts.items():
             self.episode_hits[tier] += count
 
-        # ── 4. Compute reward ──
+        # ── 6. Compute reward (prefetch cost not included) ──
         reward = compute_reward(
             prefetched_chunk_ids=prefetched_ids,
             actually_accessed_chunk_ids=needed_set,
-            prefetch_cost_ms=total_prefetch_cost_ms,
             access_latency_ms=access_latency_ms,
             baseline_latency_ms=baseline_latency_ms,
             config=self.cfg,
         )
         self.episode_rewards.append(reward)
 
-        # ── 5. Advance ──
+        # ── 7. Advance ──
         self.current_step += 1
         terminated = self.current_step >= self.n_queries
         truncated = False
@@ -176,9 +192,9 @@ class CacheEnv(gym.Env):
             "reward": reward,
             "access_latency_ms": access_latency_ms,
             "baseline_latency_ms": baseline_latency_ms,
-            "prefetch_cost_ms": total_prefetch_cost_ms,
             "tier_counts": tier_counts,
             "n_prefetched": len(prefetched_ids),
+            "n_evicted": len(evicted_ids),
             "n_useful": len(useful),
         }
 
@@ -207,7 +223,7 @@ class CacheEnv(gym.Env):
     def _build_obs(self) -> np.ndarray:
         """
         Build the observation vector:
-        [query_embedding(384) | cache_stats(3) | candidate_recency(16)]
+        [query_embedding(384) | cache_stats(3) | candidate_recency(16) | eviction_scores(16)]
         """
         # Query embedding
         if self.current_step < self.n_queries:
@@ -243,5 +259,25 @@ class CacheEnv(gym.Env):
                 except ValueError:
                     recency_scores[i] = 0.0
 
-        obs = np.concatenate([embedding, cache_stats, recency_scores])
+        # Eviction candidates: chunks in L2+L3 (prioritize by LRU, most recent first)
+        # These are potential chunks to evict to make room
+        l2_ids = list(reversed(list(self.sim.l2.keys())))
+        l3_ids = list(reversed(list(self.sim.l3.keys())))
+        self.eviction_candidate_ids = (l2_ids + l3_ids)[:self.cfg.max_eviction_candidates]
+
+        # Eviction scores: penalize evicting recently accessed chunks
+        eviction_scores = np.zeros(self.cfg.max_eviction_candidates, dtype=np.float32)
+        for i, cid in enumerate(self.eviction_candidate_ids):
+            if cid in recent_set:
+                # Recent chunks should have high scores (harder to evict)
+                try:
+                    pos = len(recent) - 1 - recent[::-1].index(cid)
+                    eviction_scores[i] = 1.0 - (pos / max(len(recent), 1))
+                except ValueError:
+                    eviction_scores[i] = 0.0
+            else:
+                # Old chunks have low scores (easier to evict)
+                eviction_scores[i] = 0.0
+
+        obs = np.concatenate([embedding, cache_stats, recency_scores, eviction_scores])
         return obs.astype(np.float32)

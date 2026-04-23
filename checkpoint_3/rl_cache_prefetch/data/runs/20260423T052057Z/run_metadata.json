@@ -1,0 +1,20 @@
+{
+  "run_id": "20260423T052057Z",
+  "timestamp_utc": "20260423T052057Z",
+  "cuda_required": true,
+  "runtime_chunks_required": true,
+  "pressure_inflation_enabled": false,
+  "max_queries": 50,
+  "artifacts": {
+    "traces_prefix": "/home/rudrash/prog/dstn/checkpoint_3/rl_cache_prefetch/data/traces_prefix.csv",
+    "traces_rag": "/home/rudrash/prog/dstn/checkpoint_3/rl_cache_prefetch/data/traces_rag.csv",
+    "traces_nocontext": "/home/rudrash/prog/dstn/checkpoint_3/rl_cache_prefetch/data/traces_nocontext.csv",
+    "traces_multiturn": "/home/rudrash/prog/dstn/checkpoint_3/rl_cache_prefetch/data/traces_multiturn.csv",
+    "ttft_lookup": "/home/rudrash/prog/dstn/checkpoint_3/rl_cache_prefetch/data/ttft_lookup.json",
+    "runtime_chunk_events": "/home/rudrash/prog/dstn/checkpoint_3/rl_cache_prefetch/data/runtime_chunk_events.jsonl",
+    "trace_audit_report": "/home/rudrash/prog/dstn/checkpoint_3/rl_cache_prefetch/data/trace_audit_report.json",
+    "raw_experiment_results": "/home/rudrash/prog/dstn/checkpoint_3/rl_cache_prefetch/data/raw_experiment_results.csv",
+    "hardware_config": "/home/rudrash/prog/dstn/checkpoint_3/rl_cache_prefetch/configs/hardware_config.yaml",
+    "ppo_config": "/home/rudrash/prog/dstn/checkpoint_3/rl_cache_prefetch/configs/ppo_config.yaml"
+  }
+}

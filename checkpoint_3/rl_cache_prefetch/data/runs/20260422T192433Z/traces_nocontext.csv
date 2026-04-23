@@ -1,0 +1,201 @@
+query_id,query_text,embedding_text,focus_text,context_profile,prompt_text,prompt_preview,input_tokens,chunk_ids_needed,shared_chunk_ids,unique_chunk_ids,num_chunks,runtime_chunk_ids,chunk_event_source,chunk_id_source,runtime_event_count,tier_transition_event,cache_file_count_before,cache_file_count_after,cache_disk_mb_before,cache_disk_mb_after,pressure_phase
+1,Who is the founder of Microsoft?,"Focus question: Who is the founder of Microsoft?
+Context profile: no_shared_context
+Prompt tokens: 7
+Context preview: Who is the founder of Microsoft?",Who is the founder of Microsoft?,no_shared_context,Who is the founder of Microsoft?,Who is the founder of Microsoft?,7,[0],[],[0],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+2,What is the chemical symbol for sodium?,"Focus question: What is the chemical symbol for sodium?
+Context profile: no_shared_context
+Prompt tokens: 8
+Context preview: What is the chemical symbol for sodium?",What is the chemical symbol for sodium?,no_shared_context,What is the chemical symbol for sodium?,What is the chemical symbol for sodium?,8,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+3,How many players are there in a baseball team?,"Focus question: How many players are there in a baseball team?
+Context profile: no_shared_context
+Prompt tokens: 10
+Context preview: How many players are there in a baseball team?",How many players are there in a baseball team?,no_shared_context,How many players are there in a baseball team?,How many players are there in a baseball team?,10,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+4,What year did World War II end?,"Focus question: What year did World War II end?
+Context profile: no_shared_context
+Prompt tokens: 8
+Context preview: What year did World War II end?",What year did World War II end?,no_shared_context,What year did World War II end?,What year did World War II end?,8,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+5,What is the tallest species of tree?,"Focus question: What is the tallest species of tree?
+Context profile: no_shared_context
+Prompt tokens: 8
+Context preview: What is the tallest species of tree?",What is the tallest species of tree?,no_shared_context,What is the tallest species of tree?,What is the tallest species of tree?,8,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+6,Who wrote The Divine Comedy?,"Focus question: Who wrote The Divine Comedy?
+Context profile: no_shared_context
+Prompt tokens: 6
+Context preview: Who wrote The Divine Comedy?",Who wrote The Divine Comedy?,no_shared_context,Who wrote The Divine Comedy?,Who wrote The Divine Comedy?,6,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+7,What is the hardest rock type?,"Focus question: What is the hardest rock type?
+Context profile: no_shared_context
+Prompt tokens: 7
+Context preview: What is the hardest rock type?",What is the hardest rock type?,no_shared_context,What is the hardest rock type?,What is the hardest rock type?,7,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+8,How many hearts does a squid have?,"Focus question: How many hearts does a squid have?
+Context profile: no_shared_context
+Prompt tokens: 8
+Context preview: How many hearts does a squid have?",How many hearts does a squid have?,no_shared_context,How many hearts does a squid have?,How many hearts does a squid have?,8,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+9,What is the main ingredient in guacamole?,"Focus question: What is the main ingredient in guacamole?
+Context profile: no_shared_context
+Prompt tokens: 10
+Context preview: What is the main ingredient in guacamole?",What is the main ingredient in guacamole?,no_shared_context,What is the main ingredient in guacamole?,What is the main ingredient in guacamole?,10,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+10,Who developed the polio vaccine?,"Focus question: Who developed the polio vaccine?
+Context profile: no_shared_context
+Prompt tokens: 7
+Context preview: Who developed the polio vaccine?",Who developed the polio vaccine?,no_shared_context,Who developed the polio vaccine?,Who developed the polio vaccine?,7,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+11,What is the longest-running Broadway show?,"Focus question: What is the longest-running Broadway show?
+Context profile: no_shared_context
+Prompt tokens: 8
+Context preview: What is the longest-running Broadway show?",What is the longest-running Broadway show?,no_shared_context,What is the longest-running Broadway show?,What is the longest-running Broadway show?,8,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+12,What is the square of 25?,"Focus question: What is the square of 25?
+Context profile: no_shared_context
+Prompt tokens: 9
+Context preview: What is the square of 25?",What is the square of 25?,no_shared_context,What is the square of 25?,What is the square of 25?,9,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+13,Who was the first woman to win a Nobel Prize?,"Focus question: Who was the first woman to win a Nobel Prize?
+Context profile: no_shared_context
+Prompt tokens: 11
+Context preview: Who was the first woman to win a Nobel Prize?",Who was the first woman to win a Nobel Prize?,no_shared_context,Who was the first woman to win a Nobel Prize?,Who was the first woman to win a Nobel Prize?,11,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+14,What is the currency of Brazil?,"Focus question: What is the currency of Brazil?
+Context profile: no_shared_context
+Prompt tokens: 7
+Context preview: What is the currency of Brazil?",What is the currency of Brazil?,no_shared_context,What is the currency of Brazil?,What is the currency of Brazil?,7,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+15,What gas do plants absorb during photosynthesis?,"Focus question: What gas do plants absorb during photosynthesis?
+Context profile: no_shared_context
+Prompt tokens: 9
+Context preview: What gas do plants absorb during photosynthesis?",What gas do plants absorb during photosynthesis?,no_shared_context,What gas do plants absorb during photosynthesis?,What gas do plants absorb during photosynthesis?,9,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+16,Who directed the movie Jaws?,"Focus question: Who directed the movie Jaws?
+Context profile: no_shared_context
+Prompt tokens: 7
+Context preview: Who directed the movie Jaws?",Who directed the movie Jaws?,no_shared_context,Who directed the movie Jaws?,Who directed the movie Jaws?,7,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+17,What is the largest internal organ in the human body?,"Focus question: What is the largest internal organ in the human body?
+Context profile: no_shared_context
+Prompt tokens: 11
+Context preview: What is the largest internal organ in the human body?",What is the largest internal organ in the human body?,no_shared_context,What is the largest internal organ in the human body?,What is the largest internal organ in the human body?,11,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+18,How many elements are in the periodic table?,"Focus question: How many elements are in the periodic table?
+Context profile: no_shared_context
+Prompt tokens: 9
+Context preview: How many elements are in the periodic table?",How many elements are in the periodic table?,no_shared_context,How many elements are in the periodic table?,How many elements are in the periodic table?,9,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+19,What is the freezing point of mercury in Celsius?,"Focus question: What is the freezing point of mercury in Celsius?
+Context profile: no_shared_context
+Prompt tokens: 10
+Context preview: What is the freezing point of mercury in Celsius?",What is the freezing point of mercury in Celsius?,no_shared_context,What is the freezing point of mercury in Celsius?,What is the freezing point of mercury in Celsius?,10,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+20,Who painted The School of Athens?,"Focus question: Who painted The School of Athens?
+Context profile: no_shared_context
+Prompt tokens: 7
+Context preview: Who painted The School of Athens?",Who painted The School of Athens?,no_shared_context,Who painted The School of Athens?,Who painted The School of Athens?,7,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+21,What is the smallest unit of life?,"Focus question: What is the smallest unit of life?
+Context profile: no_shared_context
+Prompt tokens: 8
+Context preview: What is the smallest unit of life?",What is the smallest unit of life?,no_shared_context,What is the smallest unit of life?,What is the smallest unit of life?,8,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+22,How many time zones are there in Russia?,"Focus question: How many time zones are there in Russia?
+Context profile: no_shared_context
+Prompt tokens: 9
+Context preview: How many time zones are there in Russia?",How many time zones are there in Russia?,no_shared_context,How many time zones are there in Russia?,How many time zones are there in Russia?,9,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+23,What is the main language spoken in Argentina?,"Focus question: What is the main language spoken in Argentina?
+Context profile: no_shared_context
+Prompt tokens: 9
+Context preview: What is the main language spoken in Argentina?",What is the main language spoken in Argentina?,no_shared_context,What is the main language spoken in Argentina?,What is the main language spoken in Argentina?,9,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+24,Who invented the diesel engine?,"Focus question: Who invented the diesel engine?
+Context profile: no_shared_context
+Prompt tokens: 6
+Context preview: Who invented the diesel engine?",Who invented the diesel engine?,no_shared_context,Who invented the diesel engine?,Who invented the diesel engine?,6,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+25,What is the diameter of Earth in kilometers?,"Focus question: What is the diameter of Earth in kilometers?
+Context profile: no_shared_context
+Prompt tokens: 9
+Context preview: What is the diameter of Earth in kilometers?",What is the diameter of Earth in kilometers?,no_shared_context,What is the diameter of Earth in kilometers?,What is the diameter of Earth in kilometers?,9,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+26,What is the rarest blood type?,"Focus question: What is the rarest blood type?
+Context profile: no_shared_context
+Prompt tokens: 8
+Context preview: What is the rarest blood type?",What is the rarest blood type?,no_shared_context,What is the rarest blood type?,What is the rarest blood type?,8,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+27,Who composed The Magic Flute?,"Focus question: Who composed The Magic Flute?
+Context profile: no_shared_context
+Prompt tokens: 7
+Context preview: Who composed The Magic Flute?",Who composed The Magic Flute?,no_shared_context,Who composed The Magic Flute?,Who composed The Magic Flute?,7,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+28,What is the powerhouse of a computer?,"Focus question: What is the powerhouse of a computer?
+Context profile: no_shared_context
+Prompt tokens: 8
+Context preview: What is the powerhouse of a computer?",What is the powerhouse of a computer?,no_shared_context,What is the powerhouse of a computer?,What is the powerhouse of a computer?,8,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+29,How many sides does a dodecagon have?,"Focus question: How many sides does a dodecagon have?
+Context profile: no_shared_context
+Prompt tokens: 11
+Context preview: How many sides does a dodecagon have?",How many sides does a dodecagon have?,no_shared_context,How many sides does a dodecagon have?,How many sides does a dodecagon have?,11,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+30,What is the largest species of penguin?,"Focus question: What is the largest species of penguin?
+Context profile: no_shared_context
+Prompt tokens: 9
+Context preview: What is the largest species of penguin?",What is the largest species of penguin?,no_shared_context,What is the largest species of penguin?,What is the largest species of penguin?,9,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+31,Who discovered the planet Neptune?,"Focus question: Who discovered the planet Neptune?
+Context profile: no_shared_context
+Prompt tokens: 6
+Context preview: Who discovered the planet Neptune?",Who discovered the planet Neptune?,no_shared_context,Who discovered the planet Neptune?,Who discovered the planet Neptune?,6,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+32,What is the boiling point of nitrogen in Celsius?,"Focus question: What is the boiling point of nitrogen in Celsius?
+Context profile: no_shared_context
+Prompt tokens: 10
+Context preview: What is the boiling point of nitrogen in Celsius?",What is the boiling point of nitrogen in Celsius?,no_shared_context,What is the boiling point of nitrogen in Celsius?,What is the boiling point of nitrogen in Celsius?,10,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+33,What is the fastest bird in a dive?,"Focus question: What is the fastest bird in a dive?
+Context profile: no_shared_context
+Prompt tokens: 9
+Context preview: What is the fastest bird in a dive?",What is the fastest bird in a dive?,no_shared_context,What is the fastest bird in a dive?,What is the fastest bird in a dive?,9,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+34,Who wrote The Brothers Karamazov?,"Focus question: Who wrote The Brothers Karamazov?
+Context profile: no_shared_context
+Prompt tokens: 9
+Context preview: Who wrote The Brothers Karamazov?",Who wrote The Brothers Karamazov?,no_shared_context,Who wrote The Brothers Karamazov?,Who wrote The Brothers Karamazov?,9,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+35,What is the largest artery in the human body?,"Focus question: What is the largest artery in the human body?
+Context profile: no_shared_context
+Prompt tokens: 10
+Context preview: What is the largest artery in the human body?",What is the largest artery in the human body?,no_shared_context,What is the largest artery in the human body?,What is the largest artery in the human body?,10,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+36,How many keys are on a standard computer keyboard?,"Focus question: How many keys are on a standard computer keyboard?
+Context profile: no_shared_context
+Prompt tokens: 10
+Context preview: How many keys are on a standard computer keyboard?",How many keys are on a standard computer keyboard?,no_shared_context,How many keys are on a standard computer keyboard?,How many keys are on a standard computer keyboard?,10,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+37,What is the smallest country by population?,"Focus question: What is the smallest country by population?
+Context profile: no_shared_context
+Prompt tokens: 8
+Context preview: What is the smallest country by population?",What is the smallest country by population?,no_shared_context,What is the smallest country by population?,What is the smallest country by population?,8,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+38,Who invented the telescope?,"Focus question: Who invented the telescope?
+Context profile: no_shared_context
+Prompt tokens: 5
+Context preview: Who invented the telescope?",Who invented the telescope?,no_shared_context,Who invented the telescope?,Who invented the telescope?,5,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+39,What is the main component of natural gas?,"Focus question: What is the main component of natural gas?
+Context profile: no_shared_context
+Prompt tokens: 9
+Context preview: What is the main component of natural gas?",What is the main component of natural gas?,no_shared_context,What is the main component of natural gas?,What is the main component of natural gas?,9,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+40,How many amendments are in the U.S. Constitution?,"Focus question: How many amendments are in the U.S. Constitution?
+Context profile: no_shared_context
+Prompt tokens: 11
+Context preview: How many amendments are in the U.S. Constitution?",How many amendments are in the U.S. Constitution?,no_shared_context,How many amendments are in the U.S. Constitution?,How many amendments are in the U.S. Constitution?,11,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+41,What is the deepest lake in the world?,"Focus question: What is the deepest lake in the world?
+Context profile: no_shared_context
+Prompt tokens: 9
+Context preview: What is the deepest lake in the world?",What is the deepest lake in the world?,no_shared_context,What is the deepest lake in the world?,What is the deepest lake in the world?,9,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+42,Who was the first emperor of China?,"Focus question: Who was the first emperor of China?
+Context profile: no_shared_context
+Prompt tokens: 8
+Context preview: Who was the first emperor of China?",Who was the first emperor of China?,no_shared_context,Who was the first emperor of China?,Who was the first emperor of China?,8,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+43,What is the currency of South Africa?,"Focus question: What is the currency of South Africa?
+Context profile: no_shared_context
+Prompt tokens: 8
+Context preview: What is the currency of South Africa?",What is the currency of South Africa?,no_shared_context,What is the currency of South Africa?,What is the currency of South Africa?,8,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+44,What is the longest bone in the arm?,"Focus question: What is the longest bone in the arm?
+Context profile: no_shared_context
+Prompt tokens: 9
+Context preview: What is the longest bone in the arm?",What is the longest bone in the arm?,no_shared_context,What is the longest bone in the arm?,What is the longest bone in the arm?,9,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+45,Who discovered the circulation of blood?,"Focus question: Who discovered the circulation of blood?
+Context profile: no_shared_context
+Prompt tokens: 7
+Context preview: Who discovered the circulation of blood?",Who discovered the circulation of blood?,no_shared_context,Who discovered the circulation of blood?,Who discovered the circulation of blood?,7,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+46,What is the primary ingredient in hummus?,"Focus question: What is the primary ingredient in hummus?
+Context profile: no_shared_context
+Prompt tokens: 9
+Context preview: What is the primary ingredient in hummus?",What is the primary ingredient in hummus?,no_shared_context,What is the primary ingredient in hummus?,What is the primary ingredient in hummus?,9,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+47,How many moons does Mars have?,"Focus question: How many moons does Mars have?
+Context profile: no_shared_context
+Prompt tokens: 7
+Context preview: How many moons does Mars have?",How many moons does Mars have?,no_shared_context,How many moons does Mars have?,How many moons does Mars have?,7,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+48,What is the largest species of cat?,"Focus question: What is the largest species of cat?
+Context profile: no_shared_context
+Prompt tokens: 8
+Context preview: What is the largest species of cat?",What is the largest species of cat?,no_shared_context,What is the largest species of cat?,What is the largest species of cat?,8,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+49,Who wrote The Picture of Dorian Gray?,"Focus question: Who wrote The Picture of Dorian Gray?
+Context profile: no_shared_context
+Prompt tokens: 9
+Context preview: Who wrote The Picture of Dorian Gray?",Who wrote The Picture of Dorian Gray?,no_shared_context,Who wrote The Picture of Dorian Gray?,Who wrote The Picture of Dorian Gray?,9,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline
+50,What is the chemical formula for methane?,"Focus question: What is the chemical formula for methane?
+Context profile: no_shared_context
+Prompt tokens: 8
+Context preview: What is the chemical formula for methane?",What is the chemical formula for methane?,no_shared_context,What is the chemical formula for methane?,What is the chemical formula for methane?,8,[0],[0],[],1,"[""Qwen-Qwen2.5-0.5B-Instruct@1@0@-a45a6c9c781278c@bfloat16.pt""]",lmcache_store_coldpass,lmcache_store_coldpass,1,none,6,6,18.0,18.0,baseline

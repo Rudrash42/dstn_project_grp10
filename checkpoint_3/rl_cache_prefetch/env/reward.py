@@ -12,13 +12,13 @@ from .tier_config import TierConfig
 def compute_reward(
     prefetched_chunk_ids: List[int],
     actually_accessed_chunk_ids: Set[int],
-    prefetch_cost_ms: float,
     access_latency_ms: float,
     baseline_latency_ms: float,
     config: TierConfig,
 ) -> float:
     """
     Compute the reward for one step (one query).
+    NOTE: Prefetch cost is not included (model assumes it knows next query and prefetch is free).
 
     Parameters
     ----------
@@ -26,8 +26,6 @@ def compute_reward(
         Chunk IDs the agent chose to prefetch this step.
     actually_accessed_chunk_ids : set[int]
         Chunk IDs that the query actually needed.
-    prefetch_cost_ms : float
-        Total time spent on prefetching (sum of L3→L2 migrations).
     access_latency_ms : float
         Actual time to access all needed chunks (after prefetching).
     baseline_latency_ms : float
@@ -52,7 +50,8 @@ def compute_reward(
     prefetched_set = set(prefetched_chunk_ids)
     unused_count = len(prefetched_set - actually_accessed_chunk_ids)
 
-    # Reward
+    # Reward: time saved minus migration penalty and unused prefetch penalty
+    # (prefetch cost is not included)
     R = (
         config.alpha * time_saved_ms
         - config.beta * bytes_migrated_mb

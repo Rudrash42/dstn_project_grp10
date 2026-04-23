@@ -1,0 +1,34 @@
+{
+  "shared_prefix": {
+    "cold_ttft_ms": 36.45,
+    "warm_ttft_ms": 44.05,
+    "avg_input_tokens": 617,
+    "shared_prefix_tokens": 0,
+    "n_cold": 1,
+    "n_warm": 49
+  },
+  "rag": {
+    "cold_ttft_ms": 49.95,
+    "warm_ttft_ms": 62.76,
+    "avg_input_tokens": 1266,
+    "shared_doc_tokens": 0,
+    "n_cold": 1,
+    "n_warm": 49
+  },
+  "nocontext": {
+    "cold_ttft_ms": 43.24,
+    "warm_ttft_ms": 49.56,
+    "avg_input_tokens": 8,
+    "n_cold": 1,
+    "n_warm": 49,
+    "n_queries": 50
+  },
+  "multiturn": {
+    "cold_ttft_ms": 36.6,
+    "warm_ttft_ms_base": 46.49,
+    "base_tokens": 61,
+    "tokens_per_turn": 25.0,
+    "n_cold": 1,
+    "n_warm": 49
+  }
+}

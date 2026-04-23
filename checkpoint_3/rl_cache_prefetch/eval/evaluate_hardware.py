@@ -460,8 +460,8 @@ def _print_summary_table(all_results: dict):
         ]:
             if strat_key in wl_data:
                 d = wl_data[strat_key]
-                    lat = d.get("avg_end_to_end_latency_ms", d.get("avg_latency_ms", 0))
-                    hr = d.get("l1_hit_rate_pct", d.get("hit_rate_pct", 0))
+                lat = d.get("avg_end_to_end_latency_ms", d.get("avg_latency_ms", 0))
+                hr = d.get("l1_hit_rate_pct", d.get("hit_rate_pct", 0))
                 sp = f"{lru_lat / lat:.2f}x" if lat > 0 else "N/A"
                 print(f"  {wl_name:<12} {strat_label:<18} "
                       f"{lat:<14.2f} {hr:<10.1f} {sp:<10}")

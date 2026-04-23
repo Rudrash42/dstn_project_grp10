@@ -1,32 +1,37 @@
 {
   "shared_prefix": {
-    "cold_ttft_ms": 204.61,
-    "warm_ttft_ms": 134.89,
-    "avg_input_tokens": 617,
-    "shared_prefix_tokens": 160,
-    "n_cold": 1,
-    "n_warm": 48
+    "cold_ttft_ms": 126.57,
+    "warm_ttft_ms": 33.04,
+    "avg_input_tokens": 864,
+    "shared_prefix_tokens": 768,
+    "shared_prefix_chunks": 3,
+    "measurement_source": "hardware_calibration"
   },
   "rag": {
-    "cold_ttft_ms": 165.33,
-    "warm_ttft_ms": 146.06,
-    "avg_input_tokens": 1266,
-    "shared_doc_tokens": 1700,
-    "n_cold": 1,
-    "n_warm": 46
+    "cold_ttft_ms": 189.85,
+    "warm_ttft_ms": 33.97,
+    "avg_input_tokens": 1376,
+    "shared_doc_tokens": 1280,
+    "shared_doc_chunks": 5,
+    "measurement_source": "hardware_calibration"
   },
   "nocontext": {
-    "cold_ttft_ms": 113.56,
-    "warm_ttft_ms": 113.56,
-    "avg_input_tokens": 8,
-    "n_queries": 50
+    "cold_ttft_ms": 31.64,
+    "warm_ttft_ms": 31.64,
+    "avg_input_tokens": 96,
+    "measurement_source": "hardware_calibration"
   },
   "multiturn": {
-    "cold_ttft_ms": 158.54,
-    "warm_ttft_ms_base": 135.66,
-    "base_tokens": 61,
-    "tokens_per_turn": 25.0,
-    "n_cold": 1,
-    "n_warm": 42
+    "cold_ttft_ms": 31.64,
+    "warm_ttft_ms_base": 32.11,
+    "base_tokens": 60,
+    "tokens_per_turn": 24,
+    "measurement_source": "hardware_calibration"
+  },
+  "hardware_latencies": {
+    "l1_hit_ms": 0.4649,
+    "l2_hit_ms": 1.1105,
+    "l3_hit_ms": 4.0125,
+    "cold_miss_ms": 31.6419
   }
 }

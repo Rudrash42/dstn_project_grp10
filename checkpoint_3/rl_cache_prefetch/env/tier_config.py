@@ -26,6 +26,7 @@ class TierConfig:
     l1_hit_latency_ms: float = 0.1
     l2_hit_latency_ms: float = 0.25
     l3_hit_latency_ms: float = 6.0
+    cold_compute_per_chunk_ms: float = 30.0
     prefetch_l3_to_l2_ms: float = 6.0
     prefetch_l2_to_l1_ms: float = 0.1
 
@@ -37,11 +38,12 @@ class TierConfig:
     # ── Observation ───────────────────────────────────────────
     embed_dim: int = 384
     max_candidate_chunks: int = 16
+    max_eviction_candidates: int = 16
     history_len: int = 5
 
     @property
     def obs_dim(self) -> int:
-        return self.embed_dim + 3 + self.max_candidate_chunks
+        return self.embed_dim + 3 + self.max_candidate_chunks + self.max_eviction_candidates
 
     @property
     def l1_capacity_chunks(self) -> int:
@@ -76,6 +78,7 @@ class TierConfig:
             "gamma_reward": "gamma_reward",
             "embed_dim": "embed_dim",
             "max_candidate_chunks": "max_candidate_chunks",
+            "max_eviction_candidates": "max_eviction_candidates",
             "history_len": "history_len",
         }
 

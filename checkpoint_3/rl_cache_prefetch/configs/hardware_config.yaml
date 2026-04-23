@@ -1,54 +1,18 @@
-# ═══════════════════════════════════════════════════════════════
-#  ⚡ Hardware Cache Configuration (No LMCache)
-# ═══════════════════════════════════════════════════════════════
-#
-#  Edit these values to match YOUR hardware (RTX 3050 laptop).
-#  This file is loaded by generate_traces.py, train_hardware.py,
-#  and evaluate_hardware.py.
-#
-#  🔑 KEY INSIGHT:
-#  If L1 is too big → all chunks fit in GPU → agent learns nothing.
-#  If L1 is too small → everything is a cold miss → agent can't help.
-#  Find the sweet spot where ~50% of chunks fit in L1.
-#
-# ═══════════════════════════════════════════════════════════════
-
-# ── Chunk Geometry (from your LLM model: Qwen2.5-0.5B) ──────
 chunk_size_tokens: 256
-kv_bytes_per_token: 12288       # 2 × 24L × 2H × 64d × 2B
-chunk_size_bytes: 3145728       # 256 × 12288 = 3 MB per chunk
-
-# ── Tier Capacities ──────────────────────────────────────────
-# L1 = GPU VRAM (RTX 3050 has 4096 MB total)
-# Keep this SMALL so chunks spill to L2/L3 — that's the whole point!
-l1_capacity_mb: 3.0         # changed this ~15 chunks fit (good pressure)
-
-# L2 = CPU Pinned RAM (your laptop's system RAM)
-# Don't set too high — pinned memory can't be swapped to disk
-l2_capacity_mb: 4.5           # changed this ~16 chunks fit
-
-# L3 = NVMe Disk (your SSD — plenty of space)
-l3_capacity_mb: 5120.0          # ~1600 chunks fit
-
-# ── Where to store L3 chunk files on disk ────────────────────
-l3_disk_dir: "./data/hardware_cache_store"
-
-# ── Estimated Latencies (for baseline reward computation) ────
-# These are used to estimate "what would happen without prefetch"
-# The ACTUAL access latencies are always MEASURED on real hardware.
-l1_hit_latency_ms: 0.1
-l2_hit_latency_ms: 0.24
-l3_hit_latency_ms: 6.0
-cold_compute_per_chunk_ms: 30.8
-prefetch_l3_to_l2_ms: 6.0
-
-# ── Reward Function ─────────────────────────────────────────
-# R = α × time_saved - β × MB_migrated - γ × unused_prefetches
-alpha: 1.0           # higher = reward time savings more
-beta: 0.01           # higher = penalize data migration more
-gamma_reward: 0.1    # higher = penalize wasted prefetches more
-
-# ── RL Training Hyperparameters ──────────────────────────────
+kv_bytes_per_token: 12288
+chunk_size_bytes: 3145728
+l1_capacity_mb: 48.0
+l2_capacity_mb: 96.0
+l3_capacity_mb: 5120.0
+l3_disk_dir: ./data/hardware_cache_store
+l1_hit_latency_ms: 0.4649
+l2_hit_latency_ms: 1.1105
+l3_hit_latency_ms: 4.0125
+cold_compute_per_chunk_ms: 31.6419
+prefetch_l3_to_l2_ms: 1.2478
+alpha: 1.0
+beta: 0.01
+gamma_reward: 0.1
 learning_rate: 0.0003
 n_steps: 2048
 batch_size: 64
@@ -59,31 +23,25 @@ ent_coef: 0.01
 vf_coef: 0.5
 max_grad_norm: 0.5
 total_timesteps: 50000
-
-# ── Policy Network ───────────────────────────────────────────
 policy_net_arch:
-  - 64
-  - 64
-
-# ── Observation Space ────────────────────────────────────────
+- 64
+- 64
 embed_dim: 384
 max_candidate_chunks: 16
 history_len: 5
-
-# ── Behavioral Cloning (Stage A) ────────────────────────────
 behavioral_cloning_epochs: 20
 behavioral_cloning_lr: 0.001
-
-# ── Hardware Flags ───────────────────────────────────────────
-force_cpu_mode: false           # Set true to test without GPU
-verbose: false                  # Set true to see every cache operation
-enable_operation_log: true      # Log all ops for CSV export
-cuda_warmup_iterations: 5       # GPU warmup before measurement
-
-# ── Trace Generation (used by data/generate_traces.py) ──────
+force_cpu_mode: false
+verbose: false
+enable_operation_log: true
+cuda_warmup_iterations: 5
 max_queries_per_workload: 50
-prefix_length_tokens: 600       # shared prefix ≈ 2-3 chunks
-rag_doc_length_tokens: 1700     # shared RAG doc context ≈ 7 chunks
-multiturn_tokens_per_turn: 40   # tokens added per conversation turn
-question_tokens_avg: 15         # average unique question length
-calibration_iterations: 20      # iterations to calibrate latencies
+prefix_length_tokens: 768
+rag_doc_length_tokens: 1280
+multiturn_tokens_per_turn: 24
+question_tokens_avg: 96
+calibration_iterations: 20
+interleaved_num_users: 3
+interleaved_turns_per_user: 24
+interleaved_tokens_per_turn: 256
+interleaved_max_history_chunks_per_user: 12

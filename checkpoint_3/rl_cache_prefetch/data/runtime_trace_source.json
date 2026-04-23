@@ -1,0 +1,11 @@
+{
+  "source_run": "20260423T172836Z",
+  "source_path": "/home/rudrash/prog/dstn/checkpoint_3/rl_cache_prefetch/data/runs/20260423T172836Z",
+  "trace_names": [
+    "prefix",
+    "rag",
+    "nocontext",
+    "multiturn"
+  ],
+  "chunk_event_source": "lmcache_store_coldpass"
+}

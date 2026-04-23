@@ -243,3 +243,46 @@ class CacheSimulator:
         if chunk_id in self.l3:
             return "L3"
         return None
+
+    # ─── Model-driven eviction ────────────────────────────────
+
+    def get_all_cached_chunks(self) -> List[int]:
+        """
+        Return all chunk IDs currently in the cache (L1+L2+L3),
+        ordered by tier (L1 first, then L2, then L3).
+        """
+        return list(self.l1.keys()) + list(self.l2.keys()) + list(self.l3.keys())
+
+    def evict_chunk(self, chunk_id: int) -> bool:
+        """
+        Explicitly evict a chunk by ID (not LRU-based).
+        Returns True if the chunk was found and evicted, False otherwise.
+        """
+        size = self.cfg.chunk_size_bytes
+
+        if chunk_id in self.l1:
+            del self.l1[chunk_id]
+            self.l1_bytes -= size
+            return True
+
+        if chunk_id in self.l2:
+            del self.l2[chunk_id]
+            self.l2_bytes -= size
+            return True
+
+        if chunk_id in self.l3:
+            del self.l3[chunk_id]
+            self.l3_bytes -= size
+            return True
+
+        return False
+
+    def evict_chunks(self, chunk_ids: List[int]) -> int:
+        """
+        Evict multiple chunks by ID. Returns the number of chunks successfully evicted.
+        """
+        count = 0
+        for cid in chunk_ids:
+            if self.evict_chunk(cid):
+                count += 1
+        return count

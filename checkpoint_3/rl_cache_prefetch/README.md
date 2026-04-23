@@ -28,6 +28,26 @@ python train_hardware.py --quick      # 500-step hardware smoke test (< 5 min)
 python data/generate_traces.py --cpu-only  # Generate traces without GPU
 ```
 
+## Runtime Trace Standardization (LMCache Cold-Pass)
+
+If you already generated runtime-collected traces under `data/runs/<timestamp>/`
+with `chunk_event_source=lmcache_store_coldpass`, promote the latest run into the
+canonical `data/traces_*.csv` files used by training/evaluation:
+
+```bash
+# Promote latest runtime run
+python data/promote_runtime_traces.py
+
+# Or pick a specific run id
+python data/promote_runtime_traces.py --run-id 20260423T172836Z
+
+# See available runs
+python data/promote_runtime_traces.py --list
+```
+
+This keeps your pipeline on runtime-provenance traces instead of synthetic chunk
+assignments whenever run artifacts are available.
+
 ## Architecture
 
 ```

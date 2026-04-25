@@ -1,0 +1,99 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{openai2023gpt4}
+\citation{touvron2023llama}
+\citation{bai2023qwen}
+\citation{kwon2023efficient}
+\citation{liu2024cachegen}
+\citation{liu2024cachegen}
+\citation{schulman2017proximal}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {I-A}}Problem Statement}{1}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {I-B}}Approach and Contributions}{1}{subsection.1.2}\protected@file@percent }
+\citation{vaswani2017attention}
+\citation{liu2024cachegen}
+\citation{kwon2023efficient}
+\citation{kwon2023efficient}
+\citation{shade2022}
+\citation{hvac2021}
+\citation{fedcache2022}
+\citation{parrot2024}
+\citation{zhong2018open}
+\citation{mao2016resource}
+\citation{schulman2017proximal}
+\citation{torabi2018behavioral}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Background and Related Work}{2}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}Key-Value Cache in LLM Inference}{2}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}Tiered Storage Systems for LLMs}{2}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-C}}Cache Prefetching and Learning-Based Policies}{2}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-D}}Reinforcement Learning for Systems Optimization}{2}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-E}}Observations and Gap}{2}{subsection.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {III}System Design}{2}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Overview}{2}{subsection.3.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Performance comparison of all four strategies across the four workload types, evaluated on real hardware. The RL agent is competitive across all workloads and shows strong performance on Multi-Turn.}}{2}{figure.1}\protected@file@percent }
+\newlabel{fig:system_overview}{{1}{2}{Performance comparison of all four strategies across the four workload types, evaluated on real hardware. The RL agent is competitive across all workloads and shows strong performance on Multi-Turn}{figure.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}Three-Tier Cache Hierarchy}{2}{subsection.3.2}\protected@file@percent }
+\citation{reimers2019sentencebert}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Measured Hardware Latencies (RTX 3050 Laptop GPU)}}{3}{table.1}\protected@file@percent }
+\newlabel{tab:latencies}{{I}{3}{Measured Hardware Latencies (RTX 3050 Laptop GPU)}{table.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}Workload Traces}{3}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}RL Agent Design}{3}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-D}1}State/Observation Space}{3}{subsubsection.3.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-D}2}Action Space}{3}{subsubsection.3.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-D}3}Reward Function}{3}{subsubsection.3.4.3}\protected@file@percent }
+\newlabel{eq:reward}{{2}{3}{Reward Function}{equation.3.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-D}4}Policy Network}{3}{subsubsection.3.4.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces PPO Hyperparameters}}{3}{table.2}\protected@file@percent }
+\newlabel{tab:ppo_hp}{{II}{3}{PPO Hyperparameters}{table.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-E}}Two-Stage Training Pipeline}{3}{subsection.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-E}1}Stage A: Behavioral Cloning}{3}{subsubsection.3.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-E}2}Stage B: PPO Fine-Tuning}{4}{subsubsection.3.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-F}}Baselines}{4}{subsection.3.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Evaluation}{4}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Testbed}{4}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Workload and Evaluation Protocol}{4}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Latency Results}{4}{subsection.4.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Average per-query latency (ms) for all strategies across four workload types. Lower is better. The RL agent matches or exceeds the Oracle on Multi-Turn, achieving the lowest average latency.}}{4}{figure.2}\protected@file@percent }
+\newlabel{fig:latency}{{2}{4}{Average per-query latency (ms) for all strategies across four workload types. Lower is better. The RL agent matches or exceeds the Oracle on Multi-Turn, achieving the lowest average latency}{figure.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-C}1}Multi-Turn Workload}{4}{subsubsection.4.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-C}2}Shared Prefix Workload}{4}{subsubsection.4.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-C}3}RAG Workload}{4}{subsubsection.4.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-C}4}No-Context Workload}{4}{subsubsection.4.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Training Dynamics}{4}{subsection.4.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Hardware Evaluation Results Across All Workloads}}{5}{table.3}\protected@file@percent }
+\newlabel{tab:results}{{III}{5}{Hardware Evaluation Results Across All Workloads}{table.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces PPO training curves showing reward, hit rate, and prefetch accuracy over 50,000 timesteps. The agent converges after $\approx $30,000 steps.}}{5}{figure.3}\protected@file@percent }
+\newlabel{fig:training}{{3}{5}{PPO training curves showing reward, hit rate, and prefetch accuracy over 50,000 timesteps. The agent converges after $\approx $30,000 steps}{figure.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-E}}Prefetch Efficiency}{5}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-F}}Speedup Summary}{5}{subsection.4.6}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Prefetch accuracy (useful prefetches / total prefetches) across workload types. Higher accuracy means the agent is correctly identifying which chunks will be needed.}}{5}{figure.4}\protected@file@percent }
+\newlabel{fig:prefetch}{{4}{5}{Prefetch accuracy (useful prefetches / total prefetches) across workload types. Higher accuracy means the agent is correctly identifying which chunks will be needed}{figure.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Speedup relative to the LRU baseline for Oracle and RL Agent across all workloads. Values above 1.0 indicate improvement over the reactive baseline.}}{5}{figure.5}\protected@file@percent }
+\newlabel{fig:speedup}{{5}{5}{Speedup relative to the LRU baseline for Oracle and RL Agent across all workloads. Values above 1.0 indicate improvement over the reactive baseline}{figure.5}{}}
+\bibcite{openai2023gpt4}{1}
+\bibcite{touvron2023llama}{2}
+\bibcite{bai2023qwen}{3}
+\bibcite{kwon2023efficient}{4}
+\bibcite{liu2024cachegen}{5}
+\bibcite{vaswani2017attention}{6}
+\bibcite{schulman2017proximal}{7}
+\bibcite{shade2022}{8}
+\bibcite{hvac2021}{9}
+\bibcite{fedcache2022}{10}
+\bibcite{parrot2024}{11}
+\bibcite{zhong2018open}{12}
+\bibcite{mao2016resource}{13}
+\bibcite{torabi2018behavioral}{14}
+\bibcite{reimers2019sentencebert}{15}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-G}}Discussion}{6}{subsection.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{6}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{Appendix}{6}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {A}Prerequisites}{6}{subsection.Appendix.A.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {B}Running the Full Pipeline}{6}{subsection.Appendix.A.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {C}Running the Convenience Shell Script}{6}{subsection.Appendix.A.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {D}Directory Structure}{6}{subsection.Appendix.A.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {E}Configuration}{7}{subsection.Appendix.A.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {F}Expected Output}{7}{subsection.Appendix.A.6}\protected@file@percent }
+\gdef \@abspage@last{7}

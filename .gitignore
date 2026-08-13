@@ -1,0 +1,70 @@
+# Byte-compiled / optimized / Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# LaTeX build intermediate artifacts (keep PDF, TeX, CLS, BBL, and figures)
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.blg
+report/*.fls
+report/*.fdb_latexmk
+report/*.synctex.gz
+*.aux
+*.log
+*.blg
+
+# Temporary log files and execution dumps
+*.log
+eval_out.log
+out stage 4.txt
+out*.txt
+
+# Ephemeral hardware cache stores / run dumps
+*hardware_cache_store*
+*benchmark_cache_store*
+*episode_cache_store*
+checkpoint_3_new/data/cache_store/
+runs/
+**/data/runs/
+**/eval/data/
+
+# Submission archives
+submission/
+submission.zip

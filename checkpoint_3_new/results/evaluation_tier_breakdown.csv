@@ -1,0 +1,17 @@
+workload,strategy,L1_pct,L2_pct,L3_pct,MISS_pct
+prefix,No Cache,0.0,0.0,0.0,100.0
+prefix,LRU,98.0,0.0,0.0,2.0
+prefix,Oracle,98.0,0.0,0.0,2.0
+prefix,RL Agent,98.0,0.0,0.0,2.0
+rag,No Cache,0.0,0.0,0.0,100.0
+rag,LRU,85.8,0.0,0.0,14.2
+rag,Oracle,85.8,0.0,0.0,14.2
+rag,RL Agent,85.8,0.0,0.0,14.2
+nocontext,No Cache,0.0,0.0,0.0,100.0
+nocontext,LRU,0.0,0.0,0.0,100.0
+nocontext,Oracle,0.0,0.0,0.0,100.0
+nocontext,RL Agent,0.0,0.0,0.0,100.0
+multiturn,No Cache,0.0,0.0,0.0,100.0
+multiturn,LRU,10.7,33.3,52.1,3.9
+multiturn,Oracle,10.7,33.3,52.1,3.9
+multiturn,RL Agent,10.7,33.6,51.8,3.9

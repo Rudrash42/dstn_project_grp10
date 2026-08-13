@@ -1,0 +1,51 @@
+query_id,query_text,input_tokens,chunk_ids_needed,shared_chunk_ids,unique_chunk_ids,num_chunks
+1,What exercises help with lower back pain?,487,"[0, 1, 2]","[0, 1, 2]",[],3
+2,Is applying ice effective for reducing swelling?,487,"[0, 1, 2]","[0, 1, 2]",[],3
+3,Define correct sitting posture for office workers.,487,"[0, 1, 2]","[0, 1, 2]",[],3
+4,How long should a rotator cuff tear rehabilitation programme last?,491,"[0, 1, 2]","[0, 1, 2]",[],3
+5,What is the recommended rest period after an acute ankle sprain?,492,"[0, 1, 2]","[0, 1, 2]",[],3
+6,Which stretches are most effective for tight hamstrings?,489,"[0, 1, 2]","[0, 1, 2]",[],3
+7,How should a patient progress from non-weight-bearing to full weight-bearing?,493,"[0, 1, 2]","[0, 1, 2]",[],3
+8,What is the role of proprioception training after ACL reconstruction?,491,"[0, 1, 2]","[0, 1, 2]",[],3
+9,How many sets and reps are recommended for quadriceps post surgery?,492,"[0, 1, 2]","[0, 1, 2]",[],3
+10,What are the signs that a patient is overtraining during rehabilitation?,492,"[0, 1, 2]","[0, 1, 2]",[],3
+11,How effective is dry needling for myofascial pain syndrome?,493,"[0, 1, 2]","[0, 1, 2]",[],3
+12,What is the difference between active and passive physiotherapy?,491,"[0, 1, 2]","[0, 1, 2]",[],3
+13,When is it safe to return to sport after a hamstring strain?,492,"[0, 1, 2]","[0, 1, 2]",[],3
+14,How does ultrasound therapy aid soft tissue healing?,488,"[0, 1, 2]","[0, 1, 2]",[],3
+15,What are the best exercises for strengthening the hip abductors?,492,"[0, 1, 2]","[0, 1, 2]",[],3
+16,How should breathing be coordinated during core stability exercises?,489,"[0, 1, 2]","[0, 1, 2]",[],3
+17,What is the McKenzie method and when is it indicated?,490,"[0, 1, 2]","[0, 1, 2]",[],3
+18,How do wearable sensors improve rehabilitation outcomes?,487,"[0, 1, 2]","[0, 1, 2]",[],3
+19,What is the recommended frequency of physiotherapy for chronic neck pain?,493,"[0, 1, 2]","[0, 1, 2]",[],3
+20,How does foam rolling affect muscle recovery?,487,"[0, 1, 2]","[0, 1, 2]",[],3
+21,What are early mobilisation protocols after total knee replacement?,490,"[0, 1, 2]","[0, 1, 2]",[],3
+22,How should a patient warm up before starting rehabilitation exercises?,490,"[0, 1, 2]","[0, 1, 2]",[],3
+23,What is the evidence for kinesiology taping in shoulder impingement?,495,"[0, 1, 2]","[0, 1, 2]",[],3
+24,How does sleep quality affect musculoskeletal recovery?,489,"[0, 1, 2]","[0, 1, 2]",[],3
+25,What exercises are contraindicated after lumbar discectomy?,494,"[0, 1, 2]","[0, 1, 2]",[],3
+26,How is gait analysis used in rehabilitation planning?,489,"[0, 1, 2]","[0, 1, 2]",[],3
+27,What is the role of hydrotherapy in post-surgical rehabilitation?,492,"[0, 1, 2]","[0, 1, 2]",[],3
+28,How long does it take to recover from a grade 2 ligament sprain?,496,"[0, 1, 2]","[0, 1, 2]",[],3
+29,What are the benefits of eccentric training for tendinopathy?,491,"[0, 1, 2]","[0, 1, 2]",[],3
+30,How should rehabilitation differ for elderly patients with hip fractures?,490,"[0, 1, 2]","[0, 1, 2]",[],3
+31,What is the Oswestry Disability Index used for?,490,"[0, 1, 2]","[0, 1, 2]",[],3
+32,How can computer vision detect incorrect squat form?,488,"[0, 1, 2]","[0, 1, 2]",[],3
+33,What are the clinical criteria for diagnosing patellofemoral pain?,494,"[0, 1, 2]","[0, 1, 2]",[],3
+34,How does chronic pain affect rehabilitation adherence?,487,"[0, 1, 2]","[0, 1, 2]",[],3
+35,What is the recommended load progression for Achilles tendinopathy?,491,"[0, 1, 2]","[0, 1, 2]",[],3
+36,How effective is TENS therapy for post-operative pain management?,491,"[0, 1, 2]","[0, 1, 2]",[],3
+37,What is the difference between isometric and isotonic exercises?,491,"[0, 1, 2]","[0, 1, 2]",[],3
+38,How should rehabilitation be modified for diabetic neuropathy patients?,490,"[0, 1, 2]","[0, 1, 2]",[],3
+39,What are the red flags in low back pain requiring immediate referral?,492,"[0, 1, 2]","[0, 1, 2]",[],3
+40,How does obesity affect joint loading during rehabilitation?,488,"[0, 1, 2]","[0, 1, 2]",[],3
+41,What is neuromuscular electrical stimulation and when is it used?,493,"[0, 1, 2]","[0, 1, 2]",[],3
+42,How can a patient self-monitor exercise intensity at home?,490,"[0, 1, 2]","[0, 1, 2]",[],3
+43,What are the stages of tissue healing and how do they guide treatment?,493,"[0, 1, 2]","[0, 1, 2]",[],3
+44,How effective is spinal manipulation for non-specific low back pain?,491,"[0, 1, 2]","[0, 1, 2]",[],3
+45,What is the role of the transverse abdominis in lumbar stability?,494,"[0, 1, 2]","[0, 1, 2]",[],3
+46,How does stress and anxiety impact musculoskeletal pain perception?,491,"[0, 1, 2]","[0, 1, 2]",[],3
+47,What is the minimal detectable change for the Visual Analogue Scale?,493,"[0, 1, 2]","[0, 1, 2]",[],3
+48,How should rehabilitation be adapted for osteoporosis patients?,490,"[0, 1, 2]","[0, 1, 2]",[],3
+49,What are the best outcome measures for shoulder rehabilitation?,489,"[0, 1, 2]","[0, 1, 2]",[],3
+50,How does dehydration affect muscle performance during exercise?,488,"[0, 1, 2]","[0, 1, 2]",[],3
